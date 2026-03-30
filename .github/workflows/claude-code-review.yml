@@ -1,0 +1,69 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    # Optional: Only run on specific file changes
+    # paths:
+    #   - "src/**/*.ts"
+    #   - "src/**/*.tsx"
+    #   - "src/**/*.js"
+    #   - "src/**/*.jsx"
+
+jobs:
+  claude-review:
+    # Optional: Filter by PR author
+    # if: |
+    #   github.event.pull_request.user.login == 'external-contributor' ||
+    #   github.event.pull_request.user.login == 'new-developer' ||
+    #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
+    
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: read
+      id-token: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude Code Review
+        id: claude-review
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            You are reviewing a Mentoory PR. Before reviewing, read these governance documents:
+            1. `.specify/memory/constitution.md` — 10 architectural principles (non-negotiable)
+            2. `.claude/coding-standards.md` — coding conventions
+            3. `.claude/ddd-patterns.md` — DDD rules (controllers must never use repositories)
+            4. `.claude/web-patterns.md` — web layer conventions
+            5. `.claude/common-issues.md` — known pitfalls to watch for
+
+            Review the PR diff against these categories:
+            - **Constitution compliance**: Layer boundaries, CQRS patterns, DDD constraints, DateTime handling, naming conventions, Spanish UI text, zero warnings
+            - **Forbidden patterns**: AutoMapper, Dapper for primary access, service locator, static business logic, swallowed exceptions, JavaScript in Views
+            - **Security**: Authorization attributes, ExternalId in routes (never internal IDs), input validation, CSRF
+            - **Code quality**: Result<T> pattern usage, async/await correctness, N+1 queries, null safety
+            - **Architecture**: Correct file placement, one class per file, proper layer dependencies
+
+            Format your review as:
+            ## 🔍 Code Review — PR #${{ github.event.pull_request.number }}
+            ### Blockers (must fix before merge)
+            ### Warnings (should fix)
+            ### Suggestions (optional)
+            ### ✅ Positive observations
+
+            Use `gh pr comment` with your Bash tool to leave your review as a comment on the PR.
+          
+          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
+          # or https://docs.claude.com/en/docs/claude-code/sdk#command-line for available options
+          claude_args: '--allowed-tools "Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*)"'
+
