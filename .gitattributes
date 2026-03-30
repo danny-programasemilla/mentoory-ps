@@ -1,0 +1,35 @@
+# Default: normalize line endings to LF in repository
+* text=auto eol=lf
+
+# SQL files: UTF-8 WITHOUT BOM, LF line endings
+# MSBuild.Sdk.SqlProj cannot parse files with UTF-8 BOM
+*.sql text eol=lf
+
+# Shell scripts: LF line endings (Unix)
+*.sh text eol=lf
+
+# Windows scripts: CRLF line endings
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# C# files: LF line endings
+*.cs text eol=lf
+*.csproj text eol=lf
+*.sln text eol=lf
+
+# Web files: LF line endings
+*.cshtml text eol=lf
+*.js text eol=lf
+*.css text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.zip binary
+*.dacpac binary
