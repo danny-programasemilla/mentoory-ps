@@ -1,0 +1,110 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mentoory.Web", "Mentoory.Web\Mentoory.Web.csproj", "{A76A4685-5FC6-4E4D-BAD1-7600902E131E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mentoory.Aspire.AppHost.AppHost", "Mentoory.Aspire.AppHost\Mentoory.Aspire.AppHost.AppHost.csproj", "{289BBA9E-59E6-4582-B073-EAC250090D95}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mentoory.Aspire.AppHost.ServiceDefaults", "Mentoory.Aspire.AppHost.ServiceDefaults\Mentoory.Aspire.AppHost.ServiceDefaults.csproj", "{787A88FF-962D-4D01-AE38-1BC9D9984EA7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Aspire", "Aspire", "{18B750F0-0282-488D-91E7-175149D7D314}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web", "Web", "{45F210DD-9737-4CBB-9CFD-3DE1620ABE32}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4C1641DA-D99C-44EA-892C-DD9FF49723D1}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+		sqlserver2022-docker-recreate.md = sqlserver2022-docker-recreate.md
+		global.json = global.json
+		Directory.Build.props = Directory.Build.props
+		Directory.Packages.props = Directory.Packages.props
+		delete-bin-obj.sh = delete-bin-obj.sh
+		Analyzers.ruleset = Analyzers.ruleset
+		aspire.config.json = aspire.config.json
+		Mentoory.Db\MentooryDb.Development.publish.xml = Mentoory.Db\MentooryDb.Development.publish.xml
+		Mentoory.Db\publish-mentoorydb.sh = Mentoory.Db\publish-mentoorydb.sh
+		Mentoory.Db\MentooryDb.publish.xml = Mentoory.Db\MentooryDb.publish.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Db", "Db", "{33306CCE-B21F-4D75-8FF8-A179B9391756}"
+EndProject
+Project("{42EA0DBD-9CF1-443E-919E-BE9C484E4577}") = "MentooryDb", "Mentoory.Db\MentooryDb.sqlproj", "{00000000-0000-0000-0000-000000000000}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules.Shared", "Modules.Shared", "{877CDD8C-D4F8-4F90-B655-41D4766B7128}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mentoory.Shared.Application", "Mentoory.Shared.Application\Mentoory.Shared.Application.csproj", "{25D8A8BC-34A5-4236-8BF2-854887933A6F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mentoory.Shared.Domain", "Mentoory.Shared.Domain\Mentoory.Shared.Domain.csproj", "{3F800360-80B7-4287-81ED-18BCA06CB5AC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mentoory.Shared.Infrastructure", "Mentoory.Shared.Infrastructure\Mentoory.Shared.Infrastructure.csproj", "{3B358796-5EF1-41C9-A590-94D2F4B6B5E4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{241CEA68-33B1-4638-80A5-1840C527ACB9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Example", "Example", "{9BA35E5D-12D4-446B-88ED-26A7C4248A51}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mentoory.Example.Application", "Mentoory.Example.Application\Mentoory.Example.Application.csproj", "{C18E1929-0A81-459C-858A-49391115A935}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mentoory.Example.Domain", "Mentoory.Example.Domain\Mentoory.Example.Domain.csproj", "{ADC6D712-FF9C-4335-93AC-C9103B443512}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mentoory.Example.Infrastructure", "Mentoory.Example.Infrastructure\Mentoory.Example.Infrastructure.csproj", "{29620EBA-0C5B-4C66-AA70-EC482B81CE4B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A76A4685-5FC6-4E4D-BAD1-7600902E131E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A76A4685-5FC6-4E4D-BAD1-7600902E131E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A76A4685-5FC6-4E4D-BAD1-7600902E131E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A76A4685-5FC6-4E4D-BAD1-7600902E131E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{289BBA9E-59E6-4582-B073-EAC250090D95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{289BBA9E-59E6-4582-B073-EAC250090D95}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{289BBA9E-59E6-4582-B073-EAC250090D95}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{289BBA9E-59E6-4582-B073-EAC250090D95}.Release|Any CPU.Build.0 = Release|Any CPU
+		{787A88FF-962D-4D01-AE38-1BC9D9984EA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{787A88FF-962D-4D01-AE38-1BC9D9984EA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{787A88FF-962D-4D01-AE38-1BC9D9984EA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{787A88FF-962D-4D01-AE38-1BC9D9984EA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00000000-0000-0000-0000-000000000000}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00000000-0000-0000-0000-000000000000}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00000000-0000-0000-0000-000000000000}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00000000-0000-0000-0000-000000000000}.Release|Any CPU.Build.0 = Release|Any CPU
+		{25D8A8BC-34A5-4236-8BF2-854887933A6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25D8A8BC-34A5-4236-8BF2-854887933A6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25D8A8BC-34A5-4236-8BF2-854887933A6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25D8A8BC-34A5-4236-8BF2-854887933A6F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F800360-80B7-4287-81ED-18BCA06CB5AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F800360-80B7-4287-81ED-18BCA06CB5AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F800360-80B7-4287-81ED-18BCA06CB5AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F800360-80B7-4287-81ED-18BCA06CB5AC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B358796-5EF1-41C9-A590-94D2F4B6B5E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B358796-5EF1-41C9-A590-94D2F4B6B5E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B358796-5EF1-41C9-A590-94D2F4B6B5E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B358796-5EF1-41C9-A590-94D2F4B6B5E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C18E1929-0A81-459C-858A-49391115A935}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C18E1929-0A81-459C-858A-49391115A935}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C18E1929-0A81-459C-858A-49391115A935}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C18E1929-0A81-459C-858A-49391115A935}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ADC6D712-FF9C-4335-93AC-C9103B443512}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADC6D712-FF9C-4335-93AC-C9103B443512}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADC6D712-FF9C-4335-93AC-C9103B443512}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ADC6D712-FF9C-4335-93AC-C9103B443512}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29620EBA-0C5B-4C66-AA70-EC482B81CE4B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29620EBA-0C5B-4C66-AA70-EC482B81CE4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29620EBA-0C5B-4C66-AA70-EC482B81CE4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29620EBA-0C5B-4C66-AA70-EC482B81CE4B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{289BBA9E-59E6-4582-B073-EAC250090D95} = {18B750F0-0282-488D-91E7-175149D7D314}
+		{787A88FF-962D-4D01-AE38-1BC9D9984EA7} = {18B750F0-0282-488D-91E7-175149D7D314}
+		{A76A4685-5FC6-4E4D-BAD1-7600902E131E} = {45F210DD-9737-4CBB-9CFD-3DE1620ABE32}
+		{00000000-0000-0000-0000-000000000000} = {33306CCE-B21F-4D75-8FF8-A179B9391756}
+		{25D8A8BC-34A5-4236-8BF2-854887933A6F} = {877CDD8C-D4F8-4F90-B655-41D4766B7128}
+		{3F800360-80B7-4287-81ED-18BCA06CB5AC} = {877CDD8C-D4F8-4F90-B655-41D4766B7128}
+		{3B358796-5EF1-41C9-A590-94D2F4B6B5E4} = {877CDD8C-D4F8-4F90-B655-41D4766B7128}
+		{9BA35E5D-12D4-446B-88ED-26A7C4248A51} = {241CEA68-33B1-4638-80A5-1840C527ACB9}
+		{C18E1929-0A81-459C-858A-49391115A935} = {9BA35E5D-12D4-446B-88ED-26A7C4248A51}
+		{ADC6D712-FF9C-4335-93AC-C9103B443512} = {9BA35E5D-12D4-446B-88ED-26A7C4248A51}
+		{29620EBA-0C5B-4C66-AA70-EC482B81CE4B} = {9BA35E5D-12D4-446B-88ED-26A7C4248A51}
+	EndGlobalSection
+EndGlobal

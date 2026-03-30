@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <AssemblyVersion>0.0.10</AssemblyVersion>
+        <FileVersion>0.0.10</FileVersion>
+        <InformationalVersion>0.0.10+$(SourceRevisionId)</InformationalVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Mentoory.Aspire.AppHost.ServiceDefaults\Mentoory.Aspire.AppHost.ServiceDefaults.csproj" />
+      <ProjectReference Include="..\Mentoory.Example.Application\Mentoory.Example.Application.csproj" />
+      <ProjectReference Include="..\Mentoory.Example.Infrastructure\Mentoory.Example.Infrastructure.csproj" />
+      <ProjectReference Include="..\Mentoory.Shared.Application\Mentoory.Shared.Application.csproj" />
+      <ProjectReference Include="..\Mentoory.Shared.Infrastructure\Mentoory.Shared.Infrastructure.csproj" />
+    </ItemGroup>
+
+</Project>

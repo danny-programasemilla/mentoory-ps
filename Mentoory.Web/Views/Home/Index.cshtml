@@ -1,0 +1,29 @@
+﻿@using Microsoft.EntityFrameworkCore.Metadata.Internal
+@model List<Mentoory.Example.Domain.Aggregates.Example.Example>
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Example</h1>
+    <table>
+        <thead>
+            <th>
+                Title
+            </th>
+            <th>
+                Date created
+            </th>
+        </thead>
+        <tbody>
+        @foreach (var record in Model)
+        {
+            <tr>
+                <td>@record.Title</td>
+                <td>@record.DateCreated</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
