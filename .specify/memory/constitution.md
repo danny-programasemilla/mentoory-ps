@@ -2,7 +2,13 @@
   ============================================================
   SYNC IMPACT REPORT
   ============================================================
-  Version change: (none) -> 1.0.0 (initial ratification)
+  Version change: 1.0.0 -> 1.0.1
+
+  Patches:
+    - Updated Aspire version from 13.0.2 to 13.2.0 to match
+      actual project dependency (plan.md, CLAUDE.md, AppHost)
+
+  Previous version: (none) -> 1.0.0 (initial ratification)
 
   Added principles:
     - I. Clean Architecture Layer Boundaries
@@ -57,7 +63,7 @@ All specifications MUST assume:
 
 - Spanish-language UI (all user-facing strings, validation messages,
   labels)
-- .NET 10.0 target framework with Aspire 13.0.2 orchestration
+- .NET 10.0 target framework with Aspire 13.2.0 orchestration
 - SQL Server database with SSDT project (no EF migrations)
 - Clean Architecture with mandatory layer separation
 
@@ -313,4 +319,4 @@ All specifications and implementations produced by `/speckit`
 workflows are subject to validation against this constitution.
 Non-compliant outputs MUST be revised before approval.
 
-**Version**: 1.0.0 | **Ratified**: 2026-01-27 | **Last Amended**: 2026-01-27
+**Version**: 1.0.1 | **Ratified**: 2026-01-27 | **Last Amended**: 2026-03-31

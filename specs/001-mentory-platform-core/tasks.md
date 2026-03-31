@@ -3,7 +3,7 @@
 **Input**: Design documents from `/specs/001-mentory-platform-core/`
 **Prerequisites**: plan.md, spec.md, data-model.md, research.md, contracts/web-endpoints.md, quickstart.md
 
-**Tests**: Not included — not explicitly requested in the feature specification.
+**Tests**: Included per constitution mandate (xUnit, Moq, FluentAssertions). Each user story phase includes test tasks for domain and integration coverage.
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
@@ -36,7 +36,7 @@
 - [ ] T006 [P] Implement Shared.Application supporting patterns (DataTableRequest, DataTableResponse&lt;T&gt;, ITimeProvider, ITenantContext, IAuditService, AuditEntry, IIntegrationEvent, IntegrationEvent, MediatRIntegrationEventService) in Mentoory.Shared.Application/
 - [ ] T007 Implement Shared.Infrastructure (SharedAbstractDbContext with domain event dispatch, AbstractRepository, TransactionBehavior, DefaultSystemTimeProvider, TenantContextService, AuditService) in Mentoory.Shared.Infrastructure/
 - [ ] T008 [P] Create all 8 SSDT schema files (identity, authorization, tenant, diagnostic, knowledge, mentoring, subscription, notification) plus audit schema and AuditLog table in Mentoory.Db/
-- [ ] T009 Configure Web project Program.cs skeleton with service registration, cookie authentication middleware, rate limiting policies (login: 5/15min, registration: 3/15min, password-reset: 3/60min), anti-forgery, and middleware pipeline in Mentoory.Web/Program.cs
+- [ ] T009 Configure Web project Program.cs skeleton with service registration, cookie authentication middleware, rate limiting policies (login: 5/15min, registration: 3/15min, password-reset: 3/60min), honeypot bot detection on public registration/password-reset forms (FR-054), anti-forgery, and middleware pipeline in Mentoory.Web/Program.cs
 - [ ] T010 [P] Implement Phoenix Admin layout files (_Layout.cshtml, _Navigation.cshtml, _TopBar.cshtml, _Footer.cshtml, _Breadcrumbs.cshtml) with Spanish locale and Phoenix CSS integration in Mentoory.Web/Views/Shared/
 - [ ] T011 [P] Implement menu infrastructure (MenuItem, MenuGroup models, MenuConfiguration with all role menus, IMenuService interface, MenuService) in Mentoory.Web/Infrastructure/Menu/
 - [ ] T012 [P] Implement reusable View Components (DataTableComponent, ToastComponent, ConfirmModalComponent, FilterBarComponent) in Mentoory.Web/Views/Shared/Components/
@@ -138,7 +138,7 @@
 
 ### PostDeployment Scripts
 
-- [ ] T062 [US1] Create PostDeployment seed scripts (001.SeedRoles.sql, 002.SeedGlobalAdmin.sql, 003.SeedDefaultSubscriptionPlan.sql, Script.PostDeployment.sql) in Mentoory.Db.PostDeployment/
+- [ ] T062 [US1] Create PostDeployment seed scripts (001.SeedRoles.sql, 002.SeedGlobalAdmin.sql, 003.SeedDefaultSubscriptionPlan.sql, Script.PostDeployment.sql) in Mentoory.Db.PostDeployment/ — *Note: 003.SeedDefaultSubscriptionPlan.sql seeds a US6 artifact here because a default subscription plan is required for platform bootstrap before US6 implementation*
 
 ### Web Layer — Identity Area
 
@@ -175,7 +175,14 @@
 
 - [ ] T082 [US1] Wire up Identity, Authorization, and Tenant services in Program.cs and configure Aspire SQL Server enrichment for all three DbContexts in Mentoory.Web/Program.cs
 
-**Checkpoint**: At this point, the platform has multi-tenant user management, authentication, session management, context selection, and incubator/project CRUD — fully functional and independently testable
+### Tests — US1
+
+- [ ] T082a [P] [US1] Implement Identity domain unit tests (User aggregate, AuthSession lifecycle, value objects, credential validation) in Mentoory.Identity.Tests/
+- [ ] T082b [P] [US1] Implement Authorization domain unit tests (RoleAssignment rules, entrepreneur one-active-project constraint) in Mentoory.Authorization.Tests/
+- [ ] T082c [P] [US1] Implement Tenant domain unit tests (Incubator, Project stage initialization, MentorAssignment lead flag) in Mentoory.Tenant.Tests/
+- [ ] T082d [US1] Implement integration tests for registration, login, session management, context selection, and cross-tenant data isolation using WebApplicationFactory + Testcontainers + Respawn in Mentoory.Tests.Integration/Identity/ and Mentoory.Tests.Integration/Authorization/ and Mentoory.Tests.Integration/Tenant/
+
+**Checkpoint**: At this point, the platform has multi-tenant user management, authentication, session management, context selection, and incubator/project CRUD — fully functional and independently testable with automated test coverage
 
 ---
 
@@ -231,6 +238,11 @@
 - [ ] T106 [US2] Implement answer correction UI accessible to authorized users (mentor, coordinator, incubator admin, global admin) with audit trail display
 - [ ] T107 [US2] Wire up Diagnostic services in Program.cs and configure Aspire enrichment for DiagnosticDbContext
 
+### Tests — US2
+
+- [ ] T107a [P] [US2] Implement Diagnostic domain unit tests (FormTemplate cloning, Question/AnswerOption scoring, DiagnosticResponse aggregation, AnswerCorrection audit) in Mentoory.Diagnostic.Tests/
+- [ ] T107b [US2] Implement Diagnostic integration tests (clone template, submit responses, verify score aggregation, correct answer with audit trail) in Mentoory.Tests.Integration/Diagnostic/
+
 **Checkpoint**: Diagnostic assessment fully functional — templates can be cloned, customized, filled by entrepreneurs, and corrected with audit trail
 
 ---
@@ -269,8 +281,14 @@
 - [ ] T119 [P] [US3] Implement Coordination Knowledge views (structure list, clone template, tree view with modules/topics/subjects/resources) in Mentoory.Web/Areas/Coordination/Views/Knowledge/
 - [ ] T120 [P] [US3] Implement Platform global knowledge templates controller and views in Mentoory.Web/Areas/Platform/Controllers/TemplatesController.cs (Knowledge section)
 - [ ] T121 [US3] Wire up Knowledge services in Program.cs and configure Aspire enrichment for KnowledgeDbContext
+- [ ] T121a [US3] Implement implicit form-to-knowledge-structure association: when a diagnostic form template is cloned into a project, the linked knowledge structure is automatically selected/cloned as well (FR-024) in Mentoory.Diagnostic.Application/Commands/CloneFormTemplate/ and Mentoory.Knowledge.Application/Commands/CloneKnowledgeTemplate/
 
-**Checkpoint**: Knowledge structures fully functional — templates can be cloned, hierarchy managed, topics link to diagnostic questions
+### Tests — US3
+
+- [ ] T121b [P] [US3] Implement Knowledge domain unit tests (KnowledgeStructure hierarchy, PriorityScoreRange validation, template cloning) in Mentoory.Knowledge.Tests/
+- [ ] T121c [US3] Implement Knowledge integration tests (clone template, manage hierarchy, verify implicit form-knowledge association FR-024) in Mentoory.Tests.Integration/Knowledge/
+
+**Checkpoint**: Knowledge structures fully functional — templates can be cloned, hierarchy managed, topics link to diagnostic questions, and diagnostic form selection implicitly selects the associated knowledge structure
 
 ---
 
@@ -282,7 +300,7 @@
 
 ### Mentoring Domain (Plan)
 
-- [ ] T122 [P] [US4] Implement MentoringPlan aggregate root with PlanTopic entity (priority, manual override, SWOT/ODSR summaries) in Mentoory.Mentoring.Domain/Aggregates/MentoringPlan/
+- [ ] T122 [P] [US4] Implement MentoringPlan aggregate root with PlanTopic entity (priority, manual override, SWOT/ODSR summaries) and PlanApproval entity (who approved, when) in Mentoory.Mentoring.Domain/Aggregates/MentoringPlan/
 - [ ] T123 [P] [US4] Implement PlanStatus enum (Draft, Approved, InProgress, Completed) and IMentoringPlanRepository interface in Mentoory.Mentoring.Domain/
 
 ### Mentoring Application (Plan)
@@ -309,6 +327,11 @@
 - [ ] T134 [P] [US4] Implement Mentoring Plans views (plan list, detail with topic grid, priority indicators, SWOT/ODSR context, adjust/approve buttons) in Mentoory.Web/Areas/Mentoring/Views/Plans/
 - [ ] T135 [P] [US4] Implement Participant Plan controller and view (read-only mentoring plan view) in Mentoory.Web/Areas/Participant/Controllers/PlanController.cs and Views/
 - [ ] T136 [US4] Wire up Mentoring plan services in Program.cs and configure Aspire enrichment for MentoringDbContext
+
+### Tests — US4
+
+- [ ] T136a [P] [US4] Implement Mentoring plan domain unit tests (MentoringPlan aggregate, PlanTopic priority mapping, PlanApproval) in Mentoory.Mentoring.Tests/
+- [ ] T136b [US4] Implement Mentoring plan integration tests (generate plan from diagnostic scores, adjust topics, approve plan) in Mentoory.Tests.Integration/Mentoring/
 
 **Checkpoint**: Mentoring plan generation fully functional — diagnostics drive auto-suggestions, mentors adjust collaboratively, plans are approved and persisted
 
@@ -361,6 +384,11 @@
 - [ ] T155 [P] [US5] Implement Participant Assignments controller (Index, Details, Submit) and views (list, detail, submit work form) in Mentoory.Web/Areas/Participant/Controllers/AssignmentsController.cs and Views/
 - [ ] T156 [US5] Wire up Mentoring execution services in Program.cs
 
+### Tests — US5
+
+- [ ] T156a [P] [US5] Implement execution domain unit tests (SessionCalendar scheduling algorithm, Assignment lifecycle, session logging) in Mentoory.Mentoring.Tests/
+- [ ] T156b [US5] Implement execution integration tests (generate calendar, log session, create/submit/review assignment) in Mentoory.Tests.Integration/Mentoring/
+
 **Checkpoint**: Full mentoring execution lifecycle — session scheduling, flexible topic coverage, assignment creation/submission/review
 
 ---
@@ -400,6 +428,10 @@
 - [ ] T169 [US6] Implement Incubator plan assignment (AssignPlan) and override (ApplyOverride) endpoints in Platform IncubatorsController and corresponding view sections
 - [ ] T170 [US6] Integrate subscription limit checks into project creation flow (CheckFeatureLimit before CreateProject) and wire up services in Program.cs
 
+### Tests — US6
+
+- [ ] T170a [P] [US6] Implement Subscription domain unit tests (SubscriptionPlan, PlanFeature, positive-only IncubatorOverride, effective limit calculation) in Mentoory.Subscription.Tests/
+
 **Checkpoint**: Subscription management fully functional — plans with features, assignments, overrides, and limit enforcement
 
 ---
@@ -417,6 +449,10 @@
 - [ ] T175 [P] [US7] Implement Coordination Lifecycle views (stage pipeline visualization, advance controls, current stage indicator) in Mentoory.Web/Areas/Coordination/Views/Lifecycle/
 - [ ] T176 [P] [US7] Implement Coordination Participants controller (Index, Enroll, AssignMentor) in Mentoory.Web/Areas/Coordination/Controllers/ParticipantsController.cs and Views/
 - [ ] T177 [US7] Implement stage-driven UI visibility logic (conditionally show/hide actions based on project's current stage) across Coordination, Participant, and Mentoring areas
+
+### Tests — US7
+
+- [ ] T177a [P] [US7] Implement lifecycle unit tests (sequential stage advancement, skip prevention, backward movement prevention) in Mentoory.Tenant.Tests/
 
 **Checkpoint**: Project lifecycle management fully functional — stages advance sequentially, UI adapts to current stage
 
@@ -456,6 +492,10 @@
 ### Web Layer
 
 - [ ] T191 [US8] Wire up Notification services in Program.cs and configure Aspire enrichment for NotificationDbContext
+
+### Tests — US8
+
+- [ ] T191a [P] [US8] Implement Notification domain unit tests (deduplication via SourceEventId, preference filtering, delivery status transitions) in Mentoory.Notification.Tests/
 
 **Checkpoint**: Notification system fully functional — events trigger notifications, preferences respected, deduplication works, email delivery via MailKit
 

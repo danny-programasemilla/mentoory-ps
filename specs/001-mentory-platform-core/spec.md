@@ -199,7 +199,7 @@ The platform sends notifications to users based on events and schedules. Notific
 - What happens when a scheduled notification references a session that has been canceled? The system must check event validity before sending and suppress stale notifications.
 - What happens when someone attempts to register with a valid national ID from one country but provides an email already associated with a different country's ID? The system must reject — email is globally unique regardless of country.
 - What happens when an attacker probes the signup endpoint to discover whether specific national IDs or emails exist? The system must return identical generic responses for all failure cases on public-facing endpoints.
-- What happens when a user's email changes after registration? The system must re-verify the new email before it becomes active, and the old email must remain functional until verification completes.
+- What happens when a user's email changes after registration? The system must re-verify the new email before it becomes active, and the old email must remain functional until verification completes. *(Note: email change functionality is OUT OF SCOPE for this feature; this edge case is documented for future implementation.)*
 - What happens when a topic's priority score ranges are modified after diagnostics have already been completed? Existing mentoring plans remain as-is (approved snapshot); new plan generations use the updated ranges.
 - What happens when a cloned form modifies an answer option's score? Only future diagnostic completions use the updated score; previously aggregated scores are not recalculated unless explicitly triggered.
 - What happens when an admin attempts to assign an entrepreneur to a second project within the same incubator? The system must reject the assignment and inform the admin that the entrepreneur is already enrolled in an active project in that incubator.
@@ -229,10 +229,37 @@ The platform sends notifications to users based on events and schedules. Notific
 
 **Authorization**
 
-- **FR-010**: System MUST implement role-based access control with granular permissions at module, action, and resource levels.
-- **FR-011**: System MUST validate all access requests against the user's active context on the server.
+- **FR-010**: System MUST implement role-based access control with granular permissions at module, action, and resource levels. The permission matrix is as follows:
+
+  | Module | Action | GlobalAdmin | IncubatorAdmin | ProjectCoordinator | Mentor | Entrepreneur | Sponsor |
+  |--------|--------|:-----------:|:--------------:|:------------------:|:------:|:------------:|:-------:|
+  | Incubators | Create/Edit | Yes | — | — | — | — | — |
+  | Incubators | View own | Yes | Yes | — | — | — | — |
+  | Projects | Create | — | Yes | — | — | — | — |
+  | Projects | Edit/View | — | Yes | Yes | — | — | — |
+  | Users | Platform list | Yes | — | — | — | — | — |
+  | Users | Enroll in incubator | — | Yes | — | — | — | — |
+  | Participants | Enroll in project | — | — | Yes | — | — | — |
+  | Participants | Assign mentor | — | — | Yes | — | — | — |
+  | Diagnostic Templates | Create/Edit/View | Yes | — | — | — | — | — |
+  | Diagnostic Forms | Clone/Customize | — | — | Yes | — | — | — |
+  | Diagnostic Forms | Fill (eval) | — | — | — | — | Yes | — |
+  | Diagnostic Forms | Correct answers | — | Yes | Yes | Yes | — | — |
+  | Knowledge Templates | Create/Edit/View | Yes | — | — | — | — | — |
+  | Knowledge Structures | Clone/Customize | — | — | Yes | — | — | — |
+  | Mentoring Plans | Generate/Adjust/Approve | — | — | — | Yes | — | — |
+  | Mentoring Plans | View | — | Yes | Yes | Yes | Yes | — |
+  | Sessions | Schedule/Log | — | — | — | Yes | — | — |
+  | Sessions | View upcoming | — | — | — | Yes | Yes | — |
+  | Assignments | Create/Review | — | — | — | Yes | — | — |
+  | Assignments | Submit | — | — | — | — | Yes | — |
+  | Subscriptions | Create/Assign/Override | Yes | — | — | — | — | — |
+  | Lifecycle | Advance stage | — | — | Yes | — | — | — |
+  | Notifications | View preferences | — | — | — | Yes | Yes | — |
+  | Dashboards | Sponsor view | — | — | — | — | — | Yes |
+- **FR-011**: System MUST validate all access requests against the user's active context on the server. *(Complements FR-006 server-side storage and FR-013 backend enforcement.)*
 - **FR-012**: System MUST deny access to resources via shared URLs when the requesting user lacks permission.
-- **FR-013**: System MUST enforce all authorization on the backend — frontend restrictions are for UX only, never for security.
+- **FR-013**: System MUST enforce all authorization on the backend — frontend restrictions are for UX only, never for security. *(See also FR-006, FR-011.)*
 
 **Diagnostic Module**
 
@@ -245,7 +272,7 @@ The platform sends notifications to users based on events and schedules. Notific
 - **FR-018**: System MUST support optional question blocks and question ordering within forms.
 - **FR-018a**: System MUST support optional non-scored follow-up questions attached to any question, for qualitative insight that does not affect topic scoring.
 - **FR-018b**: Authorized users (mentor, project coordinator, incubator admin, global admin) MUST be able to correct individual answers at any time — including after an evaluation stage is completed — with a full audit trail of the change (who, when, previous value).
-- **FR-019**: System MUST support sync modes for cloned forms: fully disconnected and partial sync from the global template.
+- **FR-019**: System MUST support sync modes for cloned forms: fully disconnected (no updates from template) and partial sync (pull new questions added to the global template without overwriting locally modified questions).
 
 **Knowledge Structure**
 
@@ -273,7 +300,7 @@ The platform sends notifications to users based on events and schedules. Notific
 
 **Subscription System**
 
-- **FR-032**: System MUST support versioned subscription plans with boolean and quantitative features.
+- **FR-032**: System MUST support versioned subscription plans with boolean and quantitative features. Creating a new version archives the previous version; incubators remain on their assigned version until explicitly reassigned by a Global Admin.
 - **FR-033**: System MUST support positive-only, accumulative overrides per incubator with no expiration.
 - **FR-034**: System MUST enforce feature limits (e.g., project count) based on the effective plan (base + overrides).
 - **FR-035**: Subscription management MUST be admin-managed with no payment gateway integration.
@@ -299,8 +326,8 @@ The platform sends notifications to users based on events and schedules. Notific
 
 **Authentication & Registration**
 
-- **FR-046**: Registration and administrative enrollment MUST collect the user's country, national identification number, and email address.
-- **FR-047**: The national identification number MUST be unique within a given country; the email address MUST be globally unique across the entire platform.
+- **FR-046**: Registration and administrative enrollment MUST collect the user's country, national identification number, and email address. *(See FR-002 for uniqueness constraints.)*
+- **FR-047**: *(Consolidation note: uniqueness rules are defined in FR-002.)* Registration and enrollment workflows MUST enforce these uniqueness rules at the point of data entry, rejecting duplicates before account creation.
 - **FR-048**: During registration, the system MUST validate uniqueness sequentially: first confirm the country + national ID combination does not exist, then confirm the email does not exist.
 - **FR-049**: Authentication MUST use a vendor-neutral approach (email + password) with open protocol support for future SSO/OAuth2 integration.
 - **FR-050**: Login MUST require only the user's email address and password; country and national ID are not part of the login process.
@@ -309,7 +336,7 @@ The platform sends notifications to users based on events and schedules. Notific
 - **FR-053**: Administrative enrollment (by authenticated, authorized users) MUST provide specific feedback about which field (national ID or email) conflicts, to support efficient user management.
 - **FR-054**: Open registration MUST be protected against automated abuse through rate limiting, bot detection, and throttling mechanisms.
 - **FR-055**: The system MUST temporarily lock accounts after a configurable number of consecutive failed login attempts and log all lockout events.
-- **FR-056**: The system MUST enforce minimum password strength requirements at registration and password change.
+- **FR-056**: The system MUST enforce minimum password strength requirements at registration and password change: minimum 10 characters, at least one uppercase letter, one lowercase letter, one digit, and one special character. Passwords MUST NOT contain the user's email address or national ID.
 
 **Mentor Assignment**
 
@@ -354,7 +381,7 @@ The platform sends notifications to users based on events and schedules. Notific
 - **SC-006**: No user can access data outside their authorized context, verified through access control testing across all roles.
 - **SC-007**: Session reminders and task notifications are delivered within 2 minutes of their scheduled trigger time.
 - **SC-008**: Zero duplicate notifications are sent for the same event to the same recipient.
-- **SC-009**: The platform supports at least 50 concurrent incubators, each with up to 100 active projects, without degradation in user experience.
+- **SC-009**: The platform supports at least 50 concurrent incubators, each with up to 100 active projects, maintaining sub-200ms p95 page load time under concurrent load.
 - **SC-010**: All audit-worthy events (logins, context changes, plan approvals, stage transitions) are traceable in the audit log within 24 hours of occurrence.
 - **SC-011**: No unauthenticated user can determine whether a specific national ID or email is registered in the platform through any public-facing endpoint.
 - **SC-012**: 100% of new user accounts require successful email verification before first access.

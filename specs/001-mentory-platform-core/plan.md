@@ -92,7 +92,7 @@ Mentoory.sln
 │   │   │   ├── Controllers/
 │   │   │   ├── Models/
 │   │   │   └── Views/
-│   │   ├── Coordination/                        # Project Coordinator: diagnostics, knowledge, lifecycle
+│   │   ├── Coordination/                        # Project Coordinator: diagnostics, knowledge, lifecycle (stage management)
 │   │   │   ├── Controllers/
 │   │   │   ├── Models/
 │   │   │   └── Views/
@@ -201,7 +201,7 @@ Mentoory.sln
 │   │   └── RoleAssignment/
 │   │       └── RoleAssignment.cs                # User→Incubator→Project→Role binding
 │   ├── Enums/
-│   │   ├── PlatformRole.cs                      # GlobalAdmin, IncubatorAdmin, Coordinator, Mentor, Entrepreneur, Sponsor
+│   │   ├── PlatformRole.cs                      # GlobalAdmin, IncubatorAdmin, ProjectCoordinator, Mentor, Entrepreneur, Sponsor
 │   │   └── Permission.cs                        # Granular permissions enum
 │   ├── ReadModels/
 │   │   └── UserContext.cs                        # Active context read model
@@ -465,7 +465,8 @@ Mentoory.sln
 │   ├── IntegrationEvents/
 │   │   └── Handlers/                            # Listens to events from all domains
 │   │       ├── SessionScheduledEventHandler.cs
-│   │       └── AssignmentCreatedEventHandler.cs
+│   │       ├── AssignmentCreatedEventHandler.cs
+│   │       └── StageAdvancedEventHandler.cs     # Notifies participants on stage transitions
 │   └── DependencyInjection.cs
 │
 ├── Mentoory.Notification.Infrastructure/
