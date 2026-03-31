@@ -50,7 +50,7 @@ jobs:
             Review the PR diff against these categories:
             - **Constitution compliance**: Layer boundaries, CQRS patterns, DDD constraints, DateTime handling, naming conventions, Spanish UI text, zero warnings
             - **Forbidden patterns**: AutoMapper, Dapper for primary access, service locator, static business logic, swallowed exceptions, JavaScript in Views
-            - **Security**: Authorization attributes, ExternalId in routes (never internal IDs), input validation, CSRF
+            - **Security**: Authorization attributes, input validation, CSRF
             - **Code quality**: Result<T> pattern usage, async/await correctness, N+1 queries, null safety
             - **Architecture**: Correct file placement, one class per file, proper layer dependencies
 
