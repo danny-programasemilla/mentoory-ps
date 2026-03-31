@@ -1,0 +1,69 @@
+@model List<Mentoory.Authorization.Domain.ReadModels.UserContext>
+
+@{
+    ViewData["Title"] = "Seleccionar Contexto";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h2 class="mb-4 text-center">Seleccionar Contexto de Trabajo</h2>
+            <p class="text-muted text-center mb-4">
+                Seleccione el rol y la incubadora con la que desea trabajar.
+            </p>
+
+            @if (Model.Count == 0)
+            {
+                <div class="alert alert-warning text-center">
+                    No tiene contextos disponibles. Contacte al administrador de la plataforma.
+                </div>
+            }
+            else
+            {
+                <div class="row g-3">
+                    @foreach (var ctx in Model)
+                    {
+                        <div class="col-md-6">
+                            <div class="card h-100 shadow-sm context-card">
+                                <div class="card-body d-flex flex-column">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <span class="badge bg-primary me-2">@GetRoleDisplayName(ctx.Role)</span>
+                                    </div>
+                                    <h5 class="card-title">@(ctx.IncubatorName ?? "Incubadora")</h5>
+                                    @if (ctx.ProjectName is not null)
+                                    {
+                                        <p class="text-muted mb-2">
+                                            <i class="fas fa-project-diagram me-1"></i>@ctx.ProjectName
+                                        </p>
+                                    }
+                                    <div class="mt-auto">
+                                        <form asp-action="Select" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="roleAssignmentExternalId" value="@ctx.RoleAssignmentExternalId" />
+                                            <button type="submit" class="btn btn-primary w-100">
+                                                <i class="fas fa-sign-in-alt me-1"></i>Seleccionar
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@functions {
+    private static string GetRoleDisplayName(string role) => role switch
+    {
+        "GlobalAdmin" => "Administrador Global",
+        "IncubatorAdmin" => "Administrador de Incubadora",
+        "ProjectCoordinator" => "Coordinador de Proyecto",
+        "Mentor" => "Mentor",
+        "Entrepreneur" => "Emprendedor",
+        "Sponsor" => "Patrocinador",
+        _ => role
+    };
+}

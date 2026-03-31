@@ -1,13 +1,29 @@
 using System.Reflection;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
+using Mentoory.Authorization.Application;
+using Mentoory.Authorization.Infrastructure;
 using Mentoory.Example.Application;
 using Mentoory.Example.Infrastructure;
+using Mentoory.Identity.Application;
+using Mentoory.Identity.Infrastructure;
 using Mentoory.Shared.Application;
+using Mentoory.Tenant.Application;
+using Mentoory.Tenant.Infrastructure;
+using Mentoory.Shared.Application.Audit;
 using Mentoory.Shared.Application.Behaviors;
+using Mentoory.Shared.Application.Interfaces;
 using Mentoory.Shared.Application.TimeProvider;
+using Mentoory.Shared.Infrastructure.Audit;
 using Mentoory.Shared.Infrastructure.Behaviors;
 using Mentoory.Shared.Infrastructure.Persistence;
+using Mentoory.Shared.Infrastructure.Services;
+using Mentoory.Identity.Application.Queries.ListUsers.Abstractions;
+using Mentoory.Web.Infrastructure.Menu;
 using Mentoory.Web.Infrastructure.Persistence;
+using Mentoory.Web.Infrastructure.QueryContexts;
 using Mentoory.Web.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +54,67 @@ builder.Services.AddExampleApplication();
 
 builder.AddExampleInfrastructure();
 
+builder.Services.AddIdentityApplication();
+builder.AddIdentityInfrastructure();
+builder.Services.AddScoped<IIdentityQueryContext, IdentityQueryContext>();
+builder.Services.AddAuthorizationApplication();
+builder.AddAuthorizationInfrastructure();
+builder.Services.AddTenantApplication();
+builder.AddTenantInfrastructure();
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Identity/Login";
+        options.LogoutPath = "/Identity/Logout";
+        options.AccessDeniedPath = "/Identity/Login";
+        options.Cookie.Name = "Mentoory.Session";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SameSite = SameSiteMode.Strict;
+        options.SlidingExpiration = false;
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    });
+
+builder.Services.AddAuthorization();
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddFixedWindowLimiter("login", opt =>
+    {
+        opt.PermitLimit = 5;
+        opt.Window = TimeSpan.FromMinutes(15);
+        opt.QueueLimit = 0;
+    });
+
+    options.AddFixedWindowLimiter("registration", opt =>
+    {
+        opt.PermitLimit = 3;
+        opt.Window = TimeSpan.FromMinutes(15);
+        opt.QueueLimit = 0;
+    });
+
+    options.AddFixedWindowLimiter("password-reset", opt =>
+    {
+        opt.PermitLimit = 3;
+        opt.Window = TimeSpan.FromMinutes(60);
+        opt.QueueLimit = 0;
+    });
+});
+
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "RequestVerificationToken";
+});
+
+builder.Services.AddScoped<ITenantContext, TenantContextService>();
+builder.Services.AddScoped<IAuditService, AuditService>();
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IMenuService, MenuService>();
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
@@ -56,9 +133,17 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
+app.UseAntiforgery();
+app.UseRateLimiter();
 
 app.MapStaticAssets();
+
+app.MapControllerRoute(
+        name: "areas",
+        pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}")
+    .WithStaticAssets();
 
 app.MapControllerRoute(
         name: "default",
@@ -66,3 +151,6 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 app.Run();
+
+public partial class Program;
+

@@ -1,0 +1,30 @@
+using Mentoory.Shared.Domain.SeedWork;
+
+namespace Mentoory.Identity.Domain.Aggregates.User;
+
+public class EmailVerificationToken : Entity
+{
+    private EmailVerificationToken()
+    {
+    }
+
+    public string TokenHash { get; private set; } = null!;
+    public DateTime ExpiresAtUtc { get; private set; }
+    public bool IsUsed { get; private set; }
+    public DateTime CreatedAtUtc { get; private set; }
+
+    public static EmailVerificationToken Create(string tokenHash, DateTime utcNow, DateTime expiresAtUtc)
+    {
+        return new EmailVerificationToken
+        {
+            TokenHash = tokenHash,
+            ExpiresAtUtc = expiresAtUtc,
+            IsUsed = false,
+            CreatedAtUtc = utcNow,
+        };
+    }
+
+    public bool IsValid(DateTime utcNow) => !IsUsed && utcNow < ExpiresAtUtc;
+
+    public void MarkAsUsed() => IsUsed = true;
+}

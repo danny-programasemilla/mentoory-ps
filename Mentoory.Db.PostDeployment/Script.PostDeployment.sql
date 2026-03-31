@@ -10,4 +10,16 @@ PRINT '[000.SeedExample.sql] Starting';
 :r ./000.SeedExample.sql
 PRINT '[000.SeedExample.sql] Finished';
 
+PRINT '[001.SeedRoles.sql] Starting';
+:r ./001.SeedRoles.sql
+PRINT '[001.SeedRoles.sql] Finished';
+
+PRINT '[002.SeedGlobalAdmin.sql] Starting';
+:r ./002.SeedGlobalAdmin.sql
+PRINT '[002.SeedGlobalAdmin.sql] Finished';
+
+PRINT '[003.SeedDefaultSubscriptionPlan.sql] Starting';
+:r ./003.SeedDefaultSubscriptionPlan.sql
+PRINT '[003.SeedDefaultSubscriptionPlan.sql] Finished';
+
 PRINT '[Script.PostDeployment.sql] Finished';

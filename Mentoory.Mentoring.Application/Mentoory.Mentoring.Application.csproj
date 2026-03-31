@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+        <PackageReference Include="FluentValidation"/>
+        <PackageReference Include="MediatR"/>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Mentoory.Mentoring.Domain\Mentoory.Mentoring.Domain.csproj"/>
+        <ProjectReference Include="..\Mentoory.Shared.Application\Mentoory.Shared.Application.csproj"/>
+    </ItemGroup>
+</Project>

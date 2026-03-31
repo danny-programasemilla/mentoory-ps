@@ -17,5 +17,15 @@
     <None Include="..\Mentoory.Db.PostDeployment\000.SeedExample.sql">
       <Link>PostDeploymentReferences\000.SeedExample.sql</Link>
     </None>
+      <None Include="..\Mentoory.Db.PostDeployment\001.SeedRoles.sql">
+          <Link>PostDeploymentReferences\001.SeedRoles.sql</Link>
+      </None>
+      <None Include="..\Mentoory.Db.PostDeployment\002.SeedGlobalAdmin.sql">
+          <Link>PostDeploymentReferences\002.SeedGlobalAdmin.sql</Link>
+      </None>
+
+      <None Include="..\Mentoory.Db.PostDeployment\003.SeedDefaultSubscriptionPlan.sql">
+          <Link>PostDeploymentReferences\003.SeedDefaultSubscriptionPlan.sql</Link>
+      </None>
   </ItemGroup>
 </Project>

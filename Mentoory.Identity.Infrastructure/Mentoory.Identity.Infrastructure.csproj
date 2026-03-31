@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+        <PackageReference Include="Aspire.Microsoft.EntityFrameworkCore.SqlServer"/>
+        <PackageReference Include="MediatR"/>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Mentoory.Identity.Domain\Mentoory.Identity.Domain.csproj"/>
+        <ProjectReference Include="..\Mentoory.Shared.Infrastructure\Mentoory.Shared.Infrastructure.csproj"/>
+    </ItemGroup>
+</Project>

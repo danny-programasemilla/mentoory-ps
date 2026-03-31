@@ -2,6 +2,48 @@
 
 ## Controller Patterns
 
+### Routing Convention — Attribute Routing Only
+
+Controllers that use `externalId` route parameters (e.g. `[HttpGet("{externalId:guid}")]`) **must** use full attribute routing. Mixing attribute routes on actions with conventional routing on the controller causes route resolution failures.
+
+```csharp
+[Area("Platform")]
+[Route("[area]/[controller]")]          // ← REQUIRED when any action has a route template
+[Authorize(Roles = "GlobalAdmin")]
+public class IncubatorsController : Controller
+{
+    [HttpGet("")]                       // Index — matches /Platform/Incubators
+    public IActionResult Index() { }
+
+    [HttpPost("[action]")]              // Data — matches /Platform/Incubators/Data
+    public Task<IActionResult> Data() { }
+
+    [HttpGet("[action]")]               // Create GET — matches /Platform/Incubators/Create
+    public IActionResult Create() { }
+
+    [HttpPost("[action]")]              // Create POST
+    public Task<IActionResult> Create(CreateViewModel m) { }
+
+    [HttpGet("{externalId:guid}")]      // Details — matches /Platform/Incubators/{guid}
+    public Task<IActionResult> Details(Guid externalId) { }
+
+    [HttpGet("{externalId:guid}/[action]")]  // Edit GET
+    public Task<IActionResult> Edit(Guid externalId) { }
+
+    [HttpPost("{externalId:guid}/[action]")] // Edit POST
+    public Task<IActionResult> Edit(Guid externalId, EditViewModel m) { }
+}
+```
+
+**Rules:**
+- Every action MUST have an explicit route template (`""`, `"[action]"`, or custom)
+- Never use `[HttpGet]`/`[HttpPost]` without a template on an attribute-routed controller
+- In DataTable JS, use `System.Guid.Empty` as placeholder (not `"__ID__"`) — string placeholders fail the `:guid` constraint during URL generation:
+```javascript
+var placeholder = '00000000-0000-0000-0000-000000000000';
+var url = '@Url.Action("Details", "Ctrl", new { area = "X", externalId = System.Guid.Empty })'.replace(placeholder, data);
+```
+
 ### Base Controller Inheritance
 ```csharp
 public class ProjectsController : BaseController  // ✅ Not Controller

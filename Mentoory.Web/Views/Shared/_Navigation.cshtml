@@ -1,0 +1,39 @@
+@inject Mentoory.Web.Infrastructure.Menu.IMenuService MenuService
+
+<nav id="sidebar" class="bg-dark text-white" style="min-width: 250px; min-height: 100vh;">
+    <div class="p-3">
+        <a class="text-white text-decoration-none fs-5 fw-bold" href="/">Mentoory</a>
+    </div>
+    <hr class="text-secondary mx-3" />
+    <ul class="nav flex-column px-2">
+        @foreach (var item in MenuService.GetVisibleMenuItems())
+        {
+            if (item is Mentoory.Web.Infrastructure.Menu.MenuGroup group)
+            {
+                <li class="nav-item mt-2">
+                    <span class="nav-link text-secondary small text-uppercase">
+                        <i class="@group.Icon me-2"></i>@group.Title
+                    </span>
+                    <ul class="nav flex-column ms-3">
+                        @foreach (var child in group.Items)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-white-50" href="@child.Url">
+                                    <i class="@child.Icon me-2"></i>@child.Title
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </li>
+            }
+            else
+            {
+                <li class="nav-item">
+                    <a class="nav-link text-white-50" href="@item.Url">
+                        <i class="@item.Icon me-2"></i>@item.Title
+                    </a>
+                </li>
+            }
+        }
+    </ul>
+</nav>

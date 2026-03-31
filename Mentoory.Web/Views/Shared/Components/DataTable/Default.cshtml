@@ -1,0 +1,12 @@
+<div class="table-responsive">
+    <table id="@ViewBag.TableId" class="table table-striped table-hover w-100">
+        <thead>
+            <tr>
+                @foreach (var col in (object[])ViewBag.Columns)
+                {
+                    <th>@col</th>
+                }
+            </tr>
+        </thead>
+    </table>
+</div>

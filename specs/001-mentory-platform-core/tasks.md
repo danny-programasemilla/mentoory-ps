@@ -19,9 +19,9 @@
 
 **Purpose**: Solution scaffolding — all projects, references, and NuGet packages
 
-- [ ] T001 Create solution file and all 31 project files (.csproj) with correct project references per implementation plan structure in Mentoory.sln
-- [ ] T002 [P] Configure NuGet package references per project (MediatR 14.1, FluentValidation 12.1, Mapperly 4.x, EF Core 10.x, MailKit/MimeKit, xUnit, Moq, FluentAssertions) in each .csproj
-- [ ] T003 [P] Configure Aspire AppHost to orchestrate Mentoory.Web and SQL Server resources in Mentoory.Aspire.AppHost/AppHost.cs and Mentoory.Aspire.AppHost.ServiceDefaults/Extensions.cs
+- [X] T001 Create solution file and all 31 project files (.csproj) with correct project references per implementation plan structure in Mentoory.sln
+- [X] T002 [P] Configure NuGet package references per project (MediatR 14.1, FluentValidation 12.1, Mapperly 4.x, EF Core 10.x, MailKit/MimeKit, xUnit, Moq, FluentAssertions) in each .csproj
+- [X] T003 [P] Configure Aspire AppHost to orchestrate Mentoory.Web and SQL Server resources in Mentoory.Aspire.AppHost/AppHost.cs and Mentoory.Aspire.AppHost.ServiceDefaults/Extensions.cs
 
 ---
 
@@ -31,18 +31,18 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 [P] Implement Shared.Domain seedwork (Entity, ValueObject, IAggregateRoot, IRepository, IUnitOfWork, SoftDeletableEntity) and Roles constants in Mentoory.Shared.Domain/SeedWork/ and Mentoory.Shared.Domain/Constants/Roles.cs
-- [ ] T005 [P] Implement Shared.Application core patterns (IBaseRequest, IBaseRequest&lt;T&gt;, BaseCommandHandler, BaseCommandHandler&lt;T&gt;, Result, Result&lt;T&gt;, ResultErrorCodes, ValidatorBehavior) in Mentoory.Shared.Application/MediatR/ and Mentoory.Shared.Application/
-- [ ] T006 [P] Implement Shared.Application supporting patterns (DataTableRequest, DataTableResponse&lt;T&gt;, ITimeProvider, ITenantContext, IAuditService, AuditEntry, IIntegrationEvent, IntegrationEvent, MediatRIntegrationEventService) in Mentoory.Shared.Application/
-- [ ] T007 Implement Shared.Infrastructure (SharedAbstractDbContext with domain event dispatch, AbstractRepository, TransactionBehavior, DefaultSystemTimeProvider, TenantContextService, AuditService) in Mentoory.Shared.Infrastructure/
-- [ ] T008 [P] Create all 8 SSDT schema files (identity, authorization, tenant, diagnostic, knowledge, mentoring, subscription, notification) plus audit schema and AuditLog table in Mentoory.Db/
-- [ ] T009 Configure Web project Program.cs skeleton with service registration, cookie authentication middleware, rate limiting policies (login: 5/15min, registration: 3/15min, password-reset: 3/60min), honeypot bot detection on public registration/password-reset forms (FR-054), anti-forgery, and middleware pipeline in Mentoory.Web/Program.cs
-- [ ] T010 [P] Implement Phoenix Admin layout files (_Layout.cshtml, _Navigation.cshtml, _TopBar.cshtml, _Footer.cshtml, _Breadcrumbs.cshtml) with Spanish locale and Phoenix CSS integration in Mentoory.Web/Views/Shared/
-- [ ] T011 [P] Implement menu infrastructure (MenuItem, MenuGroup models, MenuConfiguration with all role menus, IMenuService interface, MenuService) in Mentoory.Web/Infrastructure/Menu/
-- [ ] T012 [P] Implement reusable View Components (DataTableComponent, ToastComponent, ConfirmModalComponent, FilterBarComponent) in Mentoory.Web/Views/Shared/Components/
-- [ ] T013 [P] Create client-side utilities (site.js with global helpers, datatable-helper.js for reusable DataTable initialization, form-helper.js for AJAX form submission) in Mentoory.Web/wwwroot/js/
-- [ ] T014 [P] Create mentoory.css custom styles using Phoenix CSS variables in Mentoory.Web/wwwroot/css/mentoory.css
-- [ ] T015 Implement authentication middleware (session cookie validation, session loading, ClaimsPrincipal creation) and tenant context middleware (ITenantContext from active session) in Mentoory.Web/Infrastructure/Authentication/ and Mentoory.Web/Infrastructure/Authorization/
+- [X] T004 [P] Implement Shared.Domain seedwork (Entity, ValueObject, IAggregateRoot, IRepository, IUnitOfWork, SoftDeletableEntity) and Roles constants in Mentoory.Shared.Domain/SeedWork/ and Mentoory.Shared.Domain/Constants/Roles.cs
+- [X] T005 [P] Implement Shared.Application core patterns (IBaseRequest, IBaseRequest&lt;T&gt;, BaseCommandHandler, BaseCommandHandler&lt;T&gt;, Result, Result&lt;T&gt;, ResultErrorCodes, ValidatorBehavior) in Mentoory.Shared.Application/MediatR/ and Mentoory.Shared.Application/
+- [X] T006 [P] Implement Shared.Application supporting patterns (DataTableRequest, DataTableResponse&lt;T&gt;, ITimeProvider, ITenantContext, IAuditService, AuditEntry, IIntegrationEvent, IntegrationEvent, MediatRIntegrationEventService) in Mentoory.Shared.Application/
+- [X] T007 Implement Shared.Infrastructure (SharedAbstractDbContext with domain event dispatch, AbstractRepository, TransactionBehavior, DefaultSystemTimeProvider, TenantContextService, AuditService) in Mentoory.Shared.Infrastructure/
+- [X] T008 [P] Create all 8 SSDT schema files (identity, authorization, tenant, diagnostic, knowledge, mentoring, subscription, notification) plus audit schema and AuditLog table in Mentoory.Db/
+- [X] T009 Configure Web project Program.cs skeleton with service registration, cookie authentication middleware, rate limiting policies (login: 5/15min, registration: 3/15min, password-reset: 3/60min), honeypot bot detection on public registration/password-reset forms (FR-054), anti-forgery, and middleware pipeline in Mentoory.Web/Program.cs
+- [X] T010 [P] Implement Phoenix Admin layout files (_Layout.cshtml, _Navigation.cshtml, _TopBar.cshtml, _Footer.cshtml, _Breadcrumbs.cshtml) with Spanish locale and Phoenix CSS integration in Mentoory.Web/Views/Shared/
+- [X] T011 [P] Implement menu infrastructure (MenuItem, MenuGroup models, MenuConfiguration with all role menus, IMenuService interface, MenuService) in Mentoory.Web/Infrastructure/Menu/
+- [X] T012 [P] Implement reusable View Components (DataTableComponent, ToastComponent, ConfirmModalComponent, FilterBarComponent) in Mentoory.Web/Views/Shared/Components/
+- [X] T013 [P] Create client-side utilities (site.js with global helpers, datatable-helper.js for reusable DataTable initialization, form-helper.js for AJAX form submission) in Mentoory.Web/wwwroot/js/
+- [X] T014 [P] Create mentoory.css custom styles using Phoenix CSS variables in Mentoory.Web/wwwroot/css/mentoory.css
+- [X] T015 Implement authentication middleware (session cookie validation, session loading, ClaimsPrincipal creation) and tenant context middleware (ITenantContext from active session) in Mentoory.Web/Infrastructure/Authentication/ and Mentoory.Web/Infrastructure/Authorization/
 
 **Checkpoint**: Foundation ready — user story implementation can now begin
 
@@ -56,131 +56,131 @@
 
 ### Identity Domain
 
-- [ ] T016 [P] [US1] Implement User aggregate root with domain logic for registration, credential management, lockout, email verification, and password reset in Mentoory.Identity.Domain/Aggregates/User/User.cs
-- [ ] T017 [P] [US1] Implement Credential entity (password hash storage, activation) in Mentoory.Identity.Domain/Aggregates/User/Credential.cs
-- [ ] T018 [P] [US1] Implement EmailVerificationToken and PasswordResetToken entities with token hashing and expiry validation in Mentoory.Identity.Domain/Aggregates/User/
-- [ ] T019 [P] [US1] Implement AuthSession aggregate root with session lifecycle (create, validate, expire, deactivate, set context) in Mentoory.Identity.Domain/Aggregates/AuthSession/AuthSession.cs
-- [ ] T020 [P] [US1] Implement Identity value objects (EmailAddress with normalization, NationalIdentity with country+ID compound, HashedPassword with algorithm metadata) in Mentoory.Identity.Domain/ValueObjects/
-- [ ] T021 [P] [US1] Implement AccountStatus enum and repository interfaces (IUserRepository, IAuthSessionRepository) and IPasswordHasher domain service interface in Mentoory.Identity.Domain/
+- [X] T016 [P] [US1] Implement User aggregate root with domain logic for registration, credential management, lockout, email verification, and password reset in Mentoory.Identity.Domain/Aggregates/User/User.cs
+- [X] T017 [P] [US1] Implement Credential entity (password hash storage, activation) in Mentoory.Identity.Domain/Aggregates/User/Credential.cs
+- [X] T018 [P] [US1] Implement EmailVerificationToken and PasswordResetToken entities with token hashing and expiry validation in Mentoory.Identity.Domain/Aggregates/User/
+- [X] T019 [P] [US1] Implement AuthSession aggregate root with session lifecycle (create, validate, expire, deactivate, set context) in Mentoory.Identity.Domain/Aggregates/AuthSession/AuthSession.cs
+- [X] T020 [P] [US1] Implement Identity value objects (EmailAddress with normalization, NationalIdentity with country+ID compound, HashedPassword with algorithm metadata) in Mentoory.Identity.Domain/ValueObjects/
+- [X] T021 [P] [US1] Implement AccountStatus enum and repository interfaces (IUserRepository, IAuthSessionRepository) and IPasswordHasher domain service interface in Mentoory.Identity.Domain/
 
 ### Identity Application
 
-- [ ] T022 [P] [US1] Implement RegisterUserCommand, RegisterUserHandler (uniqueness checks, credential creation, token generation, event publishing), and RegisterUserValidator (password policy) in Mentoory.Identity.Application/Commands/RegisterUser/
-- [ ] T023 [P] [US1] Implement LoginUserCommand, LoginUserHandler (credential validation, lockout check, session creation, single-session enforcement), and LoginUserValidator in Mentoory.Identity.Application/Commands/LoginUser/
-- [ ] T024 [P] [US1] Implement LogoutUserCommand and handler (session deactivation) in Mentoory.Identity.Application/Commands/LogoutUser/
-- [ ] T025 [P] [US1] Implement VerifyEmailCommand and handler (token validation, account activation) in Mentoory.Identity.Application/Commands/VerifyEmail/
-- [ ] T026 [P] [US1] Implement RequestPasswordResetCommand and ResetPasswordCommand with handlers (token generation, generic response, password update) in Mentoory.Identity.Application/Commands/RequestPasswordReset/ and ResetPassword/
-- [ ] T027 [P] [US1] Implement ChangePasswordCommand and handler (old password verification, history check) in Mentoory.Identity.Application/Commands/ChangePassword/
-- [ ] T028 [P] [US1] Implement account management commands (LockAccount, UnlockAccount, ActivateAccount, DeactivateAccount) with handlers in Mentoory.Identity.Application/Commands/
-- [ ] T029 [P] [US1] Implement Identity queries (GetUserByEmail, GetUserByExternalId, ValidateSession, ListUsers with DataTable support) in Mentoory.Identity.Application/Queries/
-- [ ] T030 [P] [US1] Implement Identity integration events (UserRegisteredEvent, UserEmailVerifiedEvent, LoginAttemptEvent, UserLockedOutEvent) in Mentoory.Identity.Application/IntegrationEvents/
-- [ ] T031 [US1] Implement Identity Application DependencyInjection.cs with MediatR and FluentValidation registration in Mentoory.Identity.Application/DependencyInjection.cs
+- [X] T022 [P] [US1] Implement RegisterUserCommand, RegisterUserHandler (uniqueness checks, credential creation, token generation, event publishing), and RegisterUserValidator (password policy) in Mentoory.Identity.Application/Commands/RegisterUser/
+- [X] T023 [P] [US1] Implement LoginUserCommand, LoginUserHandler (credential validation, lockout check, session creation, single-session enforcement), and LoginUserValidator in Mentoory.Identity.Application/Commands/LoginUser/
+- [X] T024 [P] [US1] Implement LogoutUserCommand and handler (session deactivation) in Mentoory.Identity.Application/Commands/LogoutUser/
+- [X] T025 [P] [US1] Implement VerifyEmailCommand and handler (token validation, account activation) in Mentoory.Identity.Application/Commands/VerifyEmail/
+- [X] T026 [P] [US1] Implement RequestPasswordResetCommand and ResetPasswordCommand with handlers (token generation, generic response, password update) in Mentoory.Identity.Application/Commands/RequestPasswordReset/ and ResetPassword/
+- [X] T027 [P] [US1] Implement ChangePasswordCommand and handler (old password verification, history check) in Mentoory.Identity.Application/Commands/ChangePassword/
+- [X] T028 [P] [US1] Implement account management commands (LockAccount, UnlockAccount, ActivateAccount, DeactivateAccount) with handlers in Mentoory.Identity.Application/Commands/
+- [X] T029 [P] [US1] Implement Identity queries (GetUserByEmail, GetUserByExternalId, ValidateSession, ListUsers with DataTable support) in Mentoory.Identity.Application/Queries/
+- [X] T030 [P] [US1] Implement Identity integration events (UserRegisteredEvent, UserEmailVerifiedEvent, LoginAttemptEvent, UserLockedOutEvent) in Mentoory.Identity.Application/IntegrationEvents/
+- [X] T031 [US1] Implement Identity Application DependencyInjection.cs with MediatR and FluentValidation registration in Mentoory.Identity.Application/DependencyInjection.cs
 
 ### Identity Infrastructure
 
-- [ ] T032 [US1] Implement IdentityDbContext with entity configurations for [identity] schema tables in Mentoory.Identity.Infrastructure/Persistence/IdentityDbContext.cs
-- [ ] T033 [P] [US1] Implement UserRepository in Mentoory.Identity.Infrastructure/Persistence/Repositories/UserRepository.cs
-- [ ] T034 [P] [US1] Implement AuthSessionRepository in Mentoory.Identity.Infrastructure/Persistence/Repositories/AuthSessionRepository.cs
-- [ ] T035 [P] [US1] Implement Pbkdf2PasswordHasher (PBKDF2-SHA512, 600K iterations, 128-bit salt, timing-safe comparison) in Mentoory.Identity.Infrastructure/Services/Pbkdf2PasswordHasher.cs
-- [ ] T036 [US1] Implement Identity Infrastructure DependencyInjection.cs with DbContext and repository registration in Mentoory.Identity.Infrastructure/DependencyInjection.cs
+- [X] T032 [US1] Implement IdentityDbContext with entity configurations for [identity] schema tables in Mentoory.Identity.Infrastructure/Persistence/IdentityDbContext.cs
+- [X] T033 [P] [US1] Implement UserRepository in Mentoory.Identity.Infrastructure/Persistence/Repositories/UserRepository.cs
+- [X] T034 [P] [US1] Implement AuthSessionRepository in Mentoory.Identity.Infrastructure/Persistence/Repositories/AuthSessionRepository.cs
+- [X] T035 [P] [US1] Implement Pbkdf2PasswordHasher (PBKDF2-SHA512, 600K iterations, 128-bit salt, timing-safe comparison) in Mentoory.Identity.Infrastructure/Services/Pbkdf2PasswordHasher.cs
+- [X] T036 [US1] Implement Identity Infrastructure DependencyInjection.cs with DbContext and repository registration in Mentoory.Identity.Infrastructure/DependencyInjection.cs
 
 ### Identity SSDT
 
-- [ ] T037 [P] [US1] Create SSDT table definitions for [identity] schema (Users, Credentials, AuthSessions, EmailVerificationTokens, PasswordResetTokens) with all indexes and constraints in Mentoory.Db/identity/Tables/
+- [X] T037 [P] [US1] Create SSDT table definitions for [identity] schema (Users, Credentials, AuthSessions, EmailVerificationTokens, PasswordResetTokens) with all indexes and constraints in Mentoory.Db/identity/Tables/
 
 ### Authorization Domain
 
-- [ ] T038 [P] [US1] Implement RoleAssignment aggregate root with role validation logic (entrepreneur limit, GlobalAdmin rules) in Mentoory.Authorization.Domain/Aggregates/RoleAssignment/RoleAssignment.cs
-- [ ] T039 [P] [US1] Implement PlatformRole enum (GlobalAdmin, IncubatorAdmin, ProjectCoordinator, Mentor, Entrepreneur, Sponsor), Permission enum, and UserContext read model in Mentoory.Authorization.Domain/
-- [ ] T040 [P] [US1] Implement IRoleAssignmentRepository interface in Mentoory.Authorization.Domain/Repositories/IRoleAssignmentRepository.cs
+- [X] T038 [P] [US1] Implement RoleAssignment aggregate root with role validation logic (entrepreneur limit, GlobalAdmin rules) in Mentoory.Authorization.Domain/Aggregates/RoleAssignment/RoleAssignment.cs
+- [X] T039 [P] [US1] Implement PlatformRole enum (GlobalAdmin, IncubatorAdmin, ProjectCoordinator, Mentor, Entrepreneur, Sponsor), Permission enum, and UserContext read model in Mentoory.Authorization.Domain/
+- [X] T040 [P] [US1] Implement IRoleAssignmentRepository interface in Mentoory.Authorization.Domain/Repositories/IRoleAssignmentRepository.cs
 
 ### Authorization Application
 
-- [ ] T041 [P] [US1] Implement AssignRole and RevokeRole commands with handlers and validators in Mentoory.Authorization.Application/Commands/
-- [ ] T042 [P] [US1] Implement SetActiveContext command with handler (context validation and session update) in Mentoory.Authorization.Application/Commands/SetActiveContext/
-- [ ] T043 [P] [US1] Implement Authorization queries (GetUserContexts, GetActiveContext, CheckPermission) in Mentoory.Authorization.Application/Queries/
-- [ ] T044 [US1] Implement UserRegisteredEventHandler (creates default role assignments) in Mentoory.Authorization.Application/IntegrationEvents/Handlers/UserRegisteredEventHandler.cs
-- [ ] T045 [US1] Implement Authorization Application DependencyInjection.cs in Mentoory.Authorization.Application/DependencyInjection.cs
+- [X] T041 [P] [US1] Implement AssignRole and RevokeRole commands with handlers and validators in Mentoory.Authorization.Application/Commands/
+- [X] T042 [P] [US1] Implement SetActiveContext command with handler (context validation and session update) in Mentoory.Authorization.Application/Commands/SetActiveContext/
+- [X] T043 [P] [US1] Implement Authorization queries (GetUserContexts, GetActiveContext, CheckPermission) in Mentoory.Authorization.Application/Queries/
+- [X] T044 [US1] Implement UserRegisteredEventHandler (creates default role assignments) in Mentoory.Authorization.Application/IntegrationEvents/Handlers/UserRegisteredEventHandler.cs
+- [X] T045 [US1] Implement Authorization Application DependencyInjection.cs in Mentoory.Authorization.Application/DependencyInjection.cs
 
 ### Authorization Infrastructure
 
-- [ ] T046 [US1] Implement AuthorizationDbContext and RoleAssignmentRepository in Mentoory.Authorization.Infrastructure/Persistence/
-- [ ] T047 [US1] Implement Authorization Infrastructure DependencyInjection.cs in Mentoory.Authorization.Infrastructure/DependencyInjection.cs
+- [X] T046 [US1] Implement AuthorizationDbContext and RoleAssignmentRepository in Mentoory.Authorization.Infrastructure/Persistence/
+- [X] T047 [US1] Implement Authorization Infrastructure DependencyInjection.cs in Mentoory.Authorization.Infrastructure/DependencyInjection.cs
 
 ### Authorization SSDT
 
-- [ ] T048 [P] [US1] Create SSDT table definition for [authorization] schema (RoleAssignments) with indexes and filtered unique constraint in Mentoory.Db/authorization/Tables/RoleAssignments.sql
+- [X] T048 [P] [US1] Create SSDT table definition for [authorization] schema (RoleAssignments) with indexes and filtered unique constraint in Mentoory.Db/authorization/Tables/RoleAssignments.sql
 
 ### Tenant Domain
 
-- [ ] T049 [P] [US1] Implement Incubator aggregate root with create/update/activate/deactivate logic in Mentoory.Tenant.Domain/Aggregates/Incubator/Incubator.cs
-- [ ] T050 [P] [US1] Implement Project aggregate root with ProjectStage, ProjectParticipant, MentorAssignment child entities and stage initialization logic in Mentoory.Tenant.Domain/Aggregates/Project/
-- [ ] T051 [P] [US1] Implement Tenant enums (StageType, StageState), LifecyclePosition value object, and repository interfaces (IIncubatorRepository, IProjectRepository) in Mentoory.Tenant.Domain/
+- [X] T049 [P] [US1] Implement Incubator aggregate root with create/update/activate/deactivate logic in Mentoory.Tenant.Domain/Aggregates/Incubator/Incubator.cs
+- [X] T050 [P] [US1] Implement Project aggregate root with ProjectStage, ProjectParticipant, MentorAssignment child entities and stage initialization logic in Mentoory.Tenant.Domain/Aggregates/Project/
+- [X] T051 [P] [US1] Implement Tenant enums (StageType, StageState), LifecyclePosition value object, and repository interfaces (IIncubatorRepository, IProjectRepository) in Mentoory.Tenant.Domain/
 
 ### Tenant Application
 
-- [ ] T052 [P] [US1] Implement CreateIncubator and UpdateIncubator commands with handlers and validators in Mentoory.Tenant.Application/Commands/
-- [ ] T053 [P] [US1] Implement CreateProject command with handler (stage initialization, participant enrollment) in Mentoory.Tenant.Application/Commands/CreateProject/
-- [ ] T054 [P] [US1] Implement EnrollParticipant, AssignMentor, and SetLeadMentor commands with handlers in Mentoory.Tenant.Application/Commands/
-- [ ] T055 [P] [US1] Implement Tenant queries (ListIncubators, GetIncubatorByExternalId, ListProjects, GetProjectByExternalId, ListProjectParticipants) with DataTable support in Mentoory.Tenant.Application/Queries/
-- [ ] T056 [P] [US1] Implement Tenant integration events (IncubatorCreatedEvent, ProjectCreatedEvent, ParticipantEnrolledEvent) in Mentoory.Tenant.Application/IntegrationEvents/
-- [ ] T057 [US1] Implement Tenant Application DependencyInjection.cs in Mentoory.Tenant.Application/DependencyInjection.cs
+- [X] T052 [P] [US1] Implement CreateIncubator and UpdateIncubator commands with handlers and validators in Mentoory.Tenant.Application/Commands/
+- [X] T053 [P] [US1] Implement CreateProject command with handler (stage initialization, participant enrollment) in Mentoory.Tenant.Application/Commands/CreateProject/
+- [X] T054 [P] [US1] Implement EnrollParticipant, AssignMentor, and SetLeadMentor commands with handlers in Mentoory.Tenant.Application/Commands/
+- [X] T055 [P] [US1] Implement Tenant queries (ListIncubators, GetIncubatorByExternalId, ListProjects, GetProjectByExternalId, ListProjectParticipants) with DataTable support in Mentoory.Tenant.Application/Queries/
+- [X] T056 [P] [US1] Implement Tenant integration events (IncubatorCreatedEvent, ProjectCreatedEvent, ParticipantEnrolledEvent) in Mentoory.Tenant.Application/IntegrationEvents/
+- [X] T057 [US1] Implement Tenant Application DependencyInjection.cs in Mentoory.Tenant.Application/DependencyInjection.cs
 
 ### Tenant Infrastructure
 
-- [ ] T058 [US1] Implement TenantDbContext with EF Core global query filters for IncubatorId on all tenant-scoped entities in Mentoory.Tenant.Infrastructure/Persistence/TenantDbContext.cs
-- [ ] T059 [P] [US1] Implement IncubatorRepository and ProjectRepository in Mentoory.Tenant.Infrastructure/Persistence/Repositories/
-- [ ] T060 [US1] Implement Tenant Infrastructure DependencyInjection.cs in Mentoory.Tenant.Infrastructure/DependencyInjection.cs
+- [X] T058 [US1] Implement TenantDbContext with EF Core global query filters for IncubatorId on all tenant-scoped entities in Mentoory.Tenant.Infrastructure/Persistence/TenantDbContext.cs
+- [X] T059 [P] [US1] Implement IncubatorRepository and ProjectRepository in Mentoory.Tenant.Infrastructure/Persistence/Repositories/
+- [X] T060 [US1] Implement Tenant Infrastructure DependencyInjection.cs in Mentoory.Tenant.Infrastructure/DependencyInjection.cs
 
 ### Tenant SSDT
 
-- [ ] T061 [P] [US1] Create SSDT table definitions for [tenant] schema (Incubators, Projects, ProjectStages, ProjectParticipants, MentorAssignments) with all indexes in Mentoory.Db/tenant/Tables/
+- [X] T061 [P] [US1] Create SSDT table definitions for [tenant] schema (Incubators, Projects, ProjectStages, ProjectParticipants, MentorAssignments) with all indexes in Mentoory.Db/tenant/Tables/
 
 ### PostDeployment Scripts
 
-- [ ] T062 [US1] Create PostDeployment seed scripts (001.SeedRoles.sql, 002.SeedGlobalAdmin.sql, 003.SeedDefaultSubscriptionPlan.sql, Script.PostDeployment.sql) in Mentoory.Db.PostDeployment/ — *Note: 003.SeedDefaultSubscriptionPlan.sql seeds a US6 artifact here because a default subscription plan is required for platform bootstrap before US6 implementation*
+- [X] T062 [US1] Create PostDeployment seed scripts (001.SeedRoles.sql, 002.SeedGlobalAdmin.sql, 003.SeedDefaultSubscriptionPlan.sql, Script.PostDeployment.sql) in Mentoory.Db.PostDeployment/ — *Note: 003.SeedDefaultSubscriptionPlan.sql seeds a US6 artifact here because a default subscription plan is required for platform bootstrap before US6 implementation*
 
 ### Web Layer — Identity Area
 
-- [ ] T063 [P] [US1] Implement Login controller (GET form, POST validation) with rate limiting and view models in Mentoory.Web/Areas/Identity/Controllers/LoginController.cs and Models/
-- [ ] T064 [P] [US1] Implement Login views (form with email/password, error display, Spanish labels) in Mentoory.Web/Areas/Identity/Views/Login/
-- [ ] T065 [P] [US1] Implement Register controller (GET form, POST with enumeration prevention) with rate limiting in Mentoory.Web/Areas/Identity/Controllers/RegisterController.cs
-- [ ] T066 [P] [US1] Implement Register views (form with country, national ID, email, password, names, validation) in Mentoory.Web/Areas/Identity/Views/Register/
-- [ ] T067 [P] [US1] Implement VerifyEmail controller and confirmation view in Mentoory.Web/Areas/Identity/Controllers/VerifyEmailController.cs and Views/
-- [ ] T068 [P] [US1] Implement ForgotPassword and ResetPassword controllers and views in Mentoory.Web/Areas/Identity/Controllers/ and Views/
-- [ ] T069 [P] [US1] Implement Logout controller (POST session invalidation, cookie clear) in Mentoory.Web/Areas/Identity/Controllers/LogoutController.cs
+- [X] T063 [P] [US1] Implement Login controller (GET form, POST validation) with rate limiting and view models in Mentoory.Web/Areas/Identity/Controllers/LoginController.cs and Models/
+- [X] T064 [P] [US1] Implement Login views (form with email/password, error display, Spanish labels) in Mentoory.Web/Areas/Identity/Views/Login/
+- [X] T065 [P] [US1] Implement Register controller (GET form, POST with enumeration prevention) with rate limiting in Mentoory.Web/Areas/Identity/Controllers/RegisterController.cs
+- [X] T066 [P] [US1] Implement Register views (form with country, national ID, email, password, names, validation) in Mentoory.Web/Areas/Identity/Views/Register/
+- [X] T067 [P] [US1] Implement VerifyEmail controller and confirmation view in Mentoory.Web/Areas/Identity/Controllers/VerifyEmailController.cs and Views/
+- [X] T068 [P] [US1] Implement ForgotPassword and ResetPassword controllers and views in Mentoory.Web/Areas/Identity/Controllers/ and Views/
+- [X] T069 [P] [US1] Implement Logout controller (POST session invalidation, cookie clear) in Mentoory.Web/Areas/Identity/Controllers/LogoutController.cs
 
 ### Web Layer — Context Selection
 
-- [ ] T070 [US1] Implement Context Selection controller (GET show contexts, POST set context, AJAX switch) in Mentoory.Web/Controllers/ContextController.cs
-- [ ] T071 [P] [US1] Implement Context Selection views (card-based context list, auto-select logic) in Mentoory.Web/Views/Context/
-- [ ] T072 [US1] Implement context-switcher.js for top-bar AJAX context switching in Mentoory.Web/wwwroot/js/context-switcher.js
+- [X] T070 [US1] Implement Context Selection controller (GET show contexts, POST set context, AJAX switch) in Mentoory.Web/Controllers/ContextController.cs
+- [X] T071 [P] [US1] Implement Context Selection views (card-based context list, auto-select logic) in Mentoory.Web/Views/Context/
+- [X] T072 [US1] Implement context-switcher.js for top-bar AJAX context switching in Mentoory.Web/wwwroot/js/context-switcher.js
 
 ### Web Layer — Platform Area (GlobalAdmin)
 
-- [ ] T073 [P] [US1] Implement Platform Incubators controller (Index, Data, Create, Details, Edit) in Mentoory.Web/Areas/Platform/Controllers/IncubatorsController.cs
-- [ ] T074 [P] [US1] Implement Platform Incubators views (Index with DataTable, Create form, Details, Edit form) in Mentoory.Web/Areas/Platform/Views/Incubators/
-- [ ] T075 [P] [US1] Implement Platform Users controller (Index, Data) with DataTable in Mentoory.Web/Areas/Platform/Controllers/UsersController.cs
-- [ ] T076 [P] [US1] Implement Platform Users views (Index with DataTable listing all platform users) in Mentoory.Web/Areas/Platform/Views/Users/
+- [X] T073 [P] [US1] Implement Platform Incubators controller (Index, Data, Create, Details, Edit) in Mentoory.Web/Areas/Platform/Controllers/IncubatorsController.cs
+- [X] T074 [P] [US1] Implement Platform Incubators views (Index with DataTable, Create form, Details, Edit form) in Mentoory.Web/Areas/Platform/Views/Incubators/
+- [X] T075 [P] [US1] Implement Platform Users controller (Index, Data) with DataTable in Mentoory.Web/Areas/Platform/Controllers/UsersController.cs
+- [X] T076 [P] [US1] Implement Platform Users views (Index with DataTable listing all platform users) in Mentoory.Web/Areas/Platform/Views/Users/
 
 ### Web Layer — Administration Area (IncubatorAdmin)
 
-- [ ] T077 [P] [US1] Implement Administration Dashboard controller and view (incubator overview) in Mentoory.Web/Areas/Administration/
-- [ ] T078 [P] [US1] Implement Administration Projects controller (Index, Data, Create, Details) in Mentoory.Web/Areas/Administration/Controllers/ProjectsController.cs
-- [ ] T079 [P] [US1] Implement Administration Projects views (Index with DataTable, Create form, Details) in Mentoory.Web/Areas/Administration/Views/Projects/
-- [ ] T080 [P] [US1] Implement Administration Users controller (Index, Data, Enroll) with administrative enrollment in Mentoory.Web/Areas/Administration/Controllers/UsersController.cs
-- [ ] T081 [P] [US1] Implement Administration Users views (Index with DataTable, Enroll form with specific field conflict feedback) in Mentoory.Web/Areas/Administration/Views/Users/
+- [X] T077 [P] [US1] Implement Administration Dashboard controller and view (incubator overview) in Mentoory.Web/Areas/Administration/
+- [X] T078 [P] [US1] Implement Administration Projects controller (Index, Data, Create, Details) in Mentoory.Web/Areas/Administration/Controllers/ProjectsController.cs
+- [X] T079 [P] [US1] Implement Administration Projects views (Index with DataTable, Create form, Details) in Mentoory.Web/Areas/Administration/Views/Projects/
+- [X] T080 [P] [US1] Implement Administration Users controller (Index, Data, Enroll) with administrative enrollment in Mentoory.Web/Areas/Administration/Controllers/UsersController.cs
+- [X] T081 [P] [US1] Implement Administration Users views (Index with DataTable, Enroll form with specific field conflict feedback) in Mentoory.Web/Areas/Administration/Views/Users/
 
 ### Web Layer — Integration
 
-- [ ] T082 [US1] Wire up Identity, Authorization, and Tenant services in Program.cs and configure Aspire SQL Server enrichment for all three DbContexts in Mentoory.Web/Program.cs
+- [X] T082 [US1] Wire up Identity, Authorization, and Tenant services in Program.cs and configure Aspire SQL Server enrichment for all three DbContexts in Mentoory.Web/Program.cs
 
 ### Tests — US1
 
-- [ ] T082a [P] [US1] Implement Identity domain unit tests (User aggregate, AuthSession lifecycle, value objects, credential validation) in Mentoory.Identity.Tests/
-- [ ] T082b [P] [US1] Implement Authorization domain unit tests (RoleAssignment rules, entrepreneur one-active-project constraint) in Mentoory.Authorization.Tests/
-- [ ] T082c [P] [US1] Implement Tenant domain unit tests (Incubator, Project stage initialization, MentorAssignment lead flag) in Mentoory.Tenant.Tests/
-- [ ] T082d [US1] Implement integration tests for registration, login, session management, context selection, and cross-tenant data isolation using WebApplicationFactory + Testcontainers + Respawn in Mentoory.Tests.Integration/Identity/ and Mentoory.Tests.Integration/Authorization/ and Mentoory.Tests.Integration/Tenant/
+- [X] T082a [P] [US1] Implement Identity domain unit tests (User aggregate, AuthSession lifecycle, value objects, credential validation) in Mentoory.Identity.Tests/
+- [X] T082b [P] [US1] Implement Authorization domain unit tests (RoleAssignment rules, entrepreneur one-active-project constraint) in Mentoory.Authorization.Tests/
+- [X] T082c [P] [US1] Implement Tenant domain unit tests (Incubator, Project stage initialization, MentorAssignment lead flag) in Mentoory.Tenant.Tests/
+- [X] T082d [US1] Implement integration tests for registration, login, session management, context selection, and cross-tenant data isolation using WebApplicationFactory + Testcontainers + Respawn in Mentoory.Tests.Integration/Identity/ and Mentoory.Tests.Integration/Authorization/ and Mentoory.Tests.Integration/Tenant/
 
 **Checkpoint**: At this point, the platform has multi-tenant user management, authentication, session management, context selection, and incubator/project CRUD — fully functional and independently testable with automated test coverage
 
