@@ -65,3 +65,10 @@ Feature artifacts live in `specs/{###-feature-name}/`. See [`.specify/templates/
 
 ## Project Context
 - **Base Branch**: Always work from `develop`, not `main`
+
+## Active Technologies
+- C# / .NET 10.0 (SDK 10.0.0 with pre-release) + ASP.NET Core MVC, MediatR 14.1, FluentValidation 12.1, Mapperly 4.x, EF Core 10.x, MailKit/MimeKit (001-mentory-platform-core)
+- SQL Server with SSDT/DACPAC schema management, EF Core 10.x ORM (001-mentory-platform-core)
+
+## Recent Changes
+- 001-mentory-platform-core: Added C# / .NET 10.0 (SDK 10.0.0 with pre-release) + ASP.NET Core MVC, MediatR 14.1, FluentValidation 12.1, Mapperly 4.x, EF Core 10.x, MailKit/MimeKit
