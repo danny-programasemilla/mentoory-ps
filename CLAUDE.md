@@ -1,4 +1,4 @@
-# LinaSys Project Memory
+# Mentoory Project Memory
 
 ## Project Overview
 - **Platform**: ASP.NET Core 10 business incubator management system
@@ -6,16 +6,15 @@
 - **Architecture**: Clean Architecture with Domain-Driven Design (modular monolith)
 - **Cloud Native**: .NET Aspire 13.2.0 for orchestration and observability
 - **Frontend**: Razor Views with Bootstrap 5 (Phoenix Admin Template)
-- **Authentication**: Microsoft Identity
+- **Authentication**: Not defined yet, but should avoid vendor lock
 - **Language**: Spanish UI (all user-facing text)
 
 ## Key Commands
 - **Build**: `dotnet build`d
-- **Run with Aspire**: `dotnet run --project Aspire.AppHost`
-- **Run Web Only**: `dotnet run --project LinaSys.Web`
+- **Run with Aspire**: `dotnet run --project Mentoory.Aspire.AppHost`
+- **Run Web Only**: `dotnet run --project Mentoory.Web`
 - **Test**: `dotnet test`
-- **Database Build**: `cd Db && dotnet build` (generates DACPAC with PostDeployment scripts)
-- **Infrastructure**: `docker compose --file infrastructure-docker-compose.yml up -d`
+- **Database Build**: `cd Mentoory.Db && publish-mentoorydb.sh` (generates DACPAC with PostDeployment scripts)
 
 ## Knowledge Base
 **Quick lookup by scenario:**
@@ -63,25 +62,6 @@ Feature artifacts live in `specs/{###-feature-name}/`. See [`.specify/templates/
 /Infrastructure/Persistence/               # EF Core implementations
 /wwwroot/js/                               # All JavaScript files (NOT in Views)
 ```
-
-## Custom Commands
-
-### Quality & Security (read-only audits)
-| Command | Purpose |
-|---------|---------|
-| `/architecture-guard` | Audit constitution compliance, layer boundaries, forbidden patterns |
-| `/security-scan` | OWASP-based security audit (auth, injection, CSRF, dependencies) |
-| `/code-review` | Deep review against all governance docs (constitution, standards, DDD, ADRs) |
-| `/dacpac-review` | Validate SQL files for BOM, index syntax, naming, seed integrity |
-
-### DevOps
-| Command | Purpose |
-|---------|---------|
-| `/ci-generate [status\|add <workflow>\|update]` | Manage GitHub Actions CI/CD workflows |
-
-## CI/CD Pipeline
-- **claude-code-review.yml**: AI code review against constitution and standards on every PR
-- **Dependabot**: Weekly NuGet updates, monthly GitHub Actions updates (grouped by ecosystem)
 
 ## Project Context
 - **Base Branch**: Always work from `develop`, not `main`
