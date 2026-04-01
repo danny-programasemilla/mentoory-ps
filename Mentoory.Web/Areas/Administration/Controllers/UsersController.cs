@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Mentoory.Web.Areas.Administration.Controllers;
 
 [Area("Administration")]
-[Authorize(Roles = "IncubatorAdmin")]
+[Authorize(Roles = "IncubatorAdmin,GlobalAdmin")]
 public class UsersController : Controller
 {
     private readonly MediatRExecutor _executor;
@@ -22,13 +22,20 @@ public class UsersController : Controller
     [HttpGet]
     public IActionResult Index()
     {
+        if (!HasValidIncubatorContext())
+        {
+            TempData["WarningMessage"] = "Debe seleccionar una incubadora antes de continuar.";
+            return RedirectToAction("Select", "Context", new { area = string.Empty });
+        }
+
         return View();
     }
 
     [HttpPost]
     public async Task<IActionResult> Data([FromForm] DataTableServerRequest request, CancellationToken ct)
     {
-        var query = new ListUsersQuery(request.ToDataTableRequest());
+        var incubatorId = GetActiveIncubatorId();
+        var query = new ListUsersQuery(request.ToDataTableRequest(), incubatorId);
         var result = await _executor.SendOrThrowAsync(query, ct);
 
         return Json(new
@@ -84,5 +91,16 @@ public class UsersController : Controller
         }
 
         return View(model);
+    }
+
+    private bool HasValidIncubatorContext()
+    {
+        return long.TryParse(User.FindFirst("ActiveIncubatorId")?.Value, out var id) && id > 0;
+    }
+
+    private long GetActiveIncubatorId()
+    {
+        var claim = User.FindFirst("ActiveIncubatorId")?.Value;
+        return long.TryParse(claim, out var id) ? id : 0;
     }
 }

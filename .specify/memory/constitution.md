@@ -2,7 +2,17 @@
   ============================================================
   SYNC IMPACT REPORT
   ============================================================
-  Version change: 1.0.0 -> 1.0.1
+  Version change: 1.0.1 -> 1.1.0
+
+  Minor:
+    - Added Principle X: Role Hierarchy & Session Context
+    - Renumbered SSDT/DACPAC Database Strategy to XI
+    - Establishes: GlobalAdmin has full access, IncubatorAdmin
+      inherits project-scope access, [Authorize] must include
+      higher roles, MenuConfiguration must include GlobalAdmin
+      in all groups, controllers must handle missing context
+
+  Previous version: 1.0.0 -> 1.0.1
 
   Patches:
     - Updated Aspire version from 13.0.2 to 13.2.0 to match
@@ -187,7 +197,51 @@ ALL user-facing text MUST be in Spanish:
 Code comments, variable names, and documentation MUST remain in
 English.
 
-### X. SSDT/DACPAC Database Strategy
+### X. Role Hierarchy & Session Context
+
+The platform uses a **hierarchical role model** with session-scoped context
+selection. This principle MUST be followed in ALL specifications and
+implementations:
+
+#### Role Hierarchy (higher roles inherit lower-role access)
+
+1. **GlobalAdmin**: Full access to ALL incubators, ALL projects,
+   ALL features. Must be included in `[Authorize(Roles = "...")]`
+   on every controller.
+2. **IncubatorAdmin**: Full access within their assigned incubator
+   and all its projects. Must be included alongside ProjectCoordinator
+   on project-scoped controllers.
+3. **ProjectCoordinator**: Manages assigned project's diagnostic
+   forms, knowledge structures, mentoring plans.
+4. **Mentor**: Manages mentoring sessions and assignments within
+   assigned projects.
+5. **Entrepreneur**: Submits diagnostics, completes learning,
+   attends sessions within their project.
+6. **Sponsor**: Read-only dashboards.
+
+#### Authorization Rules
+
+- `[Authorize]` attributes MUST include the target role AND all
+  higher roles. Example: a ProjectCoordinator-scoped controller
+  uses `[Authorize(Roles = "ProjectCoordinator,IncubatorAdmin,GlobalAdmin")]`.
+- Menu items (`MenuConfiguration.cs`) MUST include higher roles
+  in the roles array. GlobalAdmin MUST appear in every menu group.
+
+#### Session Context
+
+- Features are context-scoped: they require an active incubator
+  and/or project selected via `/Context/Select`.
+- Controllers that read `ActiveProjectId` or `ActiveIncubatorId`
+  claims MUST handle missing context gracefully — redirect to
+  context selection with a message, never crash.
+- GlobalAdmin users operating in global scope (IncubatorId=0)
+  should still be able to access listing/read-only views.
+
+**Enforcement**: Any specification that restricts a controller to
+a single role without including higher-privilege roles MUST be
+rejected. Any menu group that excludes GlobalAdmin MUST be rejected.
+
+### XI. SSDT/DACPAC Database Strategy
 
 Database schema is managed via SQL Server Database Project
 (`Mentoory.Db/MentooryDb.sqlproj`). Entity Framework migrations are forbidden.
@@ -278,7 +332,9 @@ output is finalized, the following checks MUST pass:
 7. Are integration events correctly placed and minimal in scope?
    (Principle IV)
 8. Does database work follow SSDT/PostDeployment conventions?
-   (Principle X)
+   (Principle XI)
+9. Do `[Authorize]` attributes include all higher-privilege
+   roles? Do menu groups include GlobalAdmin? (Principle X)
 
 If any validation fails, the specification MUST be revised before
 proceeding.
@@ -319,4 +375,4 @@ All specifications and implementations produced by `/speckit`
 workflows are subject to validation against this constitution.
 Non-compliant outputs MUST be revised before approval.
 
-**Version**: 1.0.1 | **Ratified**: 2026-01-27 | **Last Amended**: 2026-03-31
+**Version**: 1.1.0 | **Ratified**: 2026-01-27 | **Last Amended**: 2026-03-31

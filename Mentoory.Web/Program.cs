@@ -10,6 +10,8 @@ using Mentoory.Identity.Infrastructure;
 using Mentoory.Shared.Application;
 using Mentoory.Tenant.Application;
 using Mentoory.Tenant.Infrastructure;
+using Mentoory.Diagnostic.Application;
+using Mentoory.Diagnostic.Infrastructure;
 using Mentoory.Shared.Application.Audit;
 using Mentoory.Shared.Application.Behaviors;
 using Mentoory.Shared.Application.Interfaces;
@@ -19,6 +21,7 @@ using Mentoory.Shared.Infrastructure.Behaviors;
 using Mentoory.Shared.Infrastructure.Persistence;
 using Mentoory.Shared.Infrastructure.Services;
 using Mentoory.Identity.Application.Queries.ListUsers.Abstractions;
+using Mentoory.Web.Infrastructure.Authorization;
 using Mentoory.Web.Infrastructure.Menu;
 using Mentoory.Web.Infrastructure.Persistence;
 using Mentoory.Web.Infrastructure.QueryContexts;
@@ -61,6 +64,8 @@ builder.Services.AddAuthorizationApplication();
 builder.AddAuthorizationInfrastructure();
 builder.Services.AddTenantApplication();
 builder.AddTenantInfrastructure();
+builder.Services.AddDiagnosticApplication();
+builder.AddDiagnosticInfrastructure();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -78,28 +83,29 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 builder.Services.AddAuthorization();
 
+var isDevelopment = builder.Environment.IsDevelopment();
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
     options.AddFixedWindowLimiter("login", opt =>
     {
-        opt.PermitLimit = 5;
-        opt.Window = TimeSpan.FromMinutes(15);
+        opt.PermitLimit = isDevelopment ? 1000 : 5;
+        opt.Window = TimeSpan.FromMinutes(isDevelopment ? 1 : 15);
         opt.QueueLimit = 0;
     });
 
     options.AddFixedWindowLimiter("registration", opt =>
     {
-        opt.PermitLimit = 3;
-        opt.Window = TimeSpan.FromMinutes(15);
+        opt.PermitLimit = isDevelopment ? 1000 : 3;
+        opt.Window = TimeSpan.FromMinutes(isDevelopment ? 1 : 15);
         opt.QueueLimit = 0;
     });
 
     options.AddFixedWindowLimiter("password-reset", opt =>
     {
-        opt.PermitLimit = 3;
-        opt.Window = TimeSpan.FromMinutes(60);
+        opt.PermitLimit = isDevelopment ? 1000 : 3;
+        opt.Window = TimeSpan.FromMinutes(isDevelopment ? 1 : 60);
         opt.QueueLimit = 0;
     });
 });
@@ -135,6 +141,7 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseTenantContext();
 app.UseAntiforgery();
 app.UseRateLimiter();
 

@@ -7,4 +7,5 @@ namespace Mentoory.Identity.Application.Queries.ListUsers;
 /// Query to retrieve a paginated list of users for DataTable display.
 /// </summary>
 /// <param name="Request">The DataTable request parameters including paging, sorting, and filtering.</param>
-public sealed record ListUsersQuery(DataTableRequest Request) : IBaseRequest<DataTableResponse<UserListItemDto>>;
+/// <param name="IncubatorId">Optional incubator ID to filter users with active role assignments.</param>
+public sealed record ListUsersQuery(DataTableRequest Request, long? IncubatorId = null) : IBaseRequest<DataTableResponse<UserListItemDto>>;

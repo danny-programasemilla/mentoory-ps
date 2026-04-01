@@ -22,4 +22,8 @@ PRINT '[003.SeedDefaultSubscriptionPlan.sql] Starting';
 :r ./003.SeedDefaultSubscriptionPlan.sql
 PRINT '[003.SeedDefaultSubscriptionPlan.sql] Finished';
 
+PRINT '[004.SeedTestData.sql] Starting';
+:r ./004.SeedTestData.sql
+PRINT '[004.SeedTestData.sql] Finished';
+
 PRINT '[Script.PostDeployment.sql] Finished';

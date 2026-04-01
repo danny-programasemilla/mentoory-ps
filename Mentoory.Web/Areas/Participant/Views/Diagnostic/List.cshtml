@@ -1,0 +1,54 @@
+@{
+    ViewData["Title"] = "Mi Diagnóstico";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Mi Diagnóstico</h2>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table id="participantFormsTable" class="table table-striped table-hover w-100">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Preguntas</th>
+                        <th>Fecha de Creación</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/datatable-helper.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            initDataTable('participantFormsTable', {
+                apiUrl: '@Url.Action("Data", "Diagnostic", new { area = "Participant" })',
+                columns: [
+                    { data: 'name' },
+                    { data: 'questionCount' },
+                    {
+                        data: 'createdAtUtc',
+                        render: function (data) {
+                            return new Date(data).toLocaleDateString('es');
+                        }
+                    },
+                    {
+                        data: 'externalId',
+                        orderable: false,
+                        render: function (data) {
+                            var respondUrl = '@Url.Action("Index", "Diagnostic", new { area = "Participant" })' + '?formExternalId=' + data;
+                            return '<a href="' + respondUrl + '" class="btn btn-sm btn-primary"><i class="fas fa-pen me-1"></i>Responder</a>';
+                        }
+                    }
+                ],
+                defaultOrder: [[2, 'desc']]
+            });
+        });
+    </script>
+}

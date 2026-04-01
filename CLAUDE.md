@@ -69,6 +69,21 @@ Feature artifacts live in `specs/{###-feature-name}/`. See [`.specify/templates/
 ## Active Technologies
 - C# / .NET 10.0 (SDK 10.0.0 with pre-release) + ASP.NET Core MVC, MediatR 14.1, FluentValidation 12.1, Mapperly 4.x, EF Core 10.x, MailKit/MimeKit (001-mentory-platform-core)
 - SQL Server with SSDT/DACPAC schema management, EF Core 10.x ORM (001-mentory-platform-core)
+- C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC + MediatR 14.1, FluentValidation 12.1, Mapperly 4.x, EF Core 10.x, MailKit/MimeKit (002-phase1-4-hardening)
+
+## Code Review Standards
+After completing any implementation, review the code for:
+- Methods longer than 30 lines (likely doing too much — extract private helpers)
+- Logic duplicated more than twice (extract to shared utility or base class)
+- Domain entities accepting invalid state at construction (guard clauses in factory methods)
+- Commands/handlers with 7+ parameters (group into value objects or nested records)
+- Magic strings where enums or constants exist in the codebase
+- Dead code: unused value objects, unreachable switch branches, methods never called
+- `AsNoTracking()` missing on read-only query paths (repositories, query handlers)
+- EF Include() chains loading more data than the caller needs
+
+Run /simplify before presenting code to the user.
 
 ## Recent Changes
+- 002-phase1-4-hardening: Added C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC + MediatR 14.1, FluentValidation 12.1, Mapperly 4.x, EF Core 10.x, MailKit/MimeKit
 - 001-mentory-platform-core: Added C# / .NET 10.0 (SDK 10.0.0 with pre-release) + ASP.NET Core MVC, MediatR 14.1, FluentValidation 12.1, Mapperly 4.x, EF Core 10.x, MailKit/MimeKit

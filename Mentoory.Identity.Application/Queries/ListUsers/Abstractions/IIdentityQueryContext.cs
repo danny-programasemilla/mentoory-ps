@@ -12,4 +12,11 @@ public interface IIdentityQueryContext
     /// </summary>
     /// <returns>An IQueryable of User for read-only queries.</returns>
     IQueryable<User> UsersQueryable();
+
+    /// <summary>
+    /// Gets a queryable of user IDs that have active role assignments in the specified incubator.
+    /// </summary>
+    /// <param name="incubatorId">The incubator internal ID.</param>
+    /// <returns>An IQueryable of distinct user IDs.</returns>
+    IQueryable<long> ActiveUserIdsByIncubatorQueryable(long incubatorId);
 }

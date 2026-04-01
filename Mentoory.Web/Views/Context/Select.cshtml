@@ -40,6 +40,7 @@
                                         <form asp-action="Select" method="post">
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="roleAssignmentExternalId" value="@ctx.RoleAssignmentExternalId" />
+                                            <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
                                             <button type="submit" class="btn btn-primary w-100">
                                                 <i class="fas fa-sign-in-alt me-1"></i>Seleccionar
                                             </button>

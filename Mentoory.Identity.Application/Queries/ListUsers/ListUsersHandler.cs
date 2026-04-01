@@ -38,7 +38,15 @@ public class ListUsersHandler : BaseCommandHandler<ListUsersQuery, DataTableResp
     {
         var dataTableRequest = request.Request;
 
-        var query = _queryContext.UsersQueryable()
+        var usersQuery = _queryContext.UsersQueryable();
+
+        if (request.IncubatorId.HasValue)
+        {
+            var incubatorUserIds = _queryContext.ActiveUserIdsByIncubatorQueryable(request.IncubatorId.Value);
+            usersQuery = usersQuery.Where(u => incubatorUserIds.Contains(u.Id));
+        }
+
+        var query = usersQuery
             .Select(u => new UserListItemDto(
                 u.ExternalId,
                 u.Email.Value,

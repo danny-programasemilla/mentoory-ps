@@ -1,5 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <ItemGroup>
+        <InternalsVisibleTo Include="Mentoory.Diagnostic.Tests"/>
+        <InternalsVisibleTo Include="Mentoory.Tests.Integration"/>
+    </ItemGroup>
+    <ItemGroup>
         <PackageReference Include="MediatR.Contracts"/>
     </ItemGroup>
     <ItemGroup>

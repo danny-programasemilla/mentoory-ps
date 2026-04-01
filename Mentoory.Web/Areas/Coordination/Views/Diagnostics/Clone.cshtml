@@ -1,0 +1,65 @@
+@model Mentoory.Web.Areas.Coordination.Models.CloneDiagnosticFormViewModel
+@{
+    ViewData["Title"] = "Clonar Plantilla de Diagnóstico";
+    var templates = ViewBag.Templates as List<Mentoory.Web.Areas.Coordination.Models.FormTemplateOptionViewModel> ?? new();
+}
+
+<div class="mb-4">
+    <h2>Clonar Plantilla de Diagnóstico</h2>
+    <p class="text-muted">Seleccione una plantilla global para clonar en este proyecto.</p>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form asp-action="Clone" method="post">
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+            @if (!templates.Any())
+            {
+                <div class="alert alert-info">
+                    No hay plantillas disponibles para clonar.
+                </div>
+            }
+            else
+            {
+                <div class="row">
+                    @foreach (var template in templates)
+                    {
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100 template-card" data-template-id="@template.ExternalId">
+                                <div class="card-body">
+                                    <h5 class="card-title">@template.Name</h5>
+                                    <p class="card-text text-muted">
+                                        @(template.Description ?? "Sin descripción")
+                                    </p>
+                                    <span class="badge bg-info">v@(template.Version)</span>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio"
+                                               name="SourceTemplateExternalId" value="@template.ExternalId"
+                                               id="template-@template.ExternalId" />
+                                        <label class="form-check-label" for="template-@template.ExternalId">
+                                            Seleccionar
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <span asp-validation-for="SourceTemplateExternalId" class="text-danger"></span>
+            }
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary" @(!templates.Any() ? "disabled" : "")>
+                    <i class="fas fa-clone me-1"></i>Clonar Plantilla
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary ms-2">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>

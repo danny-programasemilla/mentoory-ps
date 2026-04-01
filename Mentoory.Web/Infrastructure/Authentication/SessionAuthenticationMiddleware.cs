@@ -13,8 +13,11 @@ public class SessionAuthenticationMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        // Session validation will be implemented in T032/T034 when IdentityDbContext and AuthSessionRepository are available.
-        // For now, the standard cookie authentication middleware handles the auth cookie.
+        // SECURITY RISK: Session tokens are created during login but NOT validated server-side
+        // on subsequent requests. A stolen or expired session token remains valid until the
+        // authentication cookie expires (currently 8 hours).
+        // This is a known limitation — server-side session validation will be implemented
+        // when IdentityDbContext and AuthSessionRepository are available (deferred work item).
         await _next(context);
     }
 }

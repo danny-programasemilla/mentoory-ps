@@ -194,54 +194,54 @@
 
 ### Diagnostic Domain
 
-- [ ] T083 [P] [US2] Implement FormTemplate aggregate root with QuestionTemplate and AnswerOptionTemplate entities in Mentoory.Diagnostic.Domain/Aggregates/FormTemplate/
-- [ ] T084 [P] [US2] Implement ProjectForm aggregate root with Question, AnswerOption (score/SWOT/ODSR), and FollowUpQuestion entities in Mentoory.Diagnostic.Domain/Aggregates/ProjectForm/
-- [ ] T085 [P] [US2] Implement DiagnosticResponse aggregate root with QuestionResponse and AnswerCorrection entities in Mentoory.Diagnostic.Domain/Aggregates/DiagnosticResponse/
-- [ ] T086 [P] [US2] Implement Diagnostic enums (QuestionType, EvaluationStage, StageApplicability, SwotClassification, OdsrOrientation) in Mentoory.Diagnostic.Domain/Enums/
-- [ ] T087 [P] [US2] Implement Diagnostic value objects (ScoreContribution, TopicScoreAggregate) in Mentoory.Diagnostic.Domain/ValueObjects/
-- [ ] T088 [P] [US2] Implement Diagnostic repository interfaces (IFormTemplateRepository, IProjectFormRepository, IDiagnosticResponseRepository) in Mentoory.Diagnostic.Domain/Repositories/
+- [X] T083 [P] [US2] Implement FormTemplate aggregate root with QuestionTemplate and AnswerOptionTemplate entities in Mentoory.Diagnostic.Domain/Aggregates/FormTemplate/
+- [X] T084 [P] [US2] Implement ProjectForm aggregate root with Question, AnswerOption (score/SWOT/ODSR), and FollowUpQuestion entities in Mentoory.Diagnostic.Domain/Aggregates/ProjectForm/
+- [X] T085 [P] [US2] Implement DiagnosticResponse aggregate root with QuestionResponse and AnswerCorrection entities in Mentoory.Diagnostic.Domain/Aggregates/DiagnosticResponse/
+- [X] T086 [P] [US2] Implement Diagnostic enums (QuestionType, EvaluationStage, StageApplicability, SwotClassification, OdsrOrientation) in Mentoory.Diagnostic.Domain/Enums/
+- [X] T087 [P] [US2] Implement Diagnostic value objects (ScoreContribution, TopicScoreAggregate) in Mentoory.Diagnostic.Domain/ValueObjects/
+- [X] T088 [P] [US2] Implement Diagnostic repository interfaces (IFormTemplateRepository, IProjectFormRepository, IDiagnosticResponseRepository) in Mentoory.Diagnostic.Domain/Repositories/
 
 ### Diagnostic Application
 
-- [ ] T089 [P] [US2] Implement CloneFormTemplate command with handler (deep copy template → project form) in Mentoory.Diagnostic.Application/Commands/CloneFormTemplate/
-- [ ] T090 [P] [US2] Implement CustomizeProjectForm command with handler (add/remove/reorder questions) in Mentoory.Diagnostic.Application/Commands/CustomizeProjectForm/
-- [ ] T091 [US2] Implement SubmitDiagnosticResponse command with handler (save responses, aggregate scores per topic, mark evaluation complete) in Mentoory.Diagnostic.Application/Commands/SubmitDiagnosticResponse/
-- [ ] T092 [P] [US2] Implement CorrectAnswer command with handler (audit trail: who, when, previous value) in Mentoory.Diagnostic.Application/Commands/CorrectAnswer/
-- [ ] T093 [P] [US2] Implement SyncFromTemplate command with handler (partial sync of new questions) in Mentoory.Diagnostic.Application/Commands/SyncFromTemplate/
-- [ ] T094 [P] [US2] Implement Diagnostic queries (GetProjectForm, GetDiagnosticResponse, ListFormTemplates with subscription filtering, GetTopicScoreAggregation) in Mentoory.Diagnostic.Application/Queries/
-- [ ] T095 [P] [US2] Implement Diagnostic integration events (DiagnosticCompletedEvent, AnswerCorrectedEvent) in Mentoory.Diagnostic.Application/IntegrationEvents/
-- [ ] T096 [US2] Implement Diagnostic Application DependencyInjection.cs in Mentoory.Diagnostic.Application/DependencyInjection.cs
+- [X] T089 [P] [US2] Implement CloneFormTemplate command with handler (deep copy template → project form) in Mentoory.Diagnostic.Application/Commands/CloneFormTemplate/
+- [X] T090 [P] [US2] Implement CustomizeProjectForm command with handler (add/remove/reorder questions) in Mentoory.Diagnostic.Application/Commands/CustomizeProjectForm/
+- [X] T091 [US2] Implement SubmitDiagnosticResponse command with handler (save responses, aggregate scores per topic, mark evaluation complete) in Mentoory.Diagnostic.Application/Commands/SubmitDiagnosticResponse/
+- [X] T092 [P] [US2] Implement CorrectAnswer command with handler (audit trail: who, when, previous value) in Mentoory.Diagnostic.Application/Commands/CorrectAnswer/
+- [X] T093 [P] [US2] Implement SyncFromTemplate command with handler (partial sync of new questions) in Mentoory.Diagnostic.Application/Commands/SyncFromTemplate/
+- [X] T094 [P] [US2] Implement Diagnostic queries (GetProjectForm, GetDiagnosticResponse, ListFormTemplates with subscription filtering, GetTopicScoreAggregation) in Mentoory.Diagnostic.Application/Queries/
+- [X] T095 [P] [US2] Implement Diagnostic integration events (DiagnosticCompletedEvent, AnswerCorrectedEvent) in Mentoory.Diagnostic.Application/IntegrationEvents/
+- [X] T096 [US2] Implement Diagnostic Application DependencyInjection.cs in Mentoory.Diagnostic.Application/DependencyInjection.cs
 
 ### Diagnostic Infrastructure
 
-- [ ] T097 [US2] Implement DiagnosticDbContext with entity configurations for [diagnostic] schema in Mentoory.Diagnostic.Infrastructure/Persistence/DiagnosticDbContext.cs
-- [ ] T098 [P] [US2] Implement FormTemplateRepository, ProjectFormRepository, and DiagnosticResponseRepository in Mentoory.Diagnostic.Infrastructure/Persistence/Repositories/
-- [ ] T099 [US2] Implement Diagnostic Infrastructure DependencyInjection.cs in Mentoory.Diagnostic.Infrastructure/DependencyInjection.cs
+- [X] T097 [US2] Implement DiagnosticDbContext with entity configurations for [diagnostic] schema in Mentoory.Diagnostic.Infrastructure/Persistence/DiagnosticDbContext.cs
+- [X] T098 [P] [US2] Implement FormTemplateRepository, ProjectFormRepository, and DiagnosticResponseRepository in Mentoory.Diagnostic.Infrastructure/Persistence/Repositories/
+- [X] T099 [US2] Implement Diagnostic Infrastructure DependencyInjection.cs in Mentoory.Diagnostic.Infrastructure/DependencyInjection.cs
 
 ### Diagnostic SSDT
 
-- [ ] T100 [P] [US2] Create SSDT table definitions for [diagnostic] schema (FormTemplates, ProjectForms, Questions, AnswerOptions, FollowUpQuestions, DiagnosticResponses, QuestionResponses, QuestionResponseOptions, AnswerCorrections) in Mentoory.Db/diagnostic/Tables/
+- [X] T100 [P] [US2] Create SSDT table definitions for [diagnostic] schema (FormTemplates, ProjectForms, Questions, AnswerOptions, FollowUpQuestions, DiagnosticResponses, QuestionResponses, QuestionResponseOptions, AnswerCorrections) in Mentoory.Db/diagnostic/Tables/
 
 ### Web Layer — Coordination Diagnostics
 
-- [ ] T101 [P] [US2] Implement Coordination Diagnostics controller (Index, Clone, Details/Customize) in Mentoory.Web/Areas/Coordination/Controllers/DiagnosticsController.cs
-- [ ] T102 [P] [US2] Implement Coordination Diagnostics views (form list, clone template selection, form customization editor) in Mentoory.Web/Areas/Coordination/Views/Diagnostics/
-- [ ] T103 [P] [US2] Implement Platform global diagnostic templates controller and views in Mentoory.Web/Areas/Platform/Controllers/TemplatesController.cs (Diagnostics section)
+- [X] T101 [P] [US2] Implement Coordination Diagnostics controller (Index, Clone, Details/Customize) in Mentoory.Web/Areas/Coordination/Controllers/DiagnosticsController.cs
+- [X] T102 [P] [US2] Implement Coordination Diagnostics views (form list, clone template selection, form customization editor) in Mentoory.Web/Areas/Coordination/Views/Diagnostics/
+- [X] T103 [P] [US2] Implement Platform global diagnostic templates controller and views in Mentoory.Web/Areas/Platform/Controllers/TemplatesController.cs (Diagnostics section)
 
 ### Web Layer — Participant Diagnostic
 
-- [ ] T104 [P] [US2] Implement Participant Diagnostic controller (Index showing stage-filtered questions, Submit) in Mentoory.Web/Areas/Participant/Controllers/DiagnosticController.cs
-- [ ] T105 [P] [US2] Implement Participant Diagnostic views (form filling with question types, follow-ups, submission confirmation) in Mentoory.Web/Areas/Participant/Views/Diagnostic/
+- [X] T104 [P] [US2] Implement Participant Diagnostic controller (Index showing stage-filtered questions, Submit) in Mentoory.Web/Areas/Participant/Controllers/DiagnosticController.cs
+- [X] T105 [P] [US2] Implement Participant Diagnostic views (form filling with question types, follow-ups, submission confirmation) in Mentoory.Web/Areas/Participant/Views/Diagnostic/
 
 ### Web Layer — Answer Correction
 
-- [ ] T106 [US2] Implement answer correction UI accessible to authorized users (mentor, coordinator, incubator admin, global admin) with audit trail display
-- [ ] T107 [US2] Wire up Diagnostic services in Program.cs and configure Aspire enrichment for DiagnosticDbContext
+- [X] T106 [US2] Implement answer correction UI accessible to authorized users (mentor, coordinator, incubator admin, global admin) with audit trail display
+- [X] T107 [US2] Wire up Diagnostic services in Program.cs and configure Aspire enrichment for DiagnosticDbContext
 
 ### Tests — US2
 
-- [ ] T107a [P] [US2] Implement Diagnostic domain unit tests (FormTemplate cloning, Question/AnswerOption scoring, DiagnosticResponse aggregation, AnswerCorrection audit) in Mentoory.Diagnostic.Tests/
-- [ ] T107b [US2] Implement Diagnostic integration tests (clone template, submit responses, verify score aggregation, correct answer with audit trail) in Mentoory.Tests.Integration/Diagnostic/
+- [X] T107a [P] [US2] Implement Diagnostic domain unit tests (FormTemplate cloning, Question/AnswerOption scoring, DiagnosticResponse aggregation, AnswerCorrection audit) in Mentoory.Diagnostic.Tests/
+- [X] T107b [US2] Implement Diagnostic integration tests (clone template, submit responses, verify score aggregation, correct answer with audit trail) in Mentoory.Tests.Integration/Diagnostic/
 
 **Checkpoint**: Diagnostic assessment fully functional — templates can be cloned, customized, filled by entrepreneurs, and corrected with audit trail
 

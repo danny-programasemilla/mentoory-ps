@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Mentoory.Authorization.Infrastructure.Persistence;
+using Mentoory.Diagnostic.Infrastructure.Persistence;
 using Mentoory.Example.Infrastructure.Persistence;
 using Mentoory.Identity.Infrastructure.Persistence;
 using Mentoory.Shared.Infrastructure.Persistence;
@@ -11,9 +12,10 @@ public class DbContextFactory(IServiceProvider serviceProvider) : IDbContextFact
 {
     private readonly Dictionary<string, Type> _mapping = new()
     {
+        { "Authorization", typeof(AuthorizationDbContext) },
+        { "Diagnostic", typeof(DiagnosticDbContext) },
         { "Example", typeof(ExampleDbContext) },
         { "Identity", typeof(IdentityDbContext) },
-        { "Authorization", typeof(AuthorizationDbContext) },
         { "Tenant", typeof(TenantDbContext) },
     };
 

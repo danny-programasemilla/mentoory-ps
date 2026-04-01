@@ -12,7 +12,7 @@ namespace Mentoory.Web.Areas.Administration.Controllers;
 
 [Area("Administration")]
 [Route("[area]/[controller]")]
-[Authorize(Roles = "IncubatorAdmin")]
+[Authorize(Roles = "IncubatorAdmin,GlobalAdmin")]
 public class ProjectsController : Controller
 {
     private readonly MediatRExecutor _executor;
@@ -25,6 +25,12 @@ public class ProjectsController : Controller
     [HttpGet("")]
     public IActionResult Index()
     {
+        if (!HasValidIncubatorContext())
+        {
+            TempData["WarningMessage"] = "Debe seleccionar una incubadora antes de continuar.";
+            return RedirectToAction("Select", "Context", new { area = string.Empty });
+        }
+
         return View();
     }
 
@@ -81,6 +87,11 @@ public class ProjectsController : Controller
             new GetProjectByExternalIdQuery(externalId), ct);
 
         return View(project);
+    }
+
+    private bool HasValidIncubatorContext()
+    {
+        return long.TryParse(User.FindFirst("ActiveIncubatorId")?.Value, out var id) && id > 0;
     }
 
     private long GetActiveIncubatorId()

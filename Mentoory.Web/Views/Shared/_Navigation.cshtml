@@ -1,15 +1,55 @@
 @inject Mentoory.Web.Infrastructure.Menu.IMenuService MenuService
 
+@{
+    var menuItems = MenuService.GetVisibleMenuItems();
+    var platformGroups = new[] { "Plataforma" };
+    var contextGroups = new[] { "Administración", "Coordinación", "Participante" };
+
+    var hasPlatformSection = menuItems
+        .OfType<Mentoory.Web.Infrastructure.Menu.MenuGroup>()
+        .Any(g => platformGroups.Contains(g.Title));
+    var hasContextSection = menuItems
+        .OfType<Mentoory.Web.Infrastructure.Menu.MenuGroup>()
+        .Any(g => contextGroups.Contains(g.Title));
+    var platformSectionRendered = false;
+    var contextSectionRendered = false;
+}
+
 <nav id="sidebar" class="bg-dark text-white" style="min-width: 250px; min-height: 100vh;">
     <div class="p-3">
         <a class="text-white text-decoration-none fs-5 fw-bold" href="/">Mentoory</a>
     </div>
     <hr class="text-secondary mx-3" />
     <ul class="nav flex-column px-2">
-        @foreach (var item in MenuService.GetVisibleMenuItems())
+        @foreach (var item in menuItems)
         {
             if (item is Mentoory.Web.Infrastructure.Menu.MenuGroup group)
             {
+                @if (hasPlatformSection && platformGroups.Contains(group.Title) && !platformSectionRendered)
+                {
+                    platformSectionRendered = true;
+                    <li class="nav-item mt-3 mb-1 px-3">
+                        <span class="text-uppercase text-secondary small fw-bold" style="font-size: 0.65rem; letter-spacing: 0.1em;">
+                            Gestión de Plataforma
+                        </span>
+                    </li>
+                }
+                @if (hasContextSection && contextGroups.Contains(group.Title) && !contextSectionRendered)
+                {
+                    contextSectionRendered = true;
+                    @if (platformSectionRendered)
+                    {
+                        <li class="nav-item">
+                            <hr class="text-secondary mx-3 my-2" />
+                        </li>
+                    }
+                    <li class="nav-item mt-1 mb-1 px-3">
+                        <span class="text-uppercase text-secondary small fw-bold" style="font-size: 0.65rem; letter-spacing: 0.1em;">
+                            Administración del Contexto
+                        </span>
+                    </li>
+                }
+
                 <li class="nav-item mt-2">
                     <span class="nav-link text-secondary small text-uppercase">
                         <i class="@group.Icon me-2"></i>@group.Title

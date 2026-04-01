@@ -65,6 +65,6 @@ public class LoginController : Controller
 
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
-        return RedirectToAction("Select", "Context", new { area = string.Empty });
+        return RedirectToAction("Select", "Context", new { area = string.Empty, returnUrl });
     }
 }

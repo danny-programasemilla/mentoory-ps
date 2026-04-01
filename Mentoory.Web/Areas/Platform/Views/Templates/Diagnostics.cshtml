@@ -1,0 +1,69 @@
+@{
+    ViewData["Title"] = "Plantillas de Diagnóstico";
+}
+
+<div class="mb-4">
+    <h2>Plantillas de Diagnóstico</h2>
+    <p class="text-muted">Plantillas globales disponibles para todos los proyectos.</p>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table id="templatesTable" class="table table-striped table-hover w-100">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th>Nivel de Suscripción</th>
+                        <th>Versión</th>
+                        <th>Estado</th>
+                        <th>Fecha de Creación</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/datatable-helper.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            initDataTable('templatesTable', {
+                apiUrl: '@Url.Action("DiagnosticsData", "Templates", new { area = "Platform" })',
+                columns: [
+                    { data: 'name' },
+                    {
+                        data: 'description',
+                        render: function (data) {
+                            return data || '<span class="text-muted">Sin descripción</span>';
+                        }
+                    },
+                    {
+                        data: 'subscriptionTier',
+                        render: function (data) {
+                            return data || '<span class="text-muted">Todas</span>';
+                        }
+                    },
+                    { data: 'version' },
+                    {
+                        data: 'isActive',
+                        render: function (data) {
+                            return data
+                                ? '<span class="badge bg-success">Activa</span>'
+                                : '<span class="badge bg-secondary">Inactiva</span>';
+                        }
+                    },
+                    {
+                        data: 'createdAtUtc',
+                        render: function (data) {
+                            return new Date(data).toLocaleDateString('es');
+                        }
+                    }
+                ],
+                defaultOrder: [[5, 'desc']]
+            });
+        });
+    </script>
+}
