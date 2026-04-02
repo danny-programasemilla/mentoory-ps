@@ -102,7 +102,7 @@ public class DiagnosticsController : Controller
         if (!long.TryParse(projectIdClaim, out var projectId))
         {
             TempData["WarningMessage"] = "Debe seleccionar un proyecto antes de continuar.";
-            return RedirectToAction("Select", "Context", new { area = string.Empty });
+            return RedirectToAction("Select", "Context", new { area = string.Empty, returnUrl = Request.Path.Value });
         }
 
         var form = await _executor.SendOrThrowAsync(

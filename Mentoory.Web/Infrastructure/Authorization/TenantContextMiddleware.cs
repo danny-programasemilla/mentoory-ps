@@ -17,7 +17,9 @@ public class TenantContextMiddleware
         if (context.User.Identity?.IsAuthenticated == true)
         {
             var incubatorIdClaim = context.User.FindFirst("ActiveIncubatorId")?.Value;
-            if (long.TryParse(incubatorIdClaim, out var incubatorId) && tenantContext is TenantContextService tenantService)
+            if (long.TryParse(incubatorIdClaim, out var incubatorId)
+                && incubatorId > 0
+                && tenantContext is TenantContextService tenantService)
             {
                 tenantService.CurrentIncubatorId = incubatorId;
             }

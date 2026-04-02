@@ -56,6 +56,11 @@ public class ProjectRepository : AbstractRepository<Project>, IProjectRepository
         return _dbContext.Projects.AsQueryable();
     }
 
+    public IQueryable<Project> QueryUnfiltered()
+    {
+        return _dbContext.Projects.IgnoreQueryFilters().AsNoTracking();
+    }
+
     public Task<int> CountAsync(CancellationToken cancellationToken)
     {
         return _dbContext.Projects.CountAsync(cancellationToken);

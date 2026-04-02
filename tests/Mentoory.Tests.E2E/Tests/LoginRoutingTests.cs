@@ -26,6 +26,16 @@ public class LoginRoutingTests
         {
             await LoginAsync(page, "admin@mentoory.com", "123abc987");
 
+            // GlobalAdmin sees context selection with available incubators
+            page.Url.Should().Contain("/Context/Select",
+                "GlobalAdmin should see context selection after login");
+
+            // Select the first available context
+            var firstSubmitButton = page.Locator(".context-card button[type='submit']").First;
+            await firstSubmitButton.WaitForAsync(new LocatorWaitForOptions { Timeout = 5000 });
+            await firstSubmitButton.ClickAsync();
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
             page.Url.Should().Contain("/Platform/Incubators");
         }
         finally

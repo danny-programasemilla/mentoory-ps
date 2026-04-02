@@ -14,7 +14,7 @@ public class DashboardController : Controller
         if (!long.TryParse(incubatorIdClaim, out var incubatorId) || incubatorId <= 0)
         {
             TempData["WarningMessage"] = "Debe seleccionar una incubadora antes de continuar.";
-            return RedirectToAction("Select", "Context", new { area = string.Empty });
+            return RedirectToAction("Select", "Context", new { area = string.Empty, returnUrl = Request.Path.Value });
         }
 
         return View();

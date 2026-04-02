@@ -41,6 +41,16 @@
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="roleAssignmentExternalId" value="@ctx.RoleAssignmentExternalId" />
                                             <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+                                            @if (ctx.Role == "GlobalAdmin" && ctx.IncubatorId > 0)
+                                            {
+                                                <input type="hidden" name="selectedIncubatorId" value="@ctx.IncubatorId" />
+                                                <input type="hidden" name="selectedIncubatorName" value="@ctx.IncubatorName" />
+                                                @if (ctx.ProjectId.HasValue)
+                                                {
+                                                    <input type="hidden" name="selectedProjectId" value="@ctx.ProjectId" />
+                                                    <input type="hidden" name="selectedProjectName" value="@ctx.ProjectName" />
+                                                }
+                                            }
                                             <button type="submit" class="btn btn-primary w-100">
                                                 <i class="fas fa-sign-in-alt me-1"></i>Seleccionar
                                             </button>

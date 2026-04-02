@@ -1,6 +1,9 @@
 using System.Security.Claims;
 using Mentoory.Authorization.Application.Commands.SetActiveContext;
 using Mentoory.Authorization.Application.Queries.GetUserContexts;
+using Mentoory.Authorization.Domain.ReadModels;
+using Mentoory.Shared.Domain.Constants;
+using Mentoory.Tenant.Application.Queries.ListIncubatorContextOptions;
 using Mentoory.Web.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -30,6 +33,19 @@ public class ContextController : Controller
 
         var contexts = await _executor.SendOrThrowAsync(new GetUserContextsQuery(userId.Value), ct);
 
+        if (contexts.Count == 1 && contexts[0].Role == Roles.GlobalAdmin)
+        {
+            var globalAdminContexts = await BuildGlobalAdminContextsAsync(contexts[0], ct);
+
+            if (globalAdminContexts.Count == 0)
+            {
+                return await SetContext(contexts[0].RoleAssignmentExternalId, returnUrl, ct);
+            }
+
+            ViewBag.ReturnUrl = returnUrl;
+            return View(globalAdminContexts);
+        }
+
         if (contexts.Count == 1)
         {
             return await SetContext(contexts[0].RoleAssignmentExternalId, returnUrl, ct);
@@ -41,8 +57,27 @@ public class ContextController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Select(Guid roleAssignmentExternalId, string? returnUrl, CancellationToken ct)
+    public async Task<IActionResult> Select(
+        Guid roleAssignmentExternalId,
+        string? returnUrl,
+        long? selectedIncubatorId,
+        string? selectedIncubatorName,
+        long? selectedProjectId,
+        string? selectedProjectName,
+        CancellationToken ct)
     {
+        if (selectedIncubatorId.HasValue)
+        {
+            return await SetGlobalAdminContext(
+                roleAssignmentExternalId,
+                selectedIncubatorId.Value,
+                selectedIncubatorName,
+                selectedProjectId,
+                selectedProjectName,
+                returnUrl,
+                ct);
+        }
+
         return await SetContext(roleAssignmentExternalId, returnUrl, ct);
     }
 
@@ -109,7 +144,81 @@ public class ContextController : Controller
         return RedirectToAction("Index", "Home");
     }
 
-    private async Task UpdateAuthCookie(Authorization.Domain.ReadModels.UserContext context)
+    private async Task<List<UserContext>> BuildGlobalAdminContextsAsync(
+        UserContext globalContext, CancellationToken ct)
+    {
+        var options = await _executor.SendOrThrowAsync(
+            new ListIncubatorContextOptionsQuery(), ct);
+
+        var contexts = new List<UserContext>();
+
+        foreach (var incubator in options)
+        {
+            contexts.Add(globalContext with
+            {
+                IncubatorId = incubator.IncubatorId,
+                IncubatorName = incubator.IncubatorName,
+                ProjectId = null,
+                ProjectName = null,
+            });
+
+            foreach (var project in incubator.Projects)
+            {
+                contexts.Add(globalContext with
+                {
+                    IncubatorId = incubator.IncubatorId,
+                    IncubatorName = incubator.IncubatorName,
+                    ProjectId = project.ProjectId,
+                    ProjectName = project.ProjectName,
+                });
+            }
+        }
+
+        return contexts;
+    }
+
+    private async Task<IActionResult> SetGlobalAdminContext(
+        Guid roleAssignmentExternalId,
+        long incubatorId,
+        string? incubatorName,
+        long? projectId,
+        string? projectName,
+        string? returnUrl,
+        CancellationToken ct)
+    {
+        var userId = TryGetUserId();
+        if (userId is null)
+        {
+            return RedirectToAction("Login", "Login", new { area = "Identity" });
+        }
+
+        var baseContext = await _executor.SendOrThrowAsync(
+            new SetActiveContextCommand(userId.Value, roleAssignmentExternalId), ct);
+
+        if (baseContext.Role != Roles.GlobalAdmin)
+        {
+            return RedirectToAction("Login", "Login", new { area = "Identity" });
+        }
+
+        var context = baseContext with
+        {
+            IncubatorId = incubatorId,
+            IncubatorName = incubatorName,
+            ProjectId = projectId,
+            ProjectName = projectName,
+        };
+
+        await UpdateAuthCookie(context);
+
+        if (IsValidLocalUrl(returnUrl))
+        {
+            return Redirect(returnUrl!);
+        }
+
+        return RedirectToAction("Index", "Home");
+    }
+
+    private async Task UpdateAuthCookie(UserContext context)
     {
         var existingClaims = User.Claims
             .Where(c => c.Type != "ActiveRole"

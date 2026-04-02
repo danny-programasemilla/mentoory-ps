@@ -132,5 +132,14 @@ public class MenuVisibilityTests
         await page.FillAsync("input[name='Password']", password);
         await page.ClickAsync("button[type='submit']");
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+        // GlobalAdmin sees context selection with incubator choices; pick the first one
+        if (page.Url.Contains("/Context/Select"))
+        {
+            var firstSubmitButton = page.Locator(".context-card button[type='submit']").First;
+            await firstSubmitButton.WaitForAsync(new LocatorWaitForOptions { Timeout = 5000 });
+            await firstSubmitButton.ClickAsync();
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        }
     }
 }

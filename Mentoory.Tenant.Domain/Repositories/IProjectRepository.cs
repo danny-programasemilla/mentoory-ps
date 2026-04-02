@@ -11,6 +11,7 @@ public interface IProjectRepository : IRepository<Project>
     Task<Project?> GetByExternalIdAsync(Guid externalId, CancellationToken cancellationToken);
     Task<Project?> GetByExternalIdWithParticipantsAsync(Guid externalId, CancellationToken cancellationToken);
     IQueryable<Project> Query();
+    IQueryable<Project> QueryUnfiltered();
     Task<int> CountAsync(CancellationToken cancellationToken);
     Task<int> CountAsync(IQueryable<Project> query, CancellationToken cancellationToken);
     Task<List<TResult>> ToListAsync<TResult>(IQueryable<TResult> query, CancellationToken cancellationToken);
