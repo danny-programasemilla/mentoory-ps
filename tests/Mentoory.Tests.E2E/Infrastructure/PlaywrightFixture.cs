@@ -4,8 +4,6 @@ using Microsoft.AspNetCore.Http;
 using Mentoory.Authorization.Infrastructure.Persistence;
 using Mentoory.Diagnostic.Infrastructure.Persistence;
 using Mentoory.Example.Infrastructure.Persistence;
-using Mentoory.Identity.Application.Queries.ListUsers.Abstractions;
-using Mentoory.Identity.Domain.Aggregates.User;
 using Mentoory.Identity.Infrastructure.Persistence;
 using Mentoory.Tenant.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
@@ -154,13 +152,6 @@ public class PlaywrightFixture : WebApplicationFactory<Program>, IAsyncLifetime
             ReplaceDbContext<TenantDbContext>(services, connStr);
             ReplaceDbContext<DiagnosticDbContext>(services, connStr);
             ReplaceDbContext<ExampleDbContext>(services, connStr);
-
-            services.AddScoped<IIdentityQueryContext>(sp =>
-            {
-                var dbContext = sp.GetRequiredService<IdentityDbContext>();
-                var authDbContext = sp.GetRequiredService<AuthorizationDbContext>();
-                return new IdentityQueryContextAdapter(dbContext, authDbContext);
-            });
         });
     }
 
@@ -259,19 +250,5 @@ public class PlaywrightFixture : WebApplicationFactory<Program>, IAsyncLifetime
             BlockOnPossibleDataLoss = false,
             IncludeTransactionalScripts = false,
         });
-    }
-
-    private sealed class IdentityQueryContextAdapter(
-        IdentityDbContext dbContext,
-        AuthorizationDbContext authorizationDbContext) : IIdentityQueryContext
-    {
-        public IQueryable<User> UsersQueryable() => dbContext.Users.AsNoTracking();
-
-        public IQueryable<long> ActiveUserIdsByIncubatorQueryable(long incubatorId) =>
-            authorizationDbContext.RoleAssignments
-                .AsNoTracking()
-                .Where(ra => ra.IncubatorId == incubatorId && ra.IsActive)
-                .Select(ra => ra.UserId)
-                .Distinct();
     }
 }

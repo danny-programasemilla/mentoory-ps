@@ -1,20 +1,23 @@
 using System.Linq.Expressions;
 using LinaSys.Shared.Application.Extensions;
-using Mentoory.Identity.Domain.Repositories;
+using Mentoory.Authorization.Domain.Repositories;
 using Mentoory.Shared.Application;
 using Mentoory.Shared.Application.DataTables;
 using Mentoory.Shared.Application.MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace Mentoory.Identity.Application.Queries.ListUsers;
+namespace Mentoory.Authorization.Application.Queries.ListIncubatorMembers;
 
 /// <summary>
-/// Handles the ListUsersQuery by querying the database for a paginated list of all users.
+/// Handles the ListIncubatorMembersQuery by querying the Authorization domain's
+/// UserProfile read model filtered by active role assignments for an incubator.
 /// </summary>
-public class ListUsersHandler(IUserRepository userRepository)
-    : BaseCommandHandler<ListUsersQuery, DataTableResponse<UserListItemDto>>
+public class ListIncubatorMembersHandler(
+    IUserProfileRepository userProfileRepository,
+    IRoleAssignmentRepository roleAssignmentRepository)
+    : BaseCommandHandler<ListIncubatorMembersQuery, DataTableResponse<IncubatorMemberListItemDto>>
 {
-    private static readonly Dictionary<string, Expression<Func<UserListItemDto, object?>>> SortColumns = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly Dictionary<string, Expression<Func<IncubatorMemberListItemDto, object?>>> SortColumns = new(StringComparer.OrdinalIgnoreCase)
     {
         { "email", x => x.Email },
         { "firstName", x => x.FirstName },
@@ -24,17 +27,25 @@ public class ListUsersHandler(IUserRepository userRepository)
     };
 
     /// <inheritdoc />
-    public override async Task<Result<DataTableResponse<UserListItemDto>>> Handle(ListUsersQuery request, CancellationToken cancellationToken)
+    public override async Task<Result<DataTableResponse<IncubatorMemberListItemDto>>> Handle(
+        ListIncubatorMembersQuery request,
+        CancellationToken cancellationToken)
     {
         var dataTableRequest = request.Request;
 
-        var query = userRepository.Query()
-            .Select(u => new UserListItemDto(
-                u.ExternalId,
-                u.Email.Value,
+        var memberUserIds = roleAssignmentRepository.Query()
+            .Where(ra => ra.IncubatorId == request.IncubatorId && ra.IsActive)
+            .Select(ra => ra.UserId)
+            .Distinct();
+
+        var query = userProfileRepository.Query()
+            .Where(u => memberUserIds.Contains(u.UserId))
+            .Select(u => new IncubatorMemberListItemDto(
+                u.UserExternalId,
+                u.Email,
                 u.FirstName,
                 u.LastName,
-                u.AccountStatus.ToString(),
+                u.AccountStatus,
                 u.CreatedAtUtc));
 
         var totalRecords = await query.CountAsync(cancellationToken);
@@ -56,7 +67,7 @@ public class ListUsersHandler(IUserRepository userRepository)
 
         var data = await query.ToListAsync(cancellationToken);
 
-        var response = new DataTableResponse<UserListItemDto>(
+        var response = new DataTableResponse<IncubatorMemberListItemDto>(
             dataTableRequest.Draw,
             totalRecords,
             filteredRecords,

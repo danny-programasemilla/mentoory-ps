@@ -41,6 +41,7 @@ public static class DependencyInjection
         });
 
         builder.Services.AddScoped<IRoleAssignmentRepository, RoleAssignmentRepository>();
+        builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
 
         return builder;
     }

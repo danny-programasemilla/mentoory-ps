@@ -55,7 +55,13 @@ public class RegisterUserHandlerTests
         result.IsSuccess.Should().BeTrue();
         _userRepo.Verify(r => r.Add(It.IsAny<User>()), Times.Once);
         _unitOfWork.Verify(u => u.SaveEntitiesAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _eventService.Verify(e => e.PublishAsync(It.IsAny<UserRegisteredEvent>(), It.IsAny<CancellationToken>()), Times.Once);
+        _eventService.Verify(e => e.PublishAsync(
+            It.Is<UserRegisteredEvent>(ev =>
+                ev.Email == "test@test.com" &&
+                ev.FirstName == "Juan" &&
+                ev.LastName == "Pérez" &&
+                ev.AccountStatus == "PendingVerification"),
+            It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

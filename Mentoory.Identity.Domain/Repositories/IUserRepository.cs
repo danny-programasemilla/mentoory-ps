@@ -15,4 +15,9 @@ public interface IUserRepository : IRepository<User>
     Task<bool> ExistsByNationalIdentityAsync(string country, string nationalId, CancellationToken cancellationToken);
     Task<User?> GetByEmailVerificationTokenAsync(string tokenHash, CancellationToken cancellationToken);
     Task<User?> GetByPasswordResetTokenAsync(string tokenHash, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Gets a read-only queryable for users.
+    /// </summary>
+    IQueryable<User> Query();
 }

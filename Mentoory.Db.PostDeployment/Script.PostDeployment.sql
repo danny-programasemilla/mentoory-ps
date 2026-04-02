@@ -26,4 +26,8 @@ PRINT '[004.SeedTestData.sql] Starting';
 :r ./004.SeedTestData.sql
 PRINT '[004.SeedTestData.sql] Finished';
 
+PRINT '[005.SeedUserProfiles.sql] Starting';
+:r ./005.SeedUserProfiles.sql
+PRINT '[005.SeedUserProfiles.sql] Finished';
+
 PRINT '[Script.PostDeployment.sql] Finished';

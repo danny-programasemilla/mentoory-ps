@@ -98,4 +98,10 @@ public class UserRepository : AbstractRepository<User>, IUserRepository
             .Include(u => u.PasswordResetTokens)
             .FirstOrDefaultAsync(u => u.PasswordResetTokens.Any(t => t.TokenHash == tokenHash), cancellationToken);
     }
+
+    /// <inheritdoc />
+    public IQueryable<User> Query()
+    {
+        return _dbContext.Users.AsNoTracking();
+    }
 }

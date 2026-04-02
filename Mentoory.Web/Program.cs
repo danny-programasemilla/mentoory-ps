@@ -20,11 +20,9 @@ using Mentoory.Shared.Infrastructure.Audit;
 using Mentoory.Shared.Infrastructure.Behaviors;
 using Mentoory.Shared.Infrastructure.Persistence;
 using Mentoory.Shared.Infrastructure.Services;
-using Mentoory.Identity.Application.Queries.ListUsers.Abstractions;
 using Mentoory.Web.Infrastructure.Authorization;
 using Mentoory.Web.Infrastructure.Menu;
 using Mentoory.Web.Infrastructure.Persistence;
-using Mentoory.Web.Infrastructure.QueryContexts;
 using Mentoory.Web.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
@@ -59,7 +57,6 @@ builder.AddExampleInfrastructure();
 
 builder.Services.AddIdentityApplication();
 builder.AddIdentityInfrastructure();
-builder.Services.AddScoped<IIdentityQueryContext, IdentityQueryContext>();
 builder.Services.AddAuthorizationApplication();
 builder.AddAuthorizationInfrastructure();
 builder.Services.AddTenantApplication();

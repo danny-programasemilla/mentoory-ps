@@ -73,7 +73,15 @@ public partial class RegisterUserHandler : BaseCommandHandler<RegisterUserComman
         LogUserRegistered(user.Email.Value);
 
         await _eventService.PublishAsync(
-            new UserRegisteredEvent(user.Id, user.ExternalId, user.Email.Value, utcNow),
+            new UserRegisteredEvent(
+                user.Id,
+                user.ExternalId,
+                user.Email.Value,
+                user.FirstName,
+                user.LastName,
+                user.AccountStatus.ToString(),
+                user.CreatedAtUtc,
+                utcNow),
             cancellationToken);
 
         return Success();

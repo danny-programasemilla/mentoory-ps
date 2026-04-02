@@ -85,4 +85,10 @@ public class RoleAssignmentRepository(AuthorizationDbContext dbContext)
                      && r.IsActive,
                 cancellationToken);
     }
+
+    /// <inheritdoc />
+    public IQueryable<RoleAssignment> Query()
+    {
+        return dbContext.RoleAssignments.AsNoTracking();
+    }
 }

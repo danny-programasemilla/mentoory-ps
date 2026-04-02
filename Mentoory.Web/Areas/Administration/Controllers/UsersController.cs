@@ -1,5 +1,5 @@
+using Mentoory.Authorization.Application.Queries.ListIncubatorMembers;
 using Mentoory.Identity.Application.Commands.RegisterUser;
-using Mentoory.Identity.Application.Queries.ListUsers;
 using Mentoory.Web.Areas.Administration.Models;
 using Mentoory.Web.Models;
 using Mentoory.Web.Services;
@@ -35,7 +35,7 @@ public class UsersController : Controller
     public async Task<IActionResult> Data([FromForm] DataTableServerRequest request, CancellationToken ct)
     {
         var incubatorId = GetActiveIncubatorId();
-        var query = new ListUsersQuery(request.ToDataTableRequest(), incubatorId);
+        var query = new ListIncubatorMembersQuery(request.ToDataTableRequest(), incubatorId);
         var result = await _executor.SendOrThrowAsync(query, ct);
 
         return Json(new

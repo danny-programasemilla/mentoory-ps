@@ -11,4 +11,9 @@ public interface IRoleAssignmentRepository : IRepository<RoleAssignment>
     Task<List<RoleAssignment>> GetActiveByUserIdAsync(long userId, CancellationToken cancellationToken);
     Task<RoleAssignment?> GetActiveAssignmentAsync(long userId, long incubatorId, long? projectId, string role, CancellationToken cancellationToken);
     Task<int> CountActiveEntrepreneurAssignmentsAsync(long userId, long incubatorId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Gets a read-only queryable for role assignments.
+    /// </summary>
+    IQueryable<RoleAssignment> Query();
 }

@@ -4,8 +4,9 @@ using Mentoory.Shared.Application.MediatR;
 namespace Mentoory.Identity.Application.Queries.ListUsers;
 
 /// <summary>
-/// Query to retrieve a paginated list of users for DataTable display.
+/// Query to retrieve a paginated list of all users for DataTable display.
+/// Used by GlobalAdmin (Platform area) to list all users in the system.
+/// For incubator-scoped user lists, use ListIncubatorMembersQuery in the Authorization domain.
 /// </summary>
 /// <param name="Request">The DataTable request parameters including paging, sorting, and filtering.</param>
-/// <param name="IncubatorId">Optional incubator ID to filter users with active role assignments.</param>
-public sealed record ListUsersQuery(DataTableRequest Request, long? IncubatorId = null) : IBaseRequest<DataTableResponse<UserListItemDto>>;
+public sealed record ListUsersQuery(DataTableRequest Request) : IBaseRequest<DataTableResponse<UserListItemDto>>;

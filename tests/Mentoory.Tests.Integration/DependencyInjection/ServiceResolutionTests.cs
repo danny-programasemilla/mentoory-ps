@@ -5,6 +5,7 @@ using Mentoory.Authorization.Application.Commands.RevokeRole;
 using Mentoory.Authorization.Application.Commands.SetActiveContext;
 using Mentoory.Authorization.Application.Queries.CheckPermission;
 using Mentoory.Authorization.Application.Queries.GetUserContexts;
+using Mentoory.Authorization.Application.Queries.ListIncubatorMembers;
 using Mentoory.Authorization.Domain.Repositories;
 using Mentoory.Authorization.Infrastructure.Persistence;
 using Mentoory.Identity.Application.Commands.ChangePassword;
@@ -13,7 +14,6 @@ using Mentoory.Identity.Application.Commands.LogoutUser;
 using Mentoory.Identity.Application.Commands.RegisterUser;
 using Mentoory.Identity.Application.Commands.VerifyEmail;
 using Mentoory.Identity.Application.Queries.ListUsers;
-using Mentoory.Identity.Application.Queries.ListUsers.Abstractions;
 using Mentoory.Identity.Application.Queries.ValidateSession;
 using Mentoory.Shared.Application.DataTables;
 using Mentoory.Identity.Domain.Repositories;
@@ -68,7 +68,6 @@ public class ServiceResolutionTests : IntegrationTestBase
     [InlineData(typeof(IUserRepository))]
     [InlineData(typeof(IAuthSessionRepository))]
     [InlineData(typeof(IPasswordHasher))]
-    [InlineData(typeof(IIdentityQueryContext))]
     public void IdentityInfrastructure_ShouldResolve(Type serviceType)
     {
         using var scope = CreateScope();
@@ -105,6 +104,7 @@ public class ServiceResolutionTests : IntegrationTestBase
     [InlineData(typeof(IRequestHandler<VerifyEmailCommand, Mentoory.Shared.Application.Result>))]
     [InlineData(typeof(IRequestHandler<ValidateSessionQuery, Mentoory.Shared.Application.Result<Mentoory.Identity.Domain.Aggregates.AuthSession.AuthSession?>>))]
     [InlineData(typeof(IRequestHandler<ListUsersQuery, Mentoory.Shared.Application.Result<DataTableResponse<UserListItemDto>>>))]
+    [InlineData(typeof(IRequestHandler<ListIncubatorMembersQuery, Mentoory.Shared.Application.Result<DataTableResponse<IncubatorMemberListItemDto>>>))]
     [InlineData(typeof(IRequestHandler<AssignRoleCommand, Mentoory.Shared.Application.Result>))]
     [InlineData(typeof(IRequestHandler<RevokeRoleCommand, Mentoory.Shared.Application.Result>))]
     [InlineData(typeof(IRequestHandler<SetActiveContextCommand, Mentoory.Shared.Application.Result<Mentoory.Authorization.Domain.ReadModels.UserContext>>))]
