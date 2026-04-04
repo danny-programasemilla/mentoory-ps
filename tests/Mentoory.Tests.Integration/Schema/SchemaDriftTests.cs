@@ -1,7 +1,6 @@
 using FluentAssertions;
-using Mentoory.Authorization.Infrastructure.Persistence;
+using Mentoory.Access.Infrastructure.Persistence;
 using Mentoory.Example.Infrastructure.Persistence;
-using Mentoory.Identity.Infrastructure.Persistence;
 using Mentoory.Tenant.Infrastructure.Persistence;
 using Mentoory.Tests.Integration.Fixtures;
 using Microsoft.Data.SqlClient;
@@ -29,8 +28,7 @@ public class SchemaDriftTests
     }
 
     [Theory]
-    [InlineData(typeof(IdentityDbContext))]
-    [InlineData(typeof(AuthorizationDbContext))]
+    [InlineData(typeof(AccessDbContext))]
     [InlineData(typeof(TenantDbContext))]
     [InlineData(typeof(ExampleDbContext))]
     public async Task EfModel_ColumnTypes_MatchDatabaseSchema(Type dbContextType)

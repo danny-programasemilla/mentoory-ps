@@ -1,6 +1,6 @@
 -- ==========================================================================================
 -- 005.SeedUserProfiles.sql
--- Bootstraps the authorization.UserProfiles read model from identity.Users.
+-- Bootstraps the access.UserProfiles read model from access.Users.
 -- Fully idempotent: uses MERGE to insert new profiles and update existing ones.
 -- Must run AFTER user seed scripts (002, 004).
 -- ==========================================================================================
@@ -9,7 +9,7 @@ SET NOCOUNT ON;
 
 DECLARE @SyncedAt DATETIME2 = GETUTCDATE();
 
-MERGE [authorization].[UserProfiles] AS target
+MERGE [access].[UserProfiles] AS target
 USING (
     SELECT
         u.[Id]          AS [UserId],
@@ -26,7 +26,7 @@ USING (
             ELSE N'Unknown'
         END             AS [AccountStatus],
         u.[CreatedAtUtc]
-    FROM [identity].[Users] u
+    FROM [access].[Users] u
 ) AS source
 ON target.[UserId] = source.[UserId]
 WHEN MATCHED THEN

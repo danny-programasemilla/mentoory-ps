@@ -71,10 +71,10 @@ public class ContextSelectionTests
             await page.GotoAsync($"{_fixture.BaseUrl}{targetPath}");
 
             // Should be redirected to login with returnUrl
-            page.Url.Should().Contain("/Identity/Login");
+            page.Url.Should().Contain("/Access/Login");
 
             // Fill the login form on the CURRENT page (which already has returnUrl in the form action)
-            // Do NOT navigate to /Identity/Login fresh, as that would lose the returnUrl
+            // Do NOT navigate to /Access/Login fresh, as that would lose the returnUrl
             await page.FillAsync("input[name='Email']", "coord1@test.mentoory.com");
             await page.FillAsync("input[name='Password']", "Test123!@#");
             await page.ClickAsync("button[type='submit']");
@@ -93,7 +93,7 @@ public class ContextSelectionTests
 
     private async Task LoginAsync(IPage page, string email, string password)
     {
-        await page.GotoAsync($"{_fixture.BaseUrl}/Identity/Login");
+        await page.GotoAsync($"{_fixture.BaseUrl}/Access/Login");
         await page.FillAsync("input[name='Email']", email);
         await page.FillAsync("input[name='Password']", password);
         await page.ClickAsync("button[type='submit']");

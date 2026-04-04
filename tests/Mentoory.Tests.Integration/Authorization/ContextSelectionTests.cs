@@ -1,8 +1,8 @@
 using FluentAssertions;
-using Mentoory.Authorization.Application.Commands.AssignRole;
-using Mentoory.Authorization.Application.Commands.SetActiveContext;
-using Mentoory.Authorization.Application.Queries.GetUserContexts;
-using Mentoory.Authorization.Infrastructure.Persistence;
+using Mentoory.Access.Application.Commands.AssignRole;
+using Mentoory.Access.Application.Commands.SetActiveContext;
+using Mentoory.Access.Application.Queries.GetUserContexts;
+using Mentoory.Access.Infrastructure.Persistence;
 using Mentoory.Shared.Application;
 using Mentoory.Shared.Domain.Constants;
 using Mentoory.Tenant.Application.Commands.CreateIncubator;
@@ -67,7 +67,7 @@ public class ContextSelectionTests : IntegrationTestBase
 
         // Get the role assignment external ID
         using var scope = CreateScope();
-        var authContext = scope.ServiceProvider.GetRequiredService<AuthorizationDbContext>();
+        var authContext = scope.ServiceProvider.GetRequiredService<AccessDbContext>();
         var roleAssignment = await authContext.RoleAssignments
             .FirstAsync(ra => ra.UserId == userId && ra.Role == Roles.IncubatorAdmin);
 
@@ -99,7 +99,7 @@ public class ContextSelectionTests : IntegrationTestBase
 
         // Get user1's role assignment
         using var scope = CreateScope();
-        var authContext = scope.ServiceProvider.GetRequiredService<AuthorizationDbContext>();
+        var authContext = scope.ServiceProvider.GetRequiredService<AccessDbContext>();
         var roleAssignment = await authContext.RoleAssignments
             .FirstAsync(ra => ra.UserId == userId1 && ra.Role == Roles.IncubatorAdmin);
 

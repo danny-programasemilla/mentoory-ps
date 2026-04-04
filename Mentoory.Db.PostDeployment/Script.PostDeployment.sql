@@ -6,6 +6,10 @@
 PRINT '[Script.PostDeployment.sql] Starting';
 
 -- All scripts now run unconditionally for consistent deployment
+PRINT '[015.MigrateToAccessSchema.sql] Starting';
+:r ./015.MigrateToAccessSchema.sql
+PRINT '[015.MigrateToAccessSchema.sql] Finished';
+
 PRINT '[000.SeedExample.sql] Starting';
 :r ./000.SeedExample.sql
 PRINT '[000.SeedExample.sql] Finished';

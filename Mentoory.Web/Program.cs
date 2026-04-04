@@ -1,12 +1,10 @@
 using System.Reflection;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
-using Mentoory.Authorization.Application;
-using Mentoory.Authorization.Infrastructure;
+using Mentoory.Access.Application;
+using Mentoory.Access.Infrastructure;
 using Mentoory.Example.Application;
 using Mentoory.Example.Infrastructure;
-using Mentoory.Identity.Application;
-using Mentoory.Identity.Infrastructure;
 using Mentoory.Shared.Application;
 using Mentoory.Tenant.Application;
 using Mentoory.Tenant.Infrastructure;
@@ -55,10 +53,8 @@ builder.Services.AddExampleApplication();
 
 builder.AddExampleInfrastructure();
 
-builder.Services.AddIdentityApplication();
-builder.AddIdentityInfrastructure();
-builder.Services.AddAuthorizationApplication();
-builder.AddAuthorizationInfrastructure();
+builder.Services.AddAccessApplication();
+builder.AddAccessInfrastructure();
 builder.Services.AddTenantApplication();
 builder.AddTenantInfrastructure();
 builder.Services.AddDiagnosticApplication();
@@ -67,9 +63,9 @@ builder.AddDiagnosticInfrastructure();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Identity/Login";
-        options.LogoutPath = "/Identity/Logout";
-        options.AccessDeniedPath = "/Identity/Login";
+        options.LoginPath = "/Access/Login";
+        options.LogoutPath = "/Access/Logout";
+        options.AccessDeniedPath = "/Access/Login";
         options.Cookie.Name = "Mentoory.Session";
         options.Cookie.HttpOnly = true;
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;

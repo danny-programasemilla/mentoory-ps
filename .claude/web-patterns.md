@@ -55,7 +55,7 @@ public class IncubatorsController : Controller
 
 | Area | Role | Purpose |
 |------|------|---------|
-| Identity | (unauthenticated) | Login, register, password reset, email verification |
+| Access | (unauthenticated) | Login, register, password reset, email verification |
 | Platform | GlobalAdmin | Incubators, users, subscriptions, templates |
 | Administration | IncubatorAdmin | Projects, users, enrollment |
 | Coordination | ProjectCoordinator | Diagnostics, knowledge, lifecycle, answer correction |

@@ -98,7 +98,7 @@ public class AdministrationUsersTests
 
     private async Task LoginAndSelectContextAsync(IPage page, string email, string password)
     {
-        await page.GotoAsync($"{_fixture.BaseUrl}/Identity/Login");
+        await page.GotoAsync($"{_fixture.BaseUrl}/Access/Login");
         await page.FillAsync("input[name='Email']", email);
         await page.FillAsync("input[name='Password']", password);
         await page.ClickAsync("button[type='submit']");

@@ -1,9 +1,9 @@
 using MediatR;
-using Mentoory.Identity.Application.Commands.LoginUser;
-using Mentoory.Identity.Application.Commands.RegisterUser;
-using Mentoory.Identity.Domain.Aggregates.AuthSession;
-using Mentoory.Identity.Domain.Enums;
-using Mentoory.Identity.Infrastructure.Persistence;
+using Mentoory.Access.Application.Commands.LoginUser;
+using Mentoory.Access.Application.Commands.RegisterUser;
+using Mentoory.Access.Domain.Aggregates.AuthSession;
+using Mentoory.Access.Domain.Enums;
+using Mentoory.Access.Infrastructure.Persistence;
 using Mentoory.Shared.Application;
 using Mentoory.Shared.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -73,7 +73,7 @@ public abstract class IntegrationTestBase : IAsyncLifetime
         // Activate user directly via DbContext (email verification token flow
         // is not fully wired for integration tests)
         using var scope = CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AccessDbContext>();
         var normalizedEmail = email.Trim().ToUpperInvariant();
         var user = await dbContext.Users.FirstAsync(u => u.Email.NormalizedValue == normalizedEmail);
         user.Activate(DateTime.UtcNow);

@@ -1,5 +1,5 @@
-using Mentoory.Authorization.Application.Queries.ListIncubatorMembers;
-using Mentoory.Identity.Application.Commands.RegisterUser;
+using Mentoory.Access.Application.Queries.ListIncubatorMembers;
+using Mentoory.Access.Application.Commands.RegisterUser;
 using Mentoory.Web.Areas.Administration.Models;
 using Mentoory.Web.Models;
 using Mentoory.Web.Services;

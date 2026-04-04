@@ -1,7 +1,6 @@
-using Mentoory.Authorization.Infrastructure.Persistence;
+using Mentoory.Access.Infrastructure.Persistence;
 using Mentoory.Diagnostic.Infrastructure.Persistence;
 using Mentoory.Example.Infrastructure.Persistence;
-using Mentoory.Identity.Infrastructure.Persistence;
 using Mentoory.Tenant.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -78,8 +77,7 @@ public class MentooryWebApplicationFactory : WebApplicationFactory<Program>, IAs
         {
             var connStr = ConnectionString;
 
-            ReplaceDbContext<IdentityDbContext>(services, connStr);
-            ReplaceDbContext<AuthorizationDbContext>(services, connStr);
+            ReplaceDbContext<AccessDbContext>(services, connStr);
             ReplaceDbContext<TenantDbContext>(services, connStr);
             ReplaceDbContext<DiagnosticDbContext>(services, connStr);
             ReplaceDbContext<ExampleDbContext>(services, connStr);
@@ -143,7 +141,7 @@ public class MentooryWebApplicationFactory : WebApplicationFactory<Program>, IAs
         connection.Open();
         _respawner = Respawner.CreateAsync(connection, new RespawnerOptions
         {
-            SchemasToInclude = ["identity", "authorization", "tenant", "diagnostic", "example", "subscription"],
+            SchemasToInclude = ["access", "tenant", "diagnostic", "example", "subscription"],
             DbAdapter = DbAdapter.SqlServer,
         }).GetAwaiter().GetResult();
     }

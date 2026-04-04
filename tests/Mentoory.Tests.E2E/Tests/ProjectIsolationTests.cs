@@ -36,7 +36,7 @@ public class ProjectIsolationTests
             var blockedOrNotFound = response?.Status == 404
                                     || response?.Status == 403
                                     || page.Url.Contains("/AccessDenied")
-                                    || page.Url.Contains("/Identity/AccessDenied");
+                                    || page.Url.Contains("/Access/AccessDenied");
 
             blockedOrNotFound.Should().BeTrue(
                 "accessing a form from another project should return 404 or 403");
@@ -93,7 +93,7 @@ public class ProjectIsolationTests
             var blockedOrNotFound = response?.Status == 404
                                     || response?.Status == 403
                                     || page.Url.Contains("/AccessDenied")
-                                    || page.Url.Contains("/Identity/AccessDenied");
+                                    || page.Url.Contains("/Access/AccessDenied");
 
             blockedOrNotFound.Should().BeTrue(
                 "accessing a diagnostic response from another project should return 404 or 403");
@@ -107,7 +107,7 @@ public class ProjectIsolationTests
 
     private async Task LoginAsync(IPage page, string email, string password)
     {
-        await page.GotoAsync($"{_fixture.BaseUrl}/Identity/Login");
+        await page.GotoAsync($"{_fixture.BaseUrl}/Access/Login");
         await page.FillAsync("input[name='Email']", email);
         await page.FillAsync("input[name='Password']", password);
         await page.ClickAsync("button[type='submit']");

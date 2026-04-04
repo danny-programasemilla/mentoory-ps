@@ -1,7 +1,7 @@
 using System.Security.Claims;
-using Mentoory.Authorization.Application.Commands.SetActiveContext;
-using Mentoory.Authorization.Application.Queries.GetUserContexts;
-using Mentoory.Authorization.Domain.ReadModels;
+using Mentoory.Access.Application.Commands.SetActiveContext;
+using Mentoory.Access.Application.Queries.GetUserContexts;
+using Mentoory.Access.Domain.ReadModels;
 using Mentoory.Shared.Domain.Constants;
 using Mentoory.Tenant.Application.Queries.ListIncubatorContextOptions;
 using Mentoory.Web.Services;
@@ -28,7 +28,7 @@ public class ContextController : Controller
         var userId = TryGetUserId();
         if (userId is null)
         {
-            return RedirectToAction("Login", "Login", new { area = "Identity" });
+            return RedirectToAction("Login", "Login", new { area = "Access" });
         }
 
         var contexts = await _executor.SendOrThrowAsync(new GetUserContextsQuery(userId.Value), ct);
@@ -128,7 +128,7 @@ public class ContextController : Controller
         var userId = TryGetUserId();
         if (userId is null)
         {
-            return RedirectToAction("Login", "Login", new { area = "Identity" });
+            return RedirectToAction("Login", "Login", new { area = "Access" });
         }
 
         var context = await _executor.SendOrThrowAsync(
@@ -189,7 +189,7 @@ public class ContextController : Controller
         var userId = TryGetUserId();
         if (userId is null)
         {
-            return RedirectToAction("Login", "Login", new { area = "Identity" });
+            return RedirectToAction("Login", "Login", new { area = "Access" });
         }
 
         var baseContext = await _executor.SendOrThrowAsync(
@@ -197,7 +197,7 @@ public class ContextController : Controller
 
         if (baseContext.Role != Roles.GlobalAdmin)
         {
-            return RedirectToAction("Login", "Login", new { area = "Identity" });
+            return RedirectToAction("Login", "Login", new { area = "Access" });
         }
 
         var context = baseContext with

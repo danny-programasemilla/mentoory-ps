@@ -34,146 +34,146 @@ DECLARE @MultiRoleId   BIGINT;
 -- ------------------------------------------------------------------------------------------
 -- User: Incubator Admin 1
 -- ------------------------------------------------------------------------------------------
-IF NOT EXISTS (SELECT 1 FROM [identity].[Users] WHERE [NormalizedEmail] = N'INCADMIN1@TEST.MENTOORY.COM')
+IF NOT EXISTS (SELECT 1 FROM [access].[Users] WHERE [NormalizedEmail] = N'INCADMIN1@TEST.MENTOORY.COM')
 BEGIN
-    INSERT INTO [identity].[Users] ([ExternalId], [Email], [NormalizedEmail], [Country], [NationalId], [FirstName], [LastName], [AccountStatus], [FailedLoginAttempts], [CreatedAtUtc], [UpdatedAtUtc])
+    INSERT INTO [access].[Users] ([ExternalId], [Email], [NormalizedEmail], [Country], [NationalId], [FirstName], [LastName], [AccountStatus], [FailedLoginAttempts], [CreatedAtUtc], [UpdatedAtUtc])
     VALUES (NEWID(), N'incadmin1@test.mentoory.com', N'INCADMIN1@TEST.MENTOORY.COM', N'Chile', N'TEST-INCADMIN1', N'Carlos', N'Mendoza', 1, 0, @Now, @Now);
 
     SET @IncAdmin1Id = SCOPE_IDENTITY();
 
-    INSERT INTO [identity].[Credentials] ([UserId], [PasswordHash], [IsActive], [CreatedAtUtc])
+    INSERT INTO [access].[Credentials] ([UserId], [PasswordHash], [IsActive], [CreatedAtUtc])
     VALUES (@IncAdmin1Id, @PasswordHash, 1, @Now);
 END
 ELSE
-    SELECT @IncAdmin1Id = [Id] FROM [identity].[Users] WHERE [NormalizedEmail] = N'INCADMIN1@TEST.MENTOORY.COM';
+    SELECT @IncAdmin1Id = [Id] FROM [access].[Users] WHERE [NormalizedEmail] = N'INCADMIN1@TEST.MENTOORY.COM';
 
 -- ------------------------------------------------------------------------------------------
 -- User: Incubator Admin 2
 -- ------------------------------------------------------------------------------------------
-IF NOT EXISTS (SELECT 1 FROM [identity].[Users] WHERE [NormalizedEmail] = N'INCADMIN2@TEST.MENTOORY.COM')
+IF NOT EXISTS (SELECT 1 FROM [access].[Users] WHERE [NormalizedEmail] = N'INCADMIN2@TEST.MENTOORY.COM')
 BEGIN
-    INSERT INTO [identity].[Users] ([ExternalId], [Email], [NormalizedEmail], [Country], [NationalId], [FirstName], [LastName], [AccountStatus], [FailedLoginAttempts], [CreatedAtUtc], [UpdatedAtUtc])
+    INSERT INTO [access].[Users] ([ExternalId], [Email], [NormalizedEmail], [Country], [NationalId], [FirstName], [LastName], [AccountStatus], [FailedLoginAttempts], [CreatedAtUtc], [UpdatedAtUtc])
     VALUES (NEWID(), N'incadmin2@test.mentoory.com', N'INCADMIN2@TEST.MENTOORY.COM', N'Chile', N'TEST-INCADMIN2', N'María', N'Fernández', 1, 0, @Now, @Now);
 
     SET @IncAdmin2Id = SCOPE_IDENTITY();
 
-    INSERT INTO [identity].[Credentials] ([UserId], [PasswordHash], [IsActive], [CreatedAtUtc])
+    INSERT INTO [access].[Credentials] ([UserId], [PasswordHash], [IsActive], [CreatedAtUtc])
     VALUES (@IncAdmin2Id, @PasswordHash, 1, @Now);
 END
 ELSE
-    SELECT @IncAdmin2Id = [Id] FROM [identity].[Users] WHERE [NormalizedEmail] = N'INCADMIN2@TEST.MENTOORY.COM';
+    SELECT @IncAdmin2Id = [Id] FROM [access].[Users] WHERE [NormalizedEmail] = N'INCADMIN2@TEST.MENTOORY.COM';
 
 -- ------------------------------------------------------------------------------------------
 -- User: Project Coordinator 1
 -- ------------------------------------------------------------------------------------------
-IF NOT EXISTS (SELECT 1 FROM [identity].[Users] WHERE [NormalizedEmail] = N'COORD1@TEST.MENTOORY.COM')
+IF NOT EXISTS (SELECT 1 FROM [access].[Users] WHERE [NormalizedEmail] = N'COORD1@TEST.MENTOORY.COM')
 BEGIN
-    INSERT INTO [identity].[Users] ([ExternalId], [Email], [NormalizedEmail], [Country], [NationalId], [FirstName], [LastName], [AccountStatus], [FailedLoginAttempts], [CreatedAtUtc], [UpdatedAtUtc])
+    INSERT INTO [access].[Users] ([ExternalId], [Email], [NormalizedEmail], [Country], [NationalId], [FirstName], [LastName], [AccountStatus], [FailedLoginAttempts], [CreatedAtUtc], [UpdatedAtUtc])
     VALUES (NEWID(), N'coord1@test.mentoory.com', N'COORD1@TEST.MENTOORY.COM', N'Chile', N'TEST-COORD1', N'Ana', N'Rodríguez', 1, 0, @Now, @Now);
 
     SET @Coord1Id = SCOPE_IDENTITY();
 
-    INSERT INTO [identity].[Credentials] ([UserId], [PasswordHash], [IsActive], [CreatedAtUtc])
+    INSERT INTO [access].[Credentials] ([UserId], [PasswordHash], [IsActive], [CreatedAtUtc])
     VALUES (@Coord1Id, @PasswordHash, 1, @Now);
 END
 ELSE
-    SELECT @Coord1Id = [Id] FROM [identity].[Users] WHERE [NormalizedEmail] = N'COORD1@TEST.MENTOORY.COM';
+    SELECT @Coord1Id = [Id] FROM [access].[Users] WHERE [NormalizedEmail] = N'COORD1@TEST.MENTOORY.COM';
 
 -- ------------------------------------------------------------------------------------------
 -- User: Project Coordinator 2
 -- ------------------------------------------------------------------------------------------
-IF NOT EXISTS (SELECT 1 FROM [identity].[Users] WHERE [NormalizedEmail] = N'COORD2@TEST.MENTOORY.COM')
+IF NOT EXISTS (SELECT 1 FROM [access].[Users] WHERE [NormalizedEmail] = N'COORD2@TEST.MENTOORY.COM')
 BEGIN
-    INSERT INTO [identity].[Users] ([ExternalId], [Email], [NormalizedEmail], [Country], [NationalId], [FirstName], [LastName], [AccountStatus], [FailedLoginAttempts], [CreatedAtUtc], [UpdatedAtUtc])
+    INSERT INTO [access].[Users] ([ExternalId], [Email], [NormalizedEmail], [Country], [NationalId], [FirstName], [LastName], [AccountStatus], [FailedLoginAttempts], [CreatedAtUtc], [UpdatedAtUtc])
     VALUES (NEWID(), N'coord2@test.mentoory.com', N'COORD2@TEST.MENTOORY.COM', N'Chile', N'TEST-COORD2', N'Luis', N'Paredes', 1, 0, @Now, @Now);
 
     SET @Coord2Id = SCOPE_IDENTITY();
 
-    INSERT INTO [identity].[Credentials] ([UserId], [PasswordHash], [IsActive], [CreatedAtUtc])
+    INSERT INTO [access].[Credentials] ([UserId], [PasswordHash], [IsActive], [CreatedAtUtc])
     VALUES (@Coord2Id, @PasswordHash, 1, @Now);
 END
 ELSE
-    SELECT @Coord2Id = [Id] FROM [identity].[Users] WHERE [NormalizedEmail] = N'COORD2@TEST.MENTOORY.COM';
+    SELECT @Coord2Id = [Id] FROM [access].[Users] WHERE [NormalizedEmail] = N'COORD2@TEST.MENTOORY.COM';
 
 -- ------------------------------------------------------------------------------------------
 -- User: Mentor
 -- ------------------------------------------------------------------------------------------
-IF NOT EXISTS (SELECT 1 FROM [identity].[Users] WHERE [NormalizedEmail] = N'MENTOR1@TEST.MENTOORY.COM')
+IF NOT EXISTS (SELECT 1 FROM [access].[Users] WHERE [NormalizedEmail] = N'MENTOR1@TEST.MENTOORY.COM')
 BEGIN
-    INSERT INTO [identity].[Users] ([ExternalId], [Email], [NormalizedEmail], [Country], [NationalId], [FirstName], [LastName], [AccountStatus], [FailedLoginAttempts], [CreatedAtUtc], [UpdatedAtUtc])
+    INSERT INTO [access].[Users] ([ExternalId], [Email], [NormalizedEmail], [Country], [NationalId], [FirstName], [LastName], [AccountStatus], [FailedLoginAttempts], [CreatedAtUtc], [UpdatedAtUtc])
     VALUES (NEWID(), N'mentor1@test.mentoory.com', N'MENTOR1@TEST.MENTOORY.COM', N'Chile', N'TEST-MENTOR1', N'Roberto', N'Sánchez', 1, 0, @Now, @Now);
 
     SET @Mentor1Id = SCOPE_IDENTITY();
 
-    INSERT INTO [identity].[Credentials] ([UserId], [PasswordHash], [IsActive], [CreatedAtUtc])
+    INSERT INTO [access].[Credentials] ([UserId], [PasswordHash], [IsActive], [CreatedAtUtc])
     VALUES (@Mentor1Id, @PasswordHash, 1, @Now);
 END
 ELSE
-    SELECT @Mentor1Id = [Id] FROM [identity].[Users] WHERE [NormalizedEmail] = N'MENTOR1@TEST.MENTOORY.COM';
+    SELECT @Mentor1Id = [Id] FROM [access].[Users] WHERE [NormalizedEmail] = N'MENTOR1@TEST.MENTOORY.COM';
 
 -- ------------------------------------------------------------------------------------------
 -- User: Entrepreneur 1
 -- ------------------------------------------------------------------------------------------
-IF NOT EXISTS (SELECT 1 FROM [identity].[Users] WHERE [NormalizedEmail] = N'ENTREPRENEUR1@TEST.MENTOORY.COM')
+IF NOT EXISTS (SELECT 1 FROM [access].[Users] WHERE [NormalizedEmail] = N'ENTREPRENEUR1@TEST.MENTOORY.COM')
 BEGIN
-    INSERT INTO [identity].[Users] ([ExternalId], [Email], [NormalizedEmail], [Country], [NationalId], [FirstName], [LastName], [AccountStatus], [FailedLoginAttempts], [CreatedAtUtc], [UpdatedAtUtc])
+    INSERT INTO [access].[Users] ([ExternalId], [Email], [NormalizedEmail], [Country], [NationalId], [FirstName], [LastName], [AccountStatus], [FailedLoginAttempts], [CreatedAtUtc], [UpdatedAtUtc])
     VALUES (NEWID(), N'entrepreneur1@test.mentoory.com', N'ENTREPRENEUR1@TEST.MENTOORY.COM', N'Chile', N'TEST-ENTREP1', N'Valentina', N'López', 1, 0, @Now, @Now);
 
     SET @Entrep1Id = SCOPE_IDENTITY();
 
-    INSERT INTO [identity].[Credentials] ([UserId], [PasswordHash], [IsActive], [CreatedAtUtc])
+    INSERT INTO [access].[Credentials] ([UserId], [PasswordHash], [IsActive], [CreatedAtUtc])
     VALUES (@Entrep1Id, @PasswordHash, 1, @Now);
 END
 ELSE
-    SELECT @Entrep1Id = [Id] FROM [identity].[Users] WHERE [NormalizedEmail] = N'ENTREPRENEUR1@TEST.MENTOORY.COM';
+    SELECT @Entrep1Id = [Id] FROM [access].[Users] WHERE [NormalizedEmail] = N'ENTREPRENEUR1@TEST.MENTOORY.COM';
 
 -- ------------------------------------------------------------------------------------------
 -- User: Entrepreneur 2
 -- ------------------------------------------------------------------------------------------
-IF NOT EXISTS (SELECT 1 FROM [identity].[Users] WHERE [NormalizedEmail] = N'ENTREPRENEUR2@TEST.MENTOORY.COM')
+IF NOT EXISTS (SELECT 1 FROM [access].[Users] WHERE [NormalizedEmail] = N'ENTREPRENEUR2@TEST.MENTOORY.COM')
 BEGIN
-    INSERT INTO [identity].[Users] ([ExternalId], [Email], [NormalizedEmail], [Country], [NationalId], [FirstName], [LastName], [AccountStatus], [FailedLoginAttempts], [CreatedAtUtc], [UpdatedAtUtc])
+    INSERT INTO [access].[Users] ([ExternalId], [Email], [NormalizedEmail], [Country], [NationalId], [FirstName], [LastName], [AccountStatus], [FailedLoginAttempts], [CreatedAtUtc], [UpdatedAtUtc])
     VALUES (NEWID(), N'entrepreneur2@test.mentoory.com', N'ENTREPRENEUR2@TEST.MENTOORY.COM', N'Chile', N'TEST-ENTREP2', N'Diego', N'Torres', 1, 0, @Now, @Now);
 
     SET @Entrep2Id = SCOPE_IDENTITY();
 
-    INSERT INTO [identity].[Credentials] ([UserId], [PasswordHash], [IsActive], [CreatedAtUtc])
+    INSERT INTO [access].[Credentials] ([UserId], [PasswordHash], [IsActive], [CreatedAtUtc])
     VALUES (@Entrep2Id, @PasswordHash, 1, @Now);
 END
 ELSE
-    SELECT @Entrep2Id = [Id] FROM [identity].[Users] WHERE [NormalizedEmail] = N'ENTREPRENEUR2@TEST.MENTOORY.COM';
+    SELECT @Entrep2Id = [Id] FROM [access].[Users] WHERE [NormalizedEmail] = N'ENTREPRENEUR2@TEST.MENTOORY.COM';
 
 -- ------------------------------------------------------------------------------------------
 -- User: Sponsor
 -- ------------------------------------------------------------------------------------------
-IF NOT EXISTS (SELECT 1 FROM [identity].[Users] WHERE [NormalizedEmail] = N'SPONSOR1@TEST.MENTOORY.COM')
+IF NOT EXISTS (SELECT 1 FROM [access].[Users] WHERE [NormalizedEmail] = N'SPONSOR1@TEST.MENTOORY.COM')
 BEGIN
-    INSERT INTO [identity].[Users] ([ExternalId], [Email], [NormalizedEmail], [Country], [NationalId], [FirstName], [LastName], [AccountStatus], [FailedLoginAttempts], [CreatedAtUtc], [UpdatedAtUtc])
+    INSERT INTO [access].[Users] ([ExternalId], [Email], [NormalizedEmail], [Country], [NationalId], [FirstName], [LastName], [AccountStatus], [FailedLoginAttempts], [CreatedAtUtc], [UpdatedAtUtc])
     VALUES (NEWID(), N'sponsor1@test.mentoory.com', N'SPONSOR1@TEST.MENTOORY.COM', N'Chile', N'TEST-SPONSOR1', N'Gabriela', N'Morales', 1, 0, @Now, @Now);
 
     SET @Sponsor1Id = SCOPE_IDENTITY();
 
-    INSERT INTO [identity].[Credentials] ([UserId], [PasswordHash], [IsActive], [CreatedAtUtc])
+    INSERT INTO [access].[Credentials] ([UserId], [PasswordHash], [IsActive], [CreatedAtUtc])
     VALUES (@Sponsor1Id, @PasswordHash, 1, @Now);
 END
 ELSE
-    SELECT @Sponsor1Id = [Id] FROM [identity].[Users] WHERE [NormalizedEmail] = N'SPONSOR1@TEST.MENTOORY.COM';
+    SELECT @Sponsor1Id = [Id] FROM [access].[Users] WHERE [NormalizedEmail] = N'SPONSOR1@TEST.MENTOORY.COM';
 
 -- ------------------------------------------------------------------------------------------
 -- User: Multi-Role User
 -- ------------------------------------------------------------------------------------------
-IF NOT EXISTS (SELECT 1 FROM [identity].[Users] WHERE [NormalizedEmail] = N'MULTIROLE@TEST.MENTOORY.COM')
+IF NOT EXISTS (SELECT 1 FROM [access].[Users] WHERE [NormalizedEmail] = N'MULTIROLE@TEST.MENTOORY.COM')
 BEGIN
-    INSERT INTO [identity].[Users] ([ExternalId], [Email], [NormalizedEmail], [Country], [NationalId], [FirstName], [LastName], [AccountStatus], [FailedLoginAttempts], [CreatedAtUtc], [UpdatedAtUtc])
+    INSERT INTO [access].[Users] ([ExternalId], [Email], [NormalizedEmail], [Country], [NationalId], [FirstName], [LastName], [AccountStatus], [FailedLoginAttempts], [CreatedAtUtc], [UpdatedAtUtc])
     VALUES (NEWID(), N'multirole@test.mentoory.com', N'MULTIROLE@TEST.MENTOORY.COM', N'Chile', N'TEST-MULTIROLE', N'Javier', N'Gutiérrez', 1, 0, @Now, @Now);
 
     SET @MultiRoleId = SCOPE_IDENTITY();
 
-    INSERT INTO [identity].[Credentials] ([UserId], [PasswordHash], [IsActive], [CreatedAtUtc])
+    INSERT INTO [access].[Credentials] ([UserId], [PasswordHash], [IsActive], [CreatedAtUtc])
     VALUES (@MultiRoleId, @PasswordHash, 1, @Now);
 END
 ELSE
-    SELECT @MultiRoleId = [Id] FROM [identity].[Users] WHERE [NormalizedEmail] = N'MULTIROLE@TEST.MENTOORY.COM';
+    SELECT @MultiRoleId = [Id] FROM [access].[Users] WHERE [NormalizedEmail] = N'MULTIROLE@TEST.MENTOORY.COM';
 
 
 -- ==========================================================================================
@@ -272,90 +272,90 @@ ELSE
 -- ------------------------------------------------------------------------------------------
 -- IncubatorAdmin 1 -> Incubadora Alpha
 -- ------------------------------------------------------------------------------------------
-IF NOT EXISTS (SELECT 1 FROM [authorization].[RoleAssignments] WHERE [UserId] = @IncAdmin1Id AND [IncubatorId] = @Incubator1Id AND [ProjectId] IS NULL AND [Role] = N'IncubatorAdmin' AND [IsActive] = 1)
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @IncAdmin1Id AND [IncubatorId] = @Incubator1Id AND [ProjectId] IS NULL AND [Role] = N'IncubatorAdmin' AND [IsActive] = 1)
 BEGIN
-    INSERT INTO [authorization].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
     VALUES (NEWID(), @IncAdmin1Id, @Incubator1Id, NULL, N'IncubatorAdmin', 1, @Now, @Now);
 END
 
 -- ------------------------------------------------------------------------------------------
 -- IncubatorAdmin 2 -> Incubadora Beta
 -- ------------------------------------------------------------------------------------------
-IF NOT EXISTS (SELECT 1 FROM [authorization].[RoleAssignments] WHERE [UserId] = @IncAdmin2Id AND [IncubatorId] = @Incubator2Id AND [ProjectId] IS NULL AND [Role] = N'IncubatorAdmin' AND [IsActive] = 1)
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @IncAdmin2Id AND [IncubatorId] = @Incubator2Id AND [ProjectId] IS NULL AND [Role] = N'IncubatorAdmin' AND [IsActive] = 1)
 BEGIN
-    INSERT INTO [authorization].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
     VALUES (NEWID(), @IncAdmin2Id, @Incubator2Id, NULL, N'IncubatorAdmin', 1, @Now, @Now);
 END
 
 -- ------------------------------------------------------------------------------------------
 -- ProjectCoordinator 1 -> Incubadora Alpha, Proyecto Innovación
 -- ------------------------------------------------------------------------------------------
-IF NOT EXISTS (SELECT 1 FROM [authorization].[RoleAssignments] WHERE [UserId] = @Coord1Id AND [IncubatorId] = @Incubator1Id AND [ProjectId] = @Project1Id AND [Role] = N'ProjectCoordinator' AND [IsActive] = 1)
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @Coord1Id AND [IncubatorId] = @Incubator1Id AND [ProjectId] = @Project1Id AND [Role] = N'ProjectCoordinator' AND [IsActive] = 1)
 BEGIN
-    INSERT INTO [authorization].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
     VALUES (NEWID(), @Coord1Id, @Incubator1Id, @Project1Id, N'ProjectCoordinator', 1, @Now, @Now);
 END
 
 -- ------------------------------------------------------------------------------------------
 -- ProjectCoordinator 2 -> Incubadora Alpha, Proyecto Sostenibilidad
 -- ------------------------------------------------------------------------------------------
-IF NOT EXISTS (SELECT 1 FROM [authorization].[RoleAssignments] WHERE [UserId] = @Coord2Id AND [IncubatorId] = @Incubator1Id AND [ProjectId] = @Project2Id AND [Role] = N'ProjectCoordinator' AND [IsActive] = 1)
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @Coord2Id AND [IncubatorId] = @Incubator1Id AND [ProjectId] = @Project2Id AND [Role] = N'ProjectCoordinator' AND [IsActive] = 1)
 BEGIN
-    INSERT INTO [authorization].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
     VALUES (NEWID(), @Coord2Id, @Incubator1Id, @Project2Id, N'ProjectCoordinator', 1, @Now, @Now);
 END
 
 -- ------------------------------------------------------------------------------------------
 -- Mentor -> Incubadora Alpha, Proyecto Innovación
 -- ------------------------------------------------------------------------------------------
-IF NOT EXISTS (SELECT 1 FROM [authorization].[RoleAssignments] WHERE [UserId] = @Mentor1Id AND [IncubatorId] = @Incubator1Id AND [ProjectId] = @Project1Id AND [Role] = N'Mentor' AND [IsActive] = 1)
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @Mentor1Id AND [IncubatorId] = @Incubator1Id AND [ProjectId] = @Project1Id AND [Role] = N'Mentor' AND [IsActive] = 1)
 BEGIN
-    INSERT INTO [authorization].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
     VALUES (NEWID(), @Mentor1Id, @Incubator1Id, @Project1Id, N'Mentor', 1, @Now, @Now);
 END
 
 -- ------------------------------------------------------------------------------------------
 -- Entrepreneur 1 -> Incubadora Alpha, Proyecto Innovación
 -- ------------------------------------------------------------------------------------------
-IF NOT EXISTS (SELECT 1 FROM [authorization].[RoleAssignments] WHERE [UserId] = @Entrep1Id AND [IncubatorId] = @Incubator1Id AND [ProjectId] = @Project1Id AND [Role] = N'Entrepreneur' AND [IsActive] = 1)
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @Entrep1Id AND [IncubatorId] = @Incubator1Id AND [ProjectId] = @Project1Id AND [Role] = N'Entrepreneur' AND [IsActive] = 1)
 BEGIN
-    INSERT INTO [authorization].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
     VALUES (NEWID(), @Entrep1Id, @Incubator1Id, @Project1Id, N'Entrepreneur', 1, @Now, @Now);
 END
 
 -- ------------------------------------------------------------------------------------------
 -- Entrepreneur 2 -> Incubadora Beta, Proyecto Digital
 -- ------------------------------------------------------------------------------------------
-IF NOT EXISTS (SELECT 1 FROM [authorization].[RoleAssignments] WHERE [UserId] = @Entrep2Id AND [IncubatorId] = @Incubator2Id AND [ProjectId] = @Project3Id AND [Role] = N'Entrepreneur' AND [IsActive] = 1)
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @Entrep2Id AND [IncubatorId] = @Incubator2Id AND [ProjectId] = @Project3Id AND [Role] = N'Entrepreneur' AND [IsActive] = 1)
 BEGIN
-    INSERT INTO [authorization].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
     VALUES (NEWID(), @Entrep2Id, @Incubator2Id, @Project3Id, N'Entrepreneur', 1, @Now, @Now);
 END
 
 -- ------------------------------------------------------------------------------------------
 -- Sponsor -> Incubadora Alpha (incubator-level, no project)
 -- ------------------------------------------------------------------------------------------
-IF NOT EXISTS (SELECT 1 FROM [authorization].[RoleAssignments] WHERE [UserId] = @Sponsor1Id AND [IncubatorId] = @Incubator1Id AND [ProjectId] IS NULL AND [Role] = N'Sponsor' AND [IsActive] = 1)
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @Sponsor1Id AND [IncubatorId] = @Incubator1Id AND [ProjectId] IS NULL AND [Role] = N'Sponsor' AND [IsActive] = 1)
 BEGIN
-    INSERT INTO [authorization].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
     VALUES (NEWID(), @Sponsor1Id, @Incubator1Id, NULL, N'Sponsor', 1, @Now, @Now);
 END
 
 -- ------------------------------------------------------------------------------------------
 -- Multi-Role User: IncubatorAdmin for Incubadora Alpha
 -- ------------------------------------------------------------------------------------------
-IF NOT EXISTS (SELECT 1 FROM [authorization].[RoleAssignments] WHERE [UserId] = @MultiRoleId AND [IncubatorId] = @Incubator1Id AND [ProjectId] IS NULL AND [Role] = N'IncubatorAdmin' AND [IsActive] = 1)
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @MultiRoleId AND [IncubatorId] = @Incubator1Id AND [ProjectId] IS NULL AND [Role] = N'IncubatorAdmin' AND [IsActive] = 1)
 BEGIN
-    INSERT INTO [authorization].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
     VALUES (NEWID(), @MultiRoleId, @Incubator1Id, NULL, N'IncubatorAdmin', 1, @Now, @Now);
 END
 
 -- ------------------------------------------------------------------------------------------
 -- Multi-Role User: ProjectCoordinator for Incubadora Alpha, Proyecto Sostenibilidad
 -- ------------------------------------------------------------------------------------------
-IF NOT EXISTS (SELECT 1 FROM [authorization].[RoleAssignments] WHERE [UserId] = @MultiRoleId AND [IncubatorId] = @Incubator1Id AND [ProjectId] = @Project2Id AND [Role] = N'ProjectCoordinator' AND [IsActive] = 1)
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @MultiRoleId AND [IncubatorId] = @Incubator1Id AND [ProjectId] = @Project2Id AND [Role] = N'ProjectCoordinator' AND [IsActive] = 1)
 BEGIN
-    INSERT INTO [authorization].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
     VALUES (NEWID(), @MultiRoleId, @Incubator1Id, @Project2Id, N'ProjectCoordinator', 1, @Now, @Now);
 END
 

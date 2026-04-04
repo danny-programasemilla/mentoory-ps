@@ -1,7 +1,7 @@
 using FluentAssertions;
-using Mentoory.Identity.Application.Commands.RegisterUser;
-using Mentoory.Identity.Domain.Enums;
-using Mentoory.Identity.Infrastructure.Persistence;
+using Mentoory.Access.Application.Commands.RegisterUser;
+using Mentoory.Access.Domain.Enums;
+using Mentoory.Access.Infrastructure.Persistence;
 using Mentoory.Shared.Application;
 using Mentoory.Tests.Integration.Fixtures;
 using Microsoft.EntityFrameworkCore;
@@ -29,7 +29,7 @@ public class RegistrationTests : IntegrationTestBase
         result.IsSuccess.Should().BeTrue();
 
         using var scope = CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AccessDbContext>();
         var user = await dbContext.Users
             .Include(u => u.Credentials)
             .FirstAsync(u => u.Email.NormalizedValue == "JOHN@EXAMPLE.COM");

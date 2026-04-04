@@ -12,10 +12,8 @@
       <ProjectReference Include="..\Mentoory.Example.Infrastructure\Mentoory.Example.Infrastructure.csproj" />
       <ProjectReference Include="..\Mentoory.Shared.Application\Mentoory.Shared.Application.csproj" />
       <ProjectReference Include="..\Mentoory.Shared.Infrastructure\Mentoory.Shared.Infrastructure.csproj" />
-      <ProjectReference Include="..\Mentoory.Identity.Application\Mentoory.Identity.Application.csproj" />
-      <ProjectReference Include="..\Mentoory.Identity.Infrastructure\Mentoory.Identity.Infrastructure.csproj" />
-      <ProjectReference Include="..\Mentoory.Authorization.Application\Mentoory.Authorization.Application.csproj" />
-      <ProjectReference Include="..\Mentoory.Authorization.Infrastructure\Mentoory.Authorization.Infrastructure.csproj" />
+      <ProjectReference Include="..\Mentoory.Access.Application\Mentoory.Access.Application.csproj" />
+      <ProjectReference Include="..\Mentoory.Access.Infrastructure\Mentoory.Access.Infrastructure.csproj" />
       <ProjectReference Include="..\Mentoory.Tenant.Application\Mentoory.Tenant.Application.csproj" />
       <ProjectReference Include="..\Mentoory.Tenant.Infrastructure\Mentoory.Tenant.Infrastructure.csproj" />
       <ProjectReference Include="..\Mentoory.Diagnostic.Application\Mentoory.Diagnostic.Application.csproj" />

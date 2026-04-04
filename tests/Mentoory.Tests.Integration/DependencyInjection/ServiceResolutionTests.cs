@@ -1,24 +1,22 @@
 using FluentAssertions;
 using MediatR;
-using Mentoory.Authorization.Application.Commands.AssignRole;
-using Mentoory.Authorization.Application.Commands.RevokeRole;
-using Mentoory.Authorization.Application.Commands.SetActiveContext;
-using Mentoory.Authorization.Application.Queries.CheckPermission;
-using Mentoory.Authorization.Application.Queries.GetUserContexts;
-using Mentoory.Authorization.Application.Queries.ListIncubatorMembers;
-using Mentoory.Authorization.Domain.Repositories;
-using Mentoory.Authorization.Infrastructure.Persistence;
-using Mentoory.Identity.Application.Commands.ChangePassword;
-using Mentoory.Identity.Application.Commands.LoginUser;
-using Mentoory.Identity.Application.Commands.LogoutUser;
-using Mentoory.Identity.Application.Commands.RegisterUser;
-using Mentoory.Identity.Application.Commands.VerifyEmail;
-using Mentoory.Identity.Application.Queries.ListUsers;
-using Mentoory.Identity.Application.Queries.ValidateSession;
+using Mentoory.Access.Application.Commands.AssignRole;
+using Mentoory.Access.Application.Commands.ChangePassword;
+using Mentoory.Access.Application.Commands.LoginUser;
+using Mentoory.Access.Application.Commands.LogoutUser;
+using Mentoory.Access.Application.Commands.RegisterUser;
+using Mentoory.Access.Application.Commands.RevokeRole;
+using Mentoory.Access.Application.Commands.SetActiveContext;
+using Mentoory.Access.Application.Commands.VerifyEmail;
+using Mentoory.Access.Application.Queries.CheckPermission;
+using Mentoory.Access.Application.Queries.GetUserContexts;
+using Mentoory.Access.Application.Queries.ListIncubatorMembers;
+using Mentoory.Access.Application.Queries.ListUsers;
+using Mentoory.Access.Application.Queries.ValidateSession;
 using Mentoory.Shared.Application.DataTables;
-using Mentoory.Identity.Domain.Repositories;
-using Mentoory.Identity.Domain.Services;
-using Mentoory.Identity.Infrastructure.Persistence;
+using Mentoory.Access.Domain.Repositories;
+using Mentoory.Access.Domain.Services;
+using Mentoory.Access.Infrastructure.Persistence;
 using Mentoory.Shared.Application.Audit;
 using Mentoory.Shared.Application.Interfaces;
 using Mentoory.Shared.Application.IntegrationEvents;
@@ -64,7 +62,7 @@ public class ServiceResolutionTests : IntegrationTestBase
     }
 
     [Theory]
-    [InlineData(typeof(IdentityDbContext))]
+    [InlineData(typeof(AccessDbContext))]
     [InlineData(typeof(IUserRepository))]
     [InlineData(typeof(IAuthSessionRepository))]
     [InlineData(typeof(IPasswordHasher))]
@@ -76,7 +74,7 @@ public class ServiceResolutionTests : IntegrationTestBase
     }
 
     [Theory]
-    [InlineData(typeof(AuthorizationDbContext))]
+    [InlineData(typeof(AccessDbContext))]
     [InlineData(typeof(IRoleAssignmentRepository))]
     public void AuthorizationInfrastructure_ShouldResolve(Type serviceType)
     {
@@ -98,18 +96,18 @@ public class ServiceResolutionTests : IntegrationTestBase
 
     [Theory]
     [InlineData(typeof(IRequestHandler<RegisterUserCommand, Mentoory.Shared.Application.Result>))]
-    [InlineData(typeof(IRequestHandler<LoginUserCommand, Mentoory.Shared.Application.Result<Mentoory.Identity.Domain.Aggregates.AuthSession.AuthSession>>))]
+    [InlineData(typeof(IRequestHandler<LoginUserCommand, Mentoory.Shared.Application.Result<Mentoory.Access.Domain.Aggregates.AuthSession.AuthSession>>))]
     [InlineData(typeof(IRequestHandler<LogoutUserCommand, Mentoory.Shared.Application.Result>))]
     [InlineData(typeof(IRequestHandler<ChangePasswordCommand, Mentoory.Shared.Application.Result>))]
     [InlineData(typeof(IRequestHandler<VerifyEmailCommand, Mentoory.Shared.Application.Result>))]
-    [InlineData(typeof(IRequestHandler<ValidateSessionQuery, Mentoory.Shared.Application.Result<Mentoory.Identity.Domain.Aggregates.AuthSession.AuthSession?>>))]
+    [InlineData(typeof(IRequestHandler<ValidateSessionQuery, Mentoory.Shared.Application.Result<Mentoory.Access.Domain.Aggregates.AuthSession.AuthSession?>>))]
     [InlineData(typeof(IRequestHandler<ListUsersQuery, Mentoory.Shared.Application.Result<DataTableResponse<UserListItemDto>>>))]
     [InlineData(typeof(IRequestHandler<ListIncubatorMembersQuery, Mentoory.Shared.Application.Result<DataTableResponse<IncubatorMemberListItemDto>>>))]
     [InlineData(typeof(IRequestHandler<AssignRoleCommand, Mentoory.Shared.Application.Result>))]
     [InlineData(typeof(IRequestHandler<RevokeRoleCommand, Mentoory.Shared.Application.Result>))]
-    [InlineData(typeof(IRequestHandler<SetActiveContextCommand, Mentoory.Shared.Application.Result<Mentoory.Authorization.Domain.ReadModels.UserContext>>))]
+    [InlineData(typeof(IRequestHandler<SetActiveContextCommand, Mentoory.Shared.Application.Result<Mentoory.Access.Domain.ReadModels.UserContext>>))]
     [InlineData(typeof(IRequestHandler<CheckPermissionQuery, Mentoory.Shared.Application.Result<bool>>))]
-    [InlineData(typeof(IRequestHandler<GetUserContextsQuery, Mentoory.Shared.Application.Result<System.Collections.Generic.List<Mentoory.Authorization.Domain.ReadModels.UserContext>>>))]
+    [InlineData(typeof(IRequestHandler<GetUserContextsQuery, Mentoory.Shared.Application.Result<System.Collections.Generic.List<Mentoory.Access.Domain.ReadModels.UserContext>>>))]
     [InlineData(typeof(IRequestHandler<CreateIncubatorCommand, Mentoory.Shared.Application.Result<System.Guid>>))]
     [InlineData(typeof(IRequestHandler<CreateProjectCommand, Mentoory.Shared.Application.Result<System.Guid>>))]
     public void MediatRHandlers_ShouldResolve(Type handlerType)

@@ -1,7 +1,7 @@
 using FluentAssertions;
-using Mentoory.Identity.Application.Commands.LoginUser;
-using Mentoory.Identity.Domain.Enums;
-using Mentoory.Identity.Infrastructure.Persistence;
+using Mentoory.Access.Application.Commands.LoginUser;
+using Mentoory.Access.Domain.Enums;
+using Mentoory.Access.Infrastructure.Persistence;
 using Mentoory.Shared.Application;
 using Mentoory.Tests.Integration.Fixtures;
 using Microsoft.EntityFrameworkCore;
@@ -51,7 +51,7 @@ public class LoginTests : IntegrationTestBase
         result.IsFailure.Should().BeTrue();
 
         using var scope = CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AccessDbContext>();
         var user = await dbContext.Users.FirstAsync(u => u.Email.NormalizedValue == "FAILEDLOGIN@EXAMPLE.COM");
         user.FailedLoginAttempts.Should().Be(1);
     }
@@ -70,7 +70,7 @@ public class LoginTests : IntegrationTestBase
 
         // Assert — account is locked
         using var scope = CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AccessDbContext>();
         var user = await dbContext.Users.FirstAsync(u => u.Email.NormalizedValue == "LOCKOUT@EXAMPLE.COM");
         user.AccountStatus.Should().Be(AccountStatus.Locked);
         user.LockoutEndUtc.Should().NotBeNull();
@@ -118,7 +118,7 @@ public class LoginTests : IntegrationTestBase
 
         // First session should be deactivated
         using var scope = CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AccessDbContext>();
         var firstSession = await dbContext.AuthSessions.FirstAsync(s => s.SessionToken == firstSessionToken);
         firstSession.IsActive.Should().BeFalse();
     }

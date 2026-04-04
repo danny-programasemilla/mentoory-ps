@@ -34,7 +34,7 @@
             @if (User.Identity?.IsAuthenticated == true)
             {
                 <span class="text-muted me-3">@User.Identity.Name</span>
-                <form asp-area="Identity" asp-controller="Logout" asp-action="Index" method="post" class="d-inline">
+                <form asp-area="Access" asp-controller="Logout" asp-action="Index" method="post" class="d-inline">
                     @Html.AntiForgeryToken()
                     <button type="submit" class="btn btn-outline-secondary btn-sm">Cerrar sesión</button>
                 </form>

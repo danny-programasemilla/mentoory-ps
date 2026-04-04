@@ -1,10 +1,9 @@
 using System.Net;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.Http;
-using Mentoory.Authorization.Infrastructure.Persistence;
+using Mentoory.Access.Infrastructure.Persistence;
 using Mentoory.Diagnostic.Infrastructure.Persistence;
 using Mentoory.Example.Infrastructure.Persistence;
-using Mentoory.Identity.Infrastructure.Persistence;
 using Mentoory.Tenant.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -147,8 +146,7 @@ public class PlaywrightFixture : WebApplicationFactory<Program>, IAsyncLifetime
         {
             var connStr = ConnectionString;
 
-            ReplaceDbContext<IdentityDbContext>(services, connStr);
-            ReplaceDbContext<AuthorizationDbContext>(services, connStr);
+            ReplaceDbContext<AccessDbContext>(services, connStr);
             ReplaceDbContext<TenantDbContext>(services, connStr);
             ReplaceDbContext<DiagnosticDbContext>(services, connStr);
             ReplaceDbContext<ExampleDbContext>(services, connStr);

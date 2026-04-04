@@ -4,15 +4,14 @@
 - **Strict layer separation**: Domain → Application → Infrastructure → Web
 - **Dependency rule**: Dependencies only point inward (Web → Infrastructure → Application → Domain)
 - **No web concerns in inner layers**: Convert IFormFile to Stream at controller boundary
-- **Modular monolith**: 8 bounded contexts, each with Domain/Application/Infrastructure projects
-- **Schema-based isolation**: Each bounded context owns its SQL schema (e.g., `[identity]`, `[diagnostic]`)
+- **Modular monolith**: 7 bounded contexts, each with Domain/Application/Infrastructure projects
+- **Schema-based isolation**: Each bounded context owns its SQL schema (e.g., `[access]`, `[diagnostic]`)
 
 ## Bounded Contexts
 
 | Context | Schema | Status | Purpose |
 |---------|--------|--------|---------|
-| Identity | `[identity]` | Implemented (US1) | Users, credentials, sessions, email verification, password reset |
-| Authorization | `[authorization]` | Implemented (US1) | Role assignments, context selection, permissions |
+| Access | `[access]` | Implemented (US1) | Users, credentials, sessions, email verification, password reset, role assignments, context selection, permissions |
 | Tenant | `[tenant]` | Implemented (US1) | Incubators, projects, stages, participants, mentor assignments |
 | Diagnostic | `[diagnostic]` | Implemented (US2) | Form templates, project forms, responses, answer corrections |
 | Knowledge | `[knowledge]` | Scaffolded | Knowledge structures, modules, topics, subjects, resources |
@@ -109,10 +108,9 @@ Mentoory.Web/
 ### Database
 ```
 Mentoory.Db/                   # SSDT SQL project
-├── identity/
+├── access/
 │   ├── Schema.sql
-│   └── Tables/                # Users, Credentials, AuthSessions, etc.
-├── authorization/Tables/
+│   └── Tables/                # Users, Credentials, AuthSessions, Roles, etc.
 ├── tenant/Tables/
 ├── diagnostic/Tables/         # FormTemplates, ProjectForms, Questions, etc.
 ├── knowledge/Tables/
@@ -131,8 +129,7 @@ Mentoory.Db.PostDeployment/    # Seed scripts (outside Mentoory.Db/)
 ### Tests
 ```
 tests/
-├── Mentoory.Identity.Tests/        # Domain unit tests
-├── Mentoory.Authorization.Tests/
+├── Mentoory.Access.Tests/          # Domain unit tests
 ├── Mentoory.Tenant.Tests/
 ├── Mentoory.Diagnostic.Tests/
 ├── Mentoory.Tests.Integration/     # Integration tests (WebApplicationFactory + Testcontainers)

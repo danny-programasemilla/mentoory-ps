@@ -31,9 +31,9 @@ public class AuthorizationTests
 
             // Should be denied access — either redirected to Access Denied, login, or receive 403
             var denied = response?.Status == 403
-                         || page.Url.Contains("/Identity/Login")
+                         || page.Url.Contains("/Access/Login")
                          || page.Url.Contains("/AccessDenied")
-                         || page.Url.Contains("/Identity/AccessDenied");
+                         || page.Url.Contains("/Access/AccessDenied");
 
             denied.Should().BeTrue(
                 "Entrepreneur role must not have access to the Administration area");
@@ -57,9 +57,9 @@ public class AuthorizationTests
             var response = await page.GotoAsync($"{_fixture.BaseUrl}/Platform/Incubators");
 
             var denied = response?.Status == 403
-                         || page.Url.Contains("/Identity/Login")
+                         || page.Url.Contains("/Access/Login")
                          || page.Url.Contains("/AccessDenied")
-                         || page.Url.Contains("/Identity/AccessDenied");
+                         || page.Url.Contains("/Access/AccessDenied");
 
             denied.Should().BeTrue(
                 "IncubatorAdmin role must not have access to the Platform/Incubators area");
@@ -107,9 +107,9 @@ public class AuthorizationTests
             var response = await page.GotoAsync($"{_fixture.BaseUrl}/Coordination/Diagnostics");
 
             var denied = response?.Status == 403
-                         || page.Url.Contains("/Identity/Login")
+                         || page.Url.Contains("/Access/Login")
                          || page.Url.Contains("/AccessDenied")
-                         || page.Url.Contains("/Identity/AccessDenied");
+                         || page.Url.Contains("/Access/AccessDenied");
 
             denied.Should().BeTrue(
                 "Sponsor role must not have access to the Coordination area");
@@ -123,7 +123,7 @@ public class AuthorizationTests
 
     private async Task LoginAsync(IPage page, string email, string password)
     {
-        await page.GotoAsync($"{_fixture.BaseUrl}/Identity/Login");
+        await page.GotoAsync($"{_fixture.BaseUrl}/Access/Login");
         await page.FillAsync("input[name='Email']", email);
         await page.FillAsync("input[name='Password']", password);
         await page.ClickAsync("button[type='submit']");

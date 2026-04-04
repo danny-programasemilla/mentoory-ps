@@ -1,7 +1,7 @@
 using FluentAssertions;
-using Mentoory.Identity.Application.Commands.LogoutUser;
-using Mentoory.Identity.Application.Queries.ValidateSession;
-using Mentoory.Identity.Infrastructure.Persistence;
+using Mentoory.Access.Application.Commands.LogoutUser;
+using Mentoory.Access.Application.Queries.ValidateSession;
+using Mentoory.Access.Infrastructure.Persistence;
 using Mentoory.Tests.Integration.Fixtures;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -68,7 +68,7 @@ public class SessionManagementTests : IntegrationTestBase
         logoutResult.IsSuccess.Should().BeTrue();
 
         using var scope = CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AccessDbContext>();
         var session = await dbContext.AuthSessions.FirstAsync(s => s.SessionToken == sessionToken);
         session.IsActive.Should().BeFalse();
     }

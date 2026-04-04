@@ -1,4 +1,4 @@
-using Mentoory.Identity.Application.Queries.ListUsers;
+using Mentoory.Access.Application.Queries.ListUsers;
 using Mentoory.Web.Models;
 using Mentoory.Web.Services;
 using Microsoft.AspNetCore.Authorization;
