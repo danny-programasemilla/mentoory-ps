@@ -18,13 +18,6 @@ public partial class VerifyEmailHandler : BaseCommandHandler<VerifyEmailCommand>
     private readonly IIntegrationEventService _eventService;
     private readonly ILogger<VerifyEmailHandler> _logger;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="VerifyEmailHandler"/> class.
-    /// </summary>
-    /// <param name="userRepository">The user repository for persistence operations.</param>
-    /// <param name="timeProvider">The time provider for obtaining current UTC time.</param>
-    /// <param name="eventService">The integration event service for publishing events.</param>
-    /// <param name="logger">The logger instance.</param>
     public VerifyEmailHandler(
         IUserRepository userRepository,
         ITimeProvider timeProvider,

@@ -1,4 +1,5 @@
 using Mentoory.Access.Application.Commands.RegisterUser;
+using Mentoory.Access.Application.Countries.Queries.ListCountries;
 using Mentoory.Web.Areas.Access.Models;
 using Mentoory.Web.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -19,9 +20,11 @@ public class RegisterController : Controller
     }
 
     [HttpGet]
-    public IActionResult Index()
+    public async Task<IActionResult> Index(CancellationToken ct)
     {
-        return View(new RegisterViewModel());
+        var model = new RegisterViewModel();
+        await PopulateCountriesAsync(model, ct);
+        return View(model);
     }
 
     [HttpPost]
@@ -31,6 +34,7 @@ public class RegisterController : Controller
     {
         if (!ModelState.IsValid)
         {
+            await PopulateCountriesAsync(model, ct);
             return View(model);
         }
 
@@ -46,7 +50,12 @@ public class RegisterController : Controller
 
         if (result.IsFailure)
         {
-            ModelState.AddModelError(string.Empty, result.ErrorMessages?.FirstOrDefault().Message ?? "No se pudo completar el registro.");
+            foreach (var error in result.ErrorMessages ?? [])
+            {
+                ModelState.AddModelError(error.Context, error.Message);
+            }
+
+            await PopulateCountriesAsync(model, ct);
             return View(model);
         }
 
@@ -57,5 +66,11 @@ public class RegisterController : Controller
     public IActionResult Success()
     {
         return View();
+    }
+
+    private async Task PopulateCountriesAsync(RegisterViewModel model, CancellationToken ct)
+    {
+        var countriesResult = await _executor.SendAndLogIfFailureAsync(new ListCountriesQuery(), ct);
+        model.Countries = countriesResult.IsSuccess ? countriesResult.Value! : [];
     }
 }

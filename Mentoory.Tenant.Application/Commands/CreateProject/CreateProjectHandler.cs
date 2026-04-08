@@ -33,7 +33,13 @@ public partial class CreateProjectHandler(
                 (nameof(request.IncubatorExternalId), "Incubator not found"));
         }
 
-        var project = Project.Create(incubator.Id, request.Name, request.Description, timeProvider.UtcNow);
+        var project = Project.Create(
+            incubator.Id,
+            request.Name,
+            request.Description,
+            timeProvider.UtcNow,
+            request.IsPublic,
+            request.EnrollmentVariant);
         projectRepository.Add(project);
 
         LogProjectCreated(project.ExternalId, request.IncubatorExternalId);

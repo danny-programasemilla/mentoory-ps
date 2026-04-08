@@ -31,10 +31,10 @@ public class LoginTests : IntegrationTestBase
         // Assert
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeNull();
-        result.Value!.IsActive.Should().BeTrue();
-        result.Value.SessionToken.Should().NotBeNullOrEmpty();
-        result.Value.IpAddress.Should().Be("192.168.1.1");
-        result.Value.UserAgent.Should().Be("Test/1.0");
+        result.Value!.Session.IsActive.Should().BeTrue();
+        result.Value.Session.SessionToken.Should().NotBeNullOrEmpty();
+        result.Value.Session.IpAddress.Should().Be("192.168.1.1");
+        result.Value.Session.UserAgent.Should().Be("Test/1.0");
     }
 
     [Fact]
@@ -106,7 +106,7 @@ public class LoginTests : IntegrationTestBase
         var firstLogin = await SendAsync(new LoginUserCommand(
             "singlesession@example.com", "SecureP@ss123!", "10.0.0.1", "Browser/1.0"));
         firstLogin.IsSuccess.Should().BeTrue();
-        var firstSessionToken = firstLogin.Value!.SessionToken;
+        var firstSessionToken = firstLogin.Value!.Session.SessionToken;
 
         // Act — second login
         var secondLogin = await SendAsync(new LoginUserCommand(
@@ -114,7 +114,7 @@ public class LoginTests : IntegrationTestBase
 
         // Assert
         secondLogin.IsSuccess.Should().BeTrue();
-        secondLogin.Value!.SessionToken.Should().NotBe(firstSessionToken);
+        secondLogin.Value!.Session.SessionToken.Should().NotBe(firstSessionToken);
 
         // First session should be deactivated
         using var scope = CreateScope();

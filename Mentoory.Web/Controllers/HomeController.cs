@@ -14,7 +14,7 @@ public class HomeController : Controller
 
         if (string.IsNullOrEmpty(activeRole))
         {
-            return RedirectToAction("Select", "Context");
+            return RedirectToAction("Index", "AvailableProjects");
         }
 
         return activeRole switch

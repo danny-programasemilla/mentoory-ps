@@ -7,6 +7,8 @@ CREATE TABLE [tenant].[Projects]
     [Description] NVARCHAR(1000) NULL,
     [CurrentStageType] TINYINT NOT NULL DEFAULT 0,
     [CurrentStageState] TINYINT NOT NULL DEFAULT 0,
+    [IsPublic] BIT NOT NULL DEFAULT 0,
+    [EnrollmentVariant] TINYINT NOT NULL DEFAULT 0,
     [IsActive] BIT NOT NULL DEFAULT 1,
     [CreatedAtUtc] DATETIME2 NOT NULL,
     [UpdatedAtUtc] DATETIME2 NOT NULL,

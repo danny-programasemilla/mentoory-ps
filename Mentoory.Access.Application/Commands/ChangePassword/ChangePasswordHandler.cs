@@ -1,3 +1,5 @@
+using Mentoory.Access.Application.Configuration;
+using Mentoory.Access.Domain.Enums;
 using Mentoory.Access.Domain.Repositories;
 using Mentoory.Access.Domain.Services;
 using Mentoory.Shared.Application;
@@ -7,38 +9,28 @@ using Microsoft.Extensions.Logging;
 
 namespace Mentoory.Access.Application.Commands.ChangePassword;
 
-/// <summary>
-/// Handles password change by verifying the current password and enforcing password history.
-/// </summary>
 public partial class ChangePasswordHandler : BaseCommandHandler<ChangePasswordCommand>
 {
-    private const int PasswordHistoryDepth = 5;
-
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly ITimeProvider _timeProvider;
+    private readonly ISystemConfigurationReader _configReader;
     private readonly ILogger<ChangePasswordHandler> _logger;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ChangePasswordHandler"/> class.
-    /// </summary>
-    /// <param name="userRepository">The user repository for persistence operations.</param>
-    /// <param name="passwordHasher">The password hasher for verifying and securing credentials.</param>
-    /// <param name="timeProvider">The time provider for obtaining current UTC time.</param>
-    /// <param name="logger">The logger instance.</param>
     public ChangePasswordHandler(
         IUserRepository userRepository,
         IPasswordHasher passwordHasher,
         ITimeProvider timeProvider,
+        ISystemConfigurationReader configReader,
         ILogger<ChangePasswordHandler> logger)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
         _timeProvider = timeProvider;
+        _configReader = configReader;
         _logger = logger;
     }
 
-    /// <inheritdoc />
     public override async Task<Result> Handle(ChangePasswordCommand request, CancellationToken cancellationToken)
     {
         var utcNow = _timeProvider.UtcNow;
@@ -56,11 +48,13 @@ public partial class ChangePasswordHandler : BaseCommandHandler<ChangePasswordCo
             return Failure(ResultErrorCodes.GenericError, ("ChangePassword", "La contraseña actual es incorrecta."));
         }
 
-        // Check password history
+        // Check password history from config
+        var historyDepth = await _configReader.GetIntAsync(
+            nameof(ConfigurationKey.PasswordHistoryDepth), cancellationToken);
         var newPasswordHash = _passwordHasher.HashPassword(request.NewPassword);
-        if (user.HasUsedPassword(newPasswordHash, PasswordHistoryDepth))
+        if (user.HasUsedPassword(newPasswordHash, historyDepth))
         {
-            return Failure(ResultErrorCodes.GenericError, ("ChangePassword", "La nueva contraseña no puede ser igual a las últimas 5 contraseñas."));
+            return Failure(ResultErrorCodes.GenericError, ("ChangePassword", $"La nueva contraseña no puede ser igual a las últimas {historyDepth} contraseñas."));
         }
 
         user.ChangePassword(newPasswordHash, utcNow);
@@ -73,9 +67,6 @@ public partial class ChangePasswordHandler : BaseCommandHandler<ChangePasswordCo
         return Success();
     }
 
-    /// <summary>
-    /// Logs when a user's password is changed successfully.
-    /// </summary>
     [LoggerMessage(Level = LogLevel.Information, Message = "Password changed for user: {Email}")]
     partial void LogPasswordChanged(string email);
 }

@@ -1,7 +1,7 @@
 using MediatR;
 using Mentoory.Access.Application.Commands.LoginUser;
 using Mentoory.Access.Application.Commands.RegisterUser;
-using Mentoory.Access.Domain.Aggregates.AuthSession;
+using Mentoory.Access.Domain.Aggregates.SystemConfiguration;
 using Mentoory.Access.Domain.Enums;
 using Mentoory.Access.Infrastructure.Persistence;
 using Mentoory.Shared.Application;
@@ -22,7 +22,11 @@ public abstract class IntegrationTestBase : IAsyncLifetime
 
     protected MentooryWebApplicationFactory Factory { get; }
 
-    public Task InitializeAsync() => Factory.ResetDatabaseAsync();
+    public async Task InitializeAsync()
+    {
+        await Factory.ResetDatabaseAsync();
+        await SeedSystemConfigurationAsync();
+    }
 
     public Task DisposeAsync() => Task.CompletedTask;
 
@@ -82,7 +86,7 @@ public abstract class IntegrationTestBase : IAsyncLifetime
         return (registerResult, user.Id);
     }
 
-    protected async Task<(Result<AuthSession> LoginResult, long UserId)> RegisterActivateAndLoginAsync(
+    protected async Task<(Result<LoginUserResult> LoginResult, long UserId)> RegisterActivateAndLoginAsync(
         string email = "test@example.com",
         string country = "CO",
         string nationalId = "123456789",
@@ -94,10 +98,39 @@ public abstract class IntegrationTestBase : IAsyncLifetime
 
         if (registerResult.IsFailure)
         {
-            return (Result<AuthSession>.Failure(ResultErrorCodes.GenericError, ("Setup", "Registration failed")), 0);
+            return (Result<LoginUserResult>.Failure(ResultErrorCodes.GenericError, ("Setup", "Registration failed")), 0);
         }
 
         var loginResult = await SendAsync(new LoginUserCommand(email, password, "127.0.0.1", "TestAgent"));
         return (loginResult, userId);
+    }
+
+    private async Task SeedSystemConfigurationAsync()
+    {
+        using var scope = CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AccessDbContext>();
+        var utcNow = DateTime.UtcNow;
+
+        var configs = new[]
+        {
+            ("EmailVerificationTokenExpiryHours", "24", "Integer"),
+            ("PasswordResetTokenExpiryHours", "1", "Integer"),
+            ("InvitationTokenExpiryHours", "72", "Integer"),
+            ("MaxFailedLoginAttempts", "5", "Integer"),
+            ("LockoutDurationMinutes", "15", "Integer"),
+            ("SessionTimeoutHours", "8", "Integer"),
+            ("PasswordHistoryDepth", "5", "Integer"),
+        };
+
+        foreach (var (key, value, dataType) in configs)
+        {
+            if (!await dbContext.SystemConfigurations.AnyAsync(c => c.Key == key))
+            {
+                dbContext.SystemConfigurations.Add(
+                    SystemConfiguration.Create(key, value, dataType, null, utcNow));
+            }
+        }
+
+        await dbContext.SaveChangesAsync();
     }
 }

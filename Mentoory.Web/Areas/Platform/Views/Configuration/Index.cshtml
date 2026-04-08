@@ -1,0 +1,87 @@
+@using Mentoory.Access.Application.Configuration.Queries.ListAllConfigurations
+@model List<ConfigurationListItemDto>
+
+@{
+    ViewData["Title"] = "Configuración del Sistema";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Configuración del Sistema</h2>
+</div>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @successMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] is string errorMessage)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @errorMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+}
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover w-100">
+                <thead>
+                    <tr>
+                        <th>Clave</th>
+                        <th>Valor</th>
+                        <th>Descripción</th>
+                        <th>Tipo de Dato</th>
+                        <th>Última Modificación</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var config in Model)
+                    {
+                        <tr>
+                            <td>
+                                <code>@config.Key</code>
+                            </td>
+                            <td>
+                                <form asp-action="Update" asp-area="Platform" asp-controller="Configuration" method="post" class="d-flex align-items-center gap-2">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="key" value="@config.Key" />
+                                    @if (config.DataType == "Boolean")
+                                    {
+                                        <select name="value" class="form-select form-select-sm" style="width: auto;">
+                                            @if (config.Value == "true")
+                                            {
+                                                <option value="true" selected>true</option>
+                                                <option value="false">false</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="true">true</option>
+                                                <option value="false" selected>false</option>
+                                            }
+                                        </select>
+                                    }
+                                    else
+                                    {
+                                        <input type="text" name="value" value="@config.Value" class="form-control form-control-sm" style="width: 120px;" />
+                                    }
+                                    <button type="submit" class="btn btn-sm btn-primary" title="Guardar">
+                                        <i class="fas fa-save"></i>
+                                    </button>
+                                </form>
+                            </td>
+                            <td>@(config.Description ?? "—")</td>
+                            <td>
+                                <span class="badge bg-info text-dark">@config.DataType</span>
+                            </td>
+                            <td>@config.UpdatedAtUtc.ToString("dd/MM/yyyy HH:mm")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -22,6 +22,7 @@ public static class MenuConfiguration
             new("Panel", "/Administration/Dashboard", "fas fa-tachometer-alt"),
             new("Proyectos", "/Administration/Projects", "fas fa-project-diagram"),
             new("Usuarios", "/Administration/Users", "fas fa-users"),
+            new("Carga Masiva", "/Administration/BatchUpload", "fas fa-file-upload"),
         }),
 
         new MenuGroup("Coordinación", "fas fa-tasks", new[] { "ProjectCoordinator", "Mentor", "IncubatorAdmin", "GlobalAdmin" }, new MenuItem[]

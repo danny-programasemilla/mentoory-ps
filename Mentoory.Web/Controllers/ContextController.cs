@@ -33,6 +33,11 @@ public class ContextController : Controller
 
         var contexts = await _executor.SendOrThrowAsync(new GetUserContextsQuery(userId.Value), ct);
 
+        if (contexts.Count == 0)
+        {
+            return RedirectToAction("Index", "AvailableProjects");
+        }
+
         if (contexts.Count == 1 && contexts[0].Role == Roles.GlobalAdmin)
         {
             var globalAdminContexts = await BuildGlobalAdminContextsAsync(contexts[0], ct);

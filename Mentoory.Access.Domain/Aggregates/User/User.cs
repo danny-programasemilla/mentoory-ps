@@ -162,33 +162,45 @@ public class User : Entity, IAggregateRoot
         return _credentials.SingleOrDefault(c => c.IsActive);
     }
 
-    public EmailVerificationToken GenerateEmailVerificationToken(DateTime utcNow, string tokenHash)
+    public EmailVerificationToken GenerateEmailVerificationToken(DateTime utcNow, string tokenHash, int expiryHours = 24)
     {
-        // Invalidate existing tokens
+        // Invalidate existing unused/unexpired tokens
         foreach (var token in _emailVerificationTokens.Where(t => !t.IsUsed))
         {
             token.MarkAsUsed();
         }
 
-        var newToken = EmailVerificationToken.Create(tokenHash, utcNow, utcNow.AddHours(24));
+        var newToken = EmailVerificationToken.Create(tokenHash, utcNow, utcNow.AddHours(expiryHours));
         _emailVerificationTokens.Add(newToken);
         return newToken;
     }
 
-    public PasswordResetToken GeneratePasswordResetToken(DateTime utcNow, string tokenHash)
+    public PasswordResetToken GeneratePasswordResetToken(DateTime utcNow, string tokenHash, int expiryHours = 1)
     {
-        // Invalidate existing tokens
+        // Invalidate existing unused tokens
         foreach (var token in _passwordResetTokens.Where(t => !t.IsUsed))
         {
             token.MarkAsUsed();
         }
 
-        var newToken = PasswordResetToken.Create(tokenHash, utcNow, utcNow.AddHours(1));
+        var newToken = PasswordResetToken.Create(tokenHash, utcNow, utcNow.AddHours(expiryHours));
         _passwordResetTokens.Add(newToken);
         return newToken;
     }
 
-    public void RequirePasswordReset(DateTime utcNow)
+    public void AdminVerifyEmail(DateTime utcNow)
+    {
+        if (AccountStatus != AccountStatus.PendingVerification)
+        {
+            throw new InvalidOperationException("Only pending verification accounts can be verified.");
+        }
+
+        AccountStatus = AccountStatus.Active;
+        EmailVerifiedAtUtc = utcNow;
+        UpdatedAtUtc = utcNow;
+    }
+
+    public void SetPasswordResetRequired(DateTime utcNow)
     {
         AccountStatus = AccountStatus.PasswordResetRequired;
         UpdatedAtUtc = utcNow;

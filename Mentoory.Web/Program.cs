@@ -18,6 +18,7 @@ using Mentoory.Shared.Infrastructure.Audit;
 using Mentoory.Shared.Infrastructure.Behaviors;
 using Mentoory.Shared.Infrastructure.Persistence;
 using Mentoory.Shared.Infrastructure.Services;
+using Mentoory.Web.Infrastructure.Authentication;
 using Mentoory.Web.Infrastructure.Authorization;
 using Mentoory.Web.Infrastructure.Menu;
 using Mentoory.Web.Infrastructure.Persistence;
@@ -71,6 +72,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
         options.Cookie.SameSite = SameSiteMode.Strict;
         options.SlidingExpiration = false;
+        // Cookie ExpireTimeSpan is a maximum transport-level bound and cannot be made dynamic without app restart.
+        // The operative session timeout is enforced server-side by SessionAuthenticationMiddleware
+        // using the DB-configured SessionTimeoutHours value.
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
     });
 
@@ -115,7 +119,10 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IMenuService, MenuService>();
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add<PasswordResetRequiredFilter>();
+});
 
 var app = builder.Build();
 
@@ -133,6 +140,7 @@ app.UseHttpsRedirection();
 app.UseRouting();
 
 app.UseAuthentication();
+app.UseMiddleware<SessionAuthenticationMiddleware>();
 app.UseAuthorization();
 app.UseTenantContext();
 app.UseAntiforgery();

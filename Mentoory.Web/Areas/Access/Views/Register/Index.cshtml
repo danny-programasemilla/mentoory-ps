@@ -11,7 +11,7 @@
             <h5 class="text-center text-muted mb-4">Crear Cuenta</h5>
 
             <form asp-action="Index" method="post">
-                <div asp-validation-summary="All" class="text-danger mb-3"></div>
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                 <div class="mb-3">
                     <label asp-for="Email" class="form-label"></label>
@@ -35,12 +35,24 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label asp-for="Country" class="form-label"></label>
-                        <input asp-for="Country" class="form-control" />
+                        <select asp-for="Country" class="form-select" id="countrySelect">
+                            <option value="">Seleccione un país</option>
+                            @foreach (var country in Model.Countries)
+                            {
+                                <option value="@country.Code"
+                                        data-mask="@country.IdentificationMask"
+                                        data-regex="@country.IdentificationRegex"
+                                        data-maxlength="@country.IdentificationMaxLength"
+                                        data-label="@country.IdentificationLabel">
+                                    @country.Name
+                                </option>
+                            }
+                        </select>
                         <span asp-validation-for="Country" class="text-danger"></span>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label asp-for="NationalId" class="form-label"></label>
-                        <input asp-for="NationalId" class="form-control" />
+                        <label asp-for="NationalId" class="form-label" id="nationalIdLabel"></label>
+                        <input asp-for="NationalId" class="form-control" id="nationalIdInput" />
                         <span asp-validation-for="NationalId" class="text-danger"></span>
                     </div>
                 </div>
@@ -71,4 +83,5 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/registration.js"></script>
 }

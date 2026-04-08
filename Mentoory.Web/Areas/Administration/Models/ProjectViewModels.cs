@@ -12,4 +12,10 @@ public sealed class CreateProjectViewModel
     [StringLength(500, ErrorMessage = "La descripción no puede exceder 500 caracteres.")]
     [Display(Name = "Descripción")]
     public string? Description { get; set; }
+
+    [Display(Name = "Visible públicamente")]
+    public bool IsPublic { get; set; }
+
+    [Display(Name = "Variante de inscripción")]
+    public int EnrollmentVariant { get; set; }
 }

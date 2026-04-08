@@ -1,7 +1,8 @@
+using System.Reflection;
 using FluentAssertions;
 using Mentoory.Access.Application.Queries.ListIncubatorMembers;
 using Mentoory.Access.Domain.Aggregates.RoleAssignment;
-using Mentoory.Access.Domain.ReadModels;
+using Mentoory.Access.Domain.Aggregates.User;
 using Mentoory.Access.Domain.Repositories;
 using Mentoory.Access.Tests.Infrastructure;
 using Mentoory.Shared.Application.DataTables;
@@ -14,23 +15,23 @@ public class ListIncubatorMembersHandlerTests
 {
     private static readonly DateTime UtcNow = new(2026, 1, 15, 10, 0, 0, DateTimeKind.Utc);
 
-    private readonly Mock<IUserProfileRepository> _userProfileRepo = new();
+    private readonly Mock<IUserRepository> _userRepo = new();
     private readonly Mock<IRoleAssignmentRepository> _roleAssignmentRepo = new();
     private readonly ListIncubatorMembersHandler _handler;
 
     public ListIncubatorMembersHandlerTests()
     {
-        _handler = new ListIncubatorMembersHandler(_userProfileRepo.Object, _roleAssignmentRepo.Object);
+        _handler = new ListIncubatorMembersHandler(_userRepo.Object, _roleAssignmentRepo.Object);
     }
 
     [Fact]
     public async Task Handle_ReturnsFilteredMembers()
     {
-        var profiles = new List<UserProfile>
+        var users = new List<User>
         {
-            UserProfile.Create(1, Guid.NewGuid(), "user1@test.com", "Juan", "Pérez", "Active", UtcNow, UtcNow),
-            UserProfile.Create(2, Guid.NewGuid(), "user2@test.com", "María", "García", "Active", UtcNow, UtcNow),
-            UserProfile.Create(3, Guid.NewGuid(), "user3@test.com", "Carlos", "López", "Active", UtcNow, UtcNow),
+            CreateUser(1, "user1@test.com", "CO", "100", "Juan", "Pérez"),
+            CreateUser(2, "user2@test.com", "CO", "200", "María", "García"),
+            CreateUser(3, "user3@test.com", "CO", "300", "Carlos", "López"),
         };
 
         var roleAssignments = new List<RoleAssignment>
@@ -39,8 +40,8 @@ public class ListIncubatorMembersHandlerTests
             RoleAssignment.Create(2, 10, null, "Entrepreneur", UtcNow),
         };
 
-        _userProfileRepo.Setup(r => r.Query())
-            .Returns(profiles.AsAsyncQueryable());
+        _userRepo.Setup(r => r.Query())
+            .Returns(users.AsAsyncQueryable());
         _roleAssignmentRepo.Setup(r => r.Query())
             .Returns(roleAssignments.AsAsyncQueryable());
 
@@ -60,10 +61,10 @@ public class ListIncubatorMembersHandlerTests
     [Fact]
     public async Task Handle_WithSearch_FiltersResults()
     {
-        var profiles = new List<UserProfile>
+        var users = new List<User>
         {
-            UserProfile.Create(1, Guid.NewGuid(), "juan@test.com", "Juan", "Pérez", "Active", UtcNow, UtcNow),
-            UserProfile.Create(2, Guid.NewGuid(), "maria@test.com", "María", "García", "Active", UtcNow, UtcNow),
+            CreateUser(1, "juan@test.com", "CO", "100", "Juan", "Pérez"),
+            CreateUser(2, "maria@test.com", "CO", "200", "María", "García"),
         };
 
         var roleAssignments = new List<RoleAssignment>
@@ -72,8 +73,8 @@ public class ListIncubatorMembersHandlerTests
             RoleAssignment.Create(2, 10, null, "Entrepreneur", UtcNow),
         };
 
-        _userProfileRepo.Setup(r => r.Query())
-            .Returns(profiles.AsAsyncQueryable());
+        _userRepo.Setup(r => r.Query())
+            .Returns(users.AsAsyncQueryable());
         _roleAssignmentRepo.Setup(r => r.Query())
             .Returns(roleAssignments.AsAsyncQueryable());
 
@@ -92,15 +93,15 @@ public class ListIncubatorMembersHandlerTests
     [Fact]
     public async Task Handle_WithEmptyIncubator_ReturnsEmptyResult()
     {
-        var profiles = new List<UserProfile>
+        var users = new List<User>
         {
-            UserProfile.Create(1, Guid.NewGuid(), "user1@test.com", "Juan", "Pérez", "Active", UtcNow, UtcNow),
+            CreateUser(1, "user1@test.com", "CO", "100", "Juan", "Pérez"),
         };
 
         var roleAssignments = new List<RoleAssignment>();
 
-        _userProfileRepo.Setup(r => r.Query())
-            .Returns(profiles.AsAsyncQueryable());
+        _userRepo.Setup(r => r.Query())
+            .Returns(users.AsAsyncQueryable());
         _roleAssignmentRepo.Setup(r => r.Query())
             .Returns(roleAssignments.AsAsyncQueryable());
 
@@ -112,5 +113,12 @@ public class ListIncubatorMembersHandlerTests
         result.IsSuccess.Should().BeTrue();
         result.Value!.RecordsTotal.Should().Be(0);
         result.Value.Data.Should().BeEmpty();
+    }
+
+    private static User CreateUser(long id, string email, string country, string nationalId, string firstName, string lastName)
+    {
+        var user = User.Register(email, country, nationalId, firstName, lastName, "hash", UtcNow);
+        typeof(User).GetProperty("Id")!.SetValue(user, id);
+        return user;
     }
 }

@@ -3,6 +3,7 @@ using Mentoory.Shared.Application.Interfaces;
 using Mentoory.Shared.Infrastructure.Persistence;
 using Mentoory.Tenant.Domain.Aggregates.Incubator;
 using Mentoory.Tenant.Domain.Aggregates.Project;
+using Mentoory.Tenant.Domain.Aggregates.ProjectInvitation;
 using Mentoory.Tenant.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,6 +29,8 @@ public class TenantDbContext : SharedAbstractDbContext
 
     public virtual DbSet<MentorAssignment> MentorAssignments { get; set; } = null!;
 
+    public virtual DbSet<ProjectInvitation> ProjectInvitations { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureIncubator(modelBuilder);
@@ -35,6 +38,7 @@ public class TenantDbContext : SharedAbstractDbContext
         ConfigureProjectStage(modelBuilder);
         ConfigureProjectParticipant(modelBuilder);
         ConfigureMentorAssignment(modelBuilder);
+        ConfigureProjectInvitation(modelBuilder);
     }
 
     private static void ConfigureIncubator(ModelBuilder modelBuilder)
@@ -67,6 +71,8 @@ public class TenantDbContext : SharedAbstractDbContext
             entity.Property(e => e.Description).HasMaxLength(1000);
             entity.Property(e => e.CurrentStageType).IsRequired().HasConversion<byte>();
             entity.Property(e => e.CurrentStageState).IsRequired().HasConversion<byte>();
+            entity.Property(e => e.IsPublic).IsRequired().HasDefaultValue(false);
+            entity.Property(e => e.EnrollmentVariant).IsRequired().HasConversion<byte>().HasDefaultValue(EnrollmentVariant.FullFlow);
             entity.Property(e => e.IsActive).IsRequired().HasDefaultValue(true);
             entity.Property(e => e.CreatedAtUtc).IsRequired();
             entity.Property(e => e.UpdatedAtUtc).IsRequired();
@@ -134,6 +140,36 @@ public class TenantDbContext : SharedAbstractDbContext
             entity.Property(e => e.IsActive).IsRequired().HasDefaultValue(true);
             entity.Property(e => e.AssignedAtUtc).IsRequired();
             entity.Property<long>("ProjectId").IsRequired();
+        });
+    }
+
+    private static void ConfigureProjectInvitation(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ProjectInvitation>(entity =>
+        {
+            entity.ToTable("ProjectInvitations", "tenant");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ExternalId).IsRequired();
+            entity.HasIndex(e => e.ExternalId).IsUnique();
+            entity.Property(e => e.ProjectId).IsRequired();
+            entity.Property(e => e.UserId).IsRequired();
+            entity.Property(e => e.TokenHash).IsRequired().HasMaxLength(128);
+            entity.Property(e => e.Status).IsRequired().HasConversion<byte>().HasDefaultValue(InvitationStatus.Pending);
+            entity.Property(e => e.ExpiresAtUtc).IsRequired();
+            entity.Property(e => e.AcceptedAtUtc);
+            entity.Property(e => e.CreatedAtUtc).IsRequired();
+            entity.Property(e => e.CreatedByUserId).IsRequired();
+            entity.Property(e => e.IsActive).IsRequired().HasDefaultValue(true);
+
+            entity.HasIndex(e => new { e.UserId, e.ProjectId })
+                .IsUnique()
+                .HasFilter("[IsActive] = 1 AND [Status] = 0");
+
+            entity.HasIndex(e => new { e.ProjectId, e.Status })
+                .HasFilter("[IsActive] = 1");
+
+            entity.HasIndex(e => e.UserId)
+                .HasFilter("[IsActive] = 1");
         });
     }
 }

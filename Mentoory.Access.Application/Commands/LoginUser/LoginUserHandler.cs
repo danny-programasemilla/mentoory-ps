@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using Mentoory.Access.Application.Configuration;
 using Mentoory.Access.Domain.Aggregates.AuthSession;
 using Mentoory.Access.Domain.Enums;
 using Mentoory.Access.Domain.Repositories;
@@ -10,41 +11,32 @@ using Microsoft.Extensions.Logging;
 
 namespace Mentoory.Access.Application.Commands.LoginUser;
 
-/// <summary>
-/// Handles user login by validating credentials and creating an authentication session.
-/// </summary>
-public partial class LoginUserHandler : BaseCommandHandler<LoginUserCommand, AuthSession>
+public partial class LoginUserHandler : BaseCommandHandler<LoginUserCommand, LoginUserResult>
 {
     private readonly IUserRepository _userRepository;
     private readonly IAuthSessionRepository _authSessionRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly ITimeProvider _timeProvider;
+    private readonly ISystemConfigurationReader _configReader;
     private readonly ILogger<LoginUserHandler> _logger;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="LoginUserHandler"/> class.
-    /// </summary>
-    /// <param name="userRepository">The user repository for persistence operations.</param>
-    /// <param name="authSessionRepository">The auth session repository for session management.</param>
-    /// <param name="passwordHasher">The password hasher for verifying credentials.</param>
-    /// <param name="timeProvider">The time provider for obtaining current UTC time.</param>
-    /// <param name="logger">The logger instance.</param>
     public LoginUserHandler(
         IUserRepository userRepository,
         IAuthSessionRepository authSessionRepository,
         IPasswordHasher passwordHasher,
         ITimeProvider timeProvider,
+        ISystemConfigurationReader configReader,
         ILogger<LoginUserHandler> logger)
     {
         _userRepository = userRepository;
         _authSessionRepository = authSessionRepository;
         _passwordHasher = passwordHasher;
         _timeProvider = timeProvider;
+        _configReader = configReader;
         _logger = logger;
     }
 
-    /// <inheritdoc />
-    public override async Task<Result<AuthSession>> Handle(LoginUserCommand request, CancellationToken cancellationToken)
+    public override async Task<Result<LoginUserResult>> Handle(LoginUserCommand request, CancellationToken cancellationToken)
     {
         var utcNow = _timeProvider.UtcNow;
         var normalizedEmail = request.Email.Trim().ToUpperInvariant();
@@ -54,6 +46,11 @@ public partial class LoginUserHandler : BaseCommandHandler<LoginUserCommand, Aut
         {
             return Failure(ResultErrorCodes.GenericError, ("Login", "Credenciales inválidas."));
         }
+
+        // Read config-driven values
+        var maxAttempts = await _configReader.GetIntAsync(nameof(ConfigurationKey.MaxFailedLoginAttempts), cancellationToken);
+        var lockoutMinutes = await _configReader.GetIntAsync(nameof(ConfigurationKey.LockoutDurationMinutes), cancellationToken);
+        var sessionTimeoutHours = await _configReader.GetIntAsync(nameof(ConfigurationKey.SessionTimeoutHours), cancellationToken);
 
         // Check lockout
         if (user.IsLockedOut(utcNow))
@@ -76,7 +73,7 @@ public partial class LoginUserHandler : BaseCommandHandler<LoginUserCommand, Aut
         var activeCredential = user.GetActiveCredential();
         if (activeCredential is null || !_passwordHasher.VerifyPassword(request.Password, activeCredential.PasswordHash))
         {
-            user.RecordFailedLogin(utcNow, maxAttempts: 5, lockoutDuration: TimeSpan.FromMinutes(15));
+            user.RecordFailedLogin(utcNow, maxAttempts, TimeSpan.FromMinutes(lockoutMinutes));
             _userRepository.Update(user);
             await _userRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
             LogLoginFailed(normalizedEmail);
@@ -103,7 +100,7 @@ public partial class LoginUserHandler : BaseCommandHandler<LoginUserCommand, Aut
             request.IpAddress,
             request.UserAgent,
             utcNow,
-            TimeSpan.FromHours(8));
+            TimeSpan.FromHours(sessionTimeoutHours));
 
         _authSessionRepository.Add(session);
         _userRepository.Update(user);
@@ -111,18 +108,14 @@ public partial class LoginUserHandler : BaseCommandHandler<LoginUserCommand, Aut
 
         LogLoginSucceeded(normalizedEmail);
 
-        return Success(session);
+        return Success(new LoginUserResult(
+            session,
+            user.AccountStatus == AccountStatus.PasswordResetRequired));
     }
 
-    /// <summary>
-    /// Logs when a login attempt fails.
-    /// </summary>
     [LoggerMessage(Level = LogLevel.Warning, Message = "Login failed for email: {Email}")]
     partial void LogLoginFailed(string email);
 
-    /// <summary>
-    /// Logs when a login attempt succeeds.
-    /// </summary>
     [LoggerMessage(Level = LogLevel.Information, Message = "Login succeeded for email: {Email}")]
     partial void LogLoginSucceeded(string email);
 }

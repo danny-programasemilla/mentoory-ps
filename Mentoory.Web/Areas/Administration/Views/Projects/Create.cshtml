@@ -33,6 +33,20 @@
                         <span asp-validation-for="Description" class="text-danger"></span>
                     </div>
 
+                    <div class="mb-3 form-check">
+                        <input asp-for="IsPublic" class="form-check-input" type="checkbox" />
+                        <label asp-for="IsPublic" class="form-check-label"></label>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="EnrollmentVariant" class="form-label"></label>
+                        <select asp-for="EnrollmentVariant" class="form-select">
+                            <option value="0">Flujo completo</option>
+                            <option value="1">Directo</option>
+                        </select>
+                        <span asp-validation-for="EnrollmentVariant" class="text-danger"></span>
+                    </div>
+
                     <div class="d-flex justify-content-end gap-2">
                         <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
                         <button type="submit" class="btn btn-primary">

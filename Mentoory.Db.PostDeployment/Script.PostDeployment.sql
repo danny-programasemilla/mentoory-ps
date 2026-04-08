@@ -30,8 +30,16 @@ PRINT '[004.SeedTestData.sql] Starting';
 :r ./004.SeedTestData.sql
 PRINT '[004.SeedTestData.sql] Finished';
 
-PRINT '[005.SeedUserProfiles.sql] Starting';
-:r ./005.SeedUserProfiles.sql
-PRINT '[005.SeedUserProfiles.sql] Finished';
+PRINT '[016.SeedCountries.sql] Starting';
+:r ./016.SeedCountries.sql
+PRINT '[016.SeedCountries.sql] Finished';
+
+PRINT '[017.SeedSystemConfiguration.sql] Starting';
+:r ./017.SeedSystemConfiguration.sql
+PRINT '[017.SeedSystemConfiguration.sql] Finished';
+
+PRINT '[018.SeedProjectPublicFlag.sql] Starting';
+:r ./018.SeedProjectPublicFlag.sql
+PRINT '[018.SeedProjectPublicFlag.sql] Finished';
 
 PRINT '[Script.PostDeployment.sql] Finished';

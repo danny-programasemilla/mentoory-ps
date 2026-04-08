@@ -52,18 +52,26 @@ public class LoginController : Controller
             return View(model);
         }
 
-        var session = result.Value!;
+        var loginResult = result.Value!;
+        var session = loginResult.Session;
 
+        var accountStatus = loginResult.RequiresPasswordChange ? "PasswordResetRequired" : "Active";
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, session.UserId.ToString()),
             new("SessionToken", session.SessionToken),
+            new("AccountStatus", accountStatus),
         };
 
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         var principal = new ClaimsPrincipal(identity);
 
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+        if (loginResult.RequiresPasswordChange)
+        {
+            return RedirectToAction("Index", "ChangePassword", new { area = "Access" });
+        }
 
         return RedirectToAction("Select", "Context", new { area = string.Empty, returnUrl });
     }

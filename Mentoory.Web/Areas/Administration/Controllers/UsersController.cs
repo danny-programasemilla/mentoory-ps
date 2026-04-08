@@ -1,5 +1,9 @@
-using Mentoory.Access.Application.Queries.ListIncubatorMembers;
+using Mentoory.Access.Application.Commands.AdminVerifyEmail;
+using Mentoory.Access.Application.Commands.RegenerateVerificationToken;
+using Mentoory.Access.Application.Commands.RegisterInternalUser;
 using Mentoory.Access.Application.Commands.RegisterUser;
+using Mentoory.Access.Application.Countries.Queries.ListCountries;
+using Mentoory.Access.Application.Queries.ListIncubatorMembers;
 using Mentoory.Web.Areas.Administration.Models;
 using Mentoory.Web.Models;
 using Mentoory.Web.Services;
@@ -91,6 +95,90 @@ public class UsersController : Controller
         }
 
         return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> RegisterInternal(CancellationToken ct)
+    {
+        var model = new InternalRegistrationViewModel();
+        var countriesResult = await _executor.SendAndLogIfFailureAsync(new ListCountriesQuery(), ct);
+        model.Countries = countriesResult.IsSuccess ? countriesResult.Value! : [];
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RegisterInternal(InternalRegistrationViewModel model, CancellationToken ct)
+    {
+        if (!ModelState.IsValid)
+        {
+            var countriesResult = await _executor.SendAndLogIfFailureAsync(new ListCountriesQuery(), ct);
+            model.Countries = countriesResult.IsSuccess ? countriesResult.Value! : [];
+            return View(model);
+        }
+
+        var command = new RegisterInternalUserCommand(
+            model.Country,
+            model.Identification,
+            model.Email,
+            model.Password,
+            model.RequireEmailVerification,
+            model.ProjectExternalId);
+
+        var result = await _executor.SendAndLogIfFailureAsync(command, ct);
+
+        if (result.IsSuccess)
+        {
+            TempData["SuccessMessage"] = "Usuario registrado exitosamente.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        foreach (var error in result.ErrorMessages ?? [])
+        {
+            ModelState.AddModelError(error.Context, error.Message);
+        }
+
+        var countries = await _executor.SendAndLogIfFailureAsync(new ListCountriesQuery(), ct);
+        model.Countries = countries.IsSuccess ? countries.Value! : [];
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AdminVerifyEmail(Guid userExternalId, CancellationToken ct)
+    {
+        var result = await _executor.SendAndLogIfFailureAsync(
+            new AdminVerifyEmailCommand(userExternalId), ct);
+
+        if (result.IsSuccess)
+        {
+            TempData["SuccessMessage"] = "Correo electrónico verificado exitosamente.";
+        }
+        else
+        {
+            TempData["ErrorMessage"] = result.ErrorMessages?.FirstOrDefault().Message ?? "Error al verificar el correo.";
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RegenerateVerificationToken(Guid userExternalId, CancellationToken ct)
+    {
+        var result = await _executor.SendAndLogIfFailureAsync(
+            new RegenerateVerificationTokenCommand(userExternalId), ct);
+
+        if (result.IsSuccess)
+        {
+            TempData["SuccessMessage"] = "Token de verificación regenerado exitosamente.";
+        }
+        else
+        {
+            TempData["ErrorMessage"] = result.ErrorMessages?.FirstOrDefault().Message ?? "Error al regenerar el token.";
+        }
+
+        return RedirectToAction(nameof(Index));
     }
 
     private bool HasValidIncubatorContext()

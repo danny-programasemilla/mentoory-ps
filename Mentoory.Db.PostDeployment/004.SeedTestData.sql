@@ -218,6 +218,12 @@ ELSE
 -- SECTION 3: Projects
 -- ==========================================================================================
 
+-- Fix existing seed projects that were incorrectly created with CurrentStageState = 0 (NotStarted)
+-- Domain model creates projects with Registration + InProgress (CurrentStageState = 1)
+UPDATE [tenant].[Projects]
+SET [CurrentStageState] = 1
+WHERE [CurrentStageType] = 0 AND [CurrentStageState] = 0;
+
 DECLARE @Project1Id BIGINT;  -- Proyecto Innovación (Incubator 1)
 DECLARE @Project2Id BIGINT;  -- Proyecto Sostenibilidad (Incubator 1)
 DECLARE @Project3Id BIGINT;  -- Proyecto Digital (Incubator 2)
@@ -228,7 +234,7 @@ DECLARE @Project3Id BIGINT;  -- Proyecto Digital (Incubator 2)
 IF NOT EXISTS (SELECT 1 FROM [tenant].[Projects] WHERE [Name] = N'Proyecto Innovación' AND [IncubatorId] = @Incubator1Id)
 BEGIN
     INSERT INTO [tenant].[Projects] ([ExternalId], [IncubatorId], [Name], [Description], [CurrentStageType], [CurrentStageState], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
-    VALUES (NEWID(), @Incubator1Id, N'Proyecto Innovación', N'Proyecto piloto de innovación tecnológica aplicada al sector agrícola', 0, 0, 1, @Now, @Now);
+    VALUES (NEWID(), @Incubator1Id, N'Proyecto Innovación', N'Proyecto piloto de innovación tecnológica aplicada al sector agrícola', 0, 1, 1, @Now, @Now);
 
     SET @Project1Id = SCOPE_IDENTITY();
 END
@@ -241,7 +247,7 @@ ELSE
 IF NOT EXISTS (SELECT 1 FROM [tenant].[Projects] WHERE [Name] = N'Proyecto Sostenibilidad' AND [IncubatorId] = @Incubator1Id)
 BEGIN
     INSERT INTO [tenant].[Projects] ([ExternalId], [IncubatorId], [Name], [Description], [CurrentStageType], [CurrentStageState], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
-    VALUES (NEWID(), @Incubator1Id, N'Proyecto Sostenibilidad', N'Desarrollo de modelo de negocio sostenible con impacto medioambiental positivo', 0, 0, 1, @Now, @Now);
+    VALUES (NEWID(), @Incubator1Id, N'Proyecto Sostenibilidad', N'Desarrollo de modelo de negocio sostenible con impacto medioambiental positivo', 0, 1, 1, @Now, @Now);
 
     SET @Project2Id = SCOPE_IDENTITY();
 END
@@ -254,7 +260,7 @@ ELSE
 IF NOT EXISTS (SELECT 1 FROM [tenant].[Projects] WHERE [Name] = N'Proyecto Digital' AND [IncubatorId] = @Incubator2Id)
 BEGIN
     INSERT INTO [tenant].[Projects] ([ExternalId], [IncubatorId], [Name], [Description], [CurrentStageType], [CurrentStageState], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
-    VALUES (NEWID(), @Incubator2Id, N'Proyecto Digital', N'Plataforma digital para conectar emprendedores con mentores especializados', 0, 0, 1, @Now, @Now);
+    VALUES (NEWID(), @Incubator2Id, N'Proyecto Digital', N'Plataforma digital para conectar emprendedores con mentores especializados', 0, 1, 1, @Now, @Now);
 
     SET @Project3Id = SCOPE_IDENTITY();
 END

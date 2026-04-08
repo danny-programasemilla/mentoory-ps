@@ -24,8 +24,8 @@ public class SessionManagementTests : IntegrationTestBase
         var (loginResult, _) = await RegisterActivateAndLoginAsync(
             email: "session@example.com", nationalId: "600600600");
         loginResult.IsSuccess.Should().BeTrue();
-        var sessionToken = loginResult.Value!.SessionToken;
-        var originalActivity = loginResult.Value.LastActivityUtc;
+        var sessionToken = loginResult.Value!.Session.SessionToken;
+        var originalActivity = loginResult.Value.Session.LastActivityUtc;
 
         // Small delay to ensure time difference
         await Task.Delay(50);
@@ -59,7 +59,7 @@ public class SessionManagementTests : IntegrationTestBase
         var (loginResult, _) = await RegisterActivateAndLoginAsync(
             email: "logout@example.com", nationalId: "700700700");
         loginResult.IsSuccess.Should().BeTrue();
-        var sessionToken = loginResult.Value!.SessionToken;
+        var sessionToken = loginResult.Value!.Session.SessionToken;
 
         // Act
         var logoutResult = await SendAsync(new LogoutUserCommand(sessionToken));
@@ -80,7 +80,7 @@ public class SessionManagementTests : IntegrationTestBase
         var (loginResult, _) = await RegisterActivateAndLoginAsync(
             email: "validateafterlogout@example.com", nationalId: "800800800");
         loginResult.IsSuccess.Should().BeTrue();
-        var sessionToken = loginResult.Value!.SessionToken;
+        var sessionToken = loginResult.Value!.Session.SessionToken;
 
         await SendAsync(new LogoutUserCommand(sessionToken));
 

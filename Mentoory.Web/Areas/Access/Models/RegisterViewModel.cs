@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Mentoory.Access.Application.Countries.Queries.ListCountries;
 
 namespace Mentoory.Web.Areas.Access.Models;
 
@@ -38,4 +39,6 @@ public class RegisterViewModel
     [Display(Name = "Confirmar contraseña")]
     [Compare("Password", ErrorMessage = "Las contraseñas no coinciden.")]
     public string ConfirmPassword { get; set; } = string.Empty;
+
+    public List<CountryDto> Countries { get; set; } = [];
 }

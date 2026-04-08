@@ -1,5 +1,7 @@
 using FluentAssertions;
 using Mentoory.Access.Application.Commands.ChangePassword;
+using Mentoory.Access.Application.Configuration;
+using Mentoory.Access.Domain.Enums;
 using Mentoory.Access.Domain.Aggregates.User;
 using Mentoory.Access.Domain.Repositories;
 using Mentoory.Access.Domain.Services;
@@ -20,6 +22,7 @@ public class ChangePasswordHandlerTests
     private readonly Mock<IPasswordHasher> _passwordHasher = new();
     private readonly Mock<ITimeProvider> _timeProvider = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
+    private readonly Mock<ISystemConfigurationReader> _configReader = new();
     private readonly ChangePasswordHandler _handler;
 
     public ChangePasswordHandlerTests()
@@ -27,11 +30,14 @@ public class ChangePasswordHandlerTests
         _timeProvider.Setup(t => t.UtcNow).Returns(UtcNow);
         _userRepo.Setup(r => r.UnitOfWork).Returns(_unitOfWork.Object);
         _unitOfWork.Setup(u => u.SaveEntitiesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        _configReader.Setup(r => r.GetIntAsync(nameof(ConfigurationKey.PasswordHistoryDepth), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(5);
 
         _handler = new ChangePasswordHandler(
             _userRepo.Object,
             _passwordHasher.Object,
             _timeProvider.Object,
+            _configReader.Object,
             NullLogger<ChangePasswordHandler>.Instance);
     }
 

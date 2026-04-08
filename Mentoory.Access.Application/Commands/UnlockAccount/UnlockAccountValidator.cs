@@ -13,7 +13,7 @@ public class UnlockAccountValidator : AbstractValidator<UnlockAccountCommand>
     /// </summary>
     public UnlockAccountValidator()
     {
-        RuleFor(x => x.UserId)
-            .GreaterThan(0).WithMessage("El identificador de usuario es inválido.");
+        RuleFor(x => x.UserExternalId)
+            .NotEmpty().WithMessage("El identificador de usuario es inválido.");
     }
 }

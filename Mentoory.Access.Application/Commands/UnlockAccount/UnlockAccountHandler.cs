@@ -18,9 +18,6 @@ public partial class UnlockAccountHandler : BaseCommandHandler<UnlockAccountComm
     /// <summary>
     /// Initializes a new instance of the <see cref="UnlockAccountHandler"/> class.
     /// </summary>
-    /// <param name="userRepository">The user repository for persistence operations.</param>
-    /// <param name="timeProvider">The time provider for obtaining current UTC time.</param>
-    /// <param name="logger">The logger instance.</param>
     public UnlockAccountHandler(
         IUserRepository userRepository,
         ITimeProvider timeProvider,
@@ -36,7 +33,7 @@ public partial class UnlockAccountHandler : BaseCommandHandler<UnlockAccountComm
     {
         var utcNow = _timeProvider.UtcNow;
 
-        var user = await _userRepository.GetByIdAsync(request.UserId, cancellationToken);
+        var user = await _userRepository.GetByExternalIdAsync(request.UserExternalId, cancellationToken);
         if (user is null)
         {
             return Failure(ResultErrorCodes.GenericError, ("UnlockAccount", "Usuario no encontrado."));

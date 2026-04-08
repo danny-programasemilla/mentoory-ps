@@ -96,7 +96,7 @@ public class ServiceResolutionTests : IntegrationTestBase
 
     [Theory]
     [InlineData(typeof(IRequestHandler<RegisterUserCommand, Mentoory.Shared.Application.Result>))]
-    [InlineData(typeof(IRequestHandler<LoginUserCommand, Mentoory.Shared.Application.Result<Mentoory.Access.Domain.Aggregates.AuthSession.AuthSession>>))]
+    [InlineData(typeof(IRequestHandler<LoginUserCommand, Mentoory.Shared.Application.Result<LoginUserResult>>))]
     [InlineData(typeof(IRequestHandler<LogoutUserCommand, Mentoory.Shared.Application.Result>))]
     [InlineData(typeof(IRequestHandler<ChangePasswordCommand, Mentoory.Shared.Application.Result>))]
     [InlineData(typeof(IRequestHandler<VerifyEmailCommand, Mentoory.Shared.Application.Result>))]

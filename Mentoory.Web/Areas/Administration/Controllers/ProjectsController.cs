@@ -2,6 +2,7 @@ using Mentoory.Tenant.Application.Commands.CreateProject;
 using Mentoory.Tenant.Application.Queries.GetProjectByExternalId;
 using Mentoory.Tenant.Application.Queries.ListIncubators;
 using Mentoory.Tenant.Application.Queries.ListProjects;
+using Mentoory.Tenant.Domain.Enums;
 using Mentoory.Web.Areas.Administration.Models;
 using Mentoory.Web.Models;
 using Mentoory.Web.Services;
@@ -68,7 +69,12 @@ public class ProjectsController : Controller
         var incubatorExternalId = await GetIncubatorExternalIdAsync(ct);
 
         var result = await _executor.SendAndLogIfFailureAsync(
-            new CreateProjectCommand(incubatorExternalId, model.Name, model.Description), ct);
+            new CreateProjectCommand(
+                incubatorExternalId,
+                model.Name,
+                model.Description,
+                model.IsPublic,
+                (EnrollmentVariant)model.EnrollmentVariant), ct);
 
         if (result.IsSuccess)
         {

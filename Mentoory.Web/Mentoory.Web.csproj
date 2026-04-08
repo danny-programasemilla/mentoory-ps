@@ -7,6 +7,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="CsvHelper"/>
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="..\Mentoory.Aspire.AppHost.ServiceDefaults\Mentoory.Aspire.AppHost.ServiceDefaults.csproj" />
       <ProjectReference Include="..\Mentoory.Example.Application\Mentoory.Example.Application.csproj" />
       <ProjectReference Include="..\Mentoory.Example.Infrastructure\Mentoory.Example.Infrastructure.csproj" />

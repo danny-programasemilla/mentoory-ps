@@ -9,11 +9,11 @@ using Microsoft.EntityFrameworkCore;
 namespace Mentoory.Access.Application.Queries.ListIncubatorMembers;
 
 /// <summary>
-/// Handles the ListIncubatorMembersQuery by querying the Access domain's
-/// UserProfile read model filtered by active role assignments for an incubator.
+/// Handles the ListIncubatorMembersQuery by querying the User aggregate
+/// filtered by active role assignments for an incubator.
 /// </summary>
 public class ListIncubatorMembersHandler(
-    IUserProfileRepository userProfileRepository,
+    IUserRepository userRepository,
     IRoleAssignmentRepository roleAssignmentRepository)
     : BaseCommandHandler<ListIncubatorMembersQuery, DataTableResponse<IncubatorMemberListItemDto>>
 {
@@ -38,14 +38,14 @@ public class ListIncubatorMembersHandler(
             .Select(ra => ra.UserId)
             .Distinct();
 
-        var query = userProfileRepository.Query()
-            .Where(u => memberUserIds.Contains(u.UserId))
+        var query = userRepository.Query()
+            .Where(u => memberUserIds.Contains(u.Id))
             .Select(u => new IncubatorMemberListItemDto(
-                u.UserExternalId,
-                u.Email,
+                u.ExternalId,
+                u.Email.Value,
                 u.FirstName,
                 u.LastName,
-                u.AccountStatus,
+                u.AccountStatus.ToString(),
                 u.CreatedAtUtc));
 
         var totalRecords = await query.CountAsync(cancellationToken);

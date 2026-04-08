@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Mentoory.Access.Application.Commands.LoginUser;
+using Mentoory.Access.Application.Configuration;
 using Mentoory.Access.Domain.Aggregates.AuthSession;
 using Mentoory.Access.Domain.Aggregates.User;
 using Mentoory.Access.Domain.Enums;
@@ -23,6 +24,7 @@ public class LoginUserHandlerTests
     private readonly Mock<IPasswordHasher> _passwordHasher = new();
     private readonly Mock<ITimeProvider> _timeProvider = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
+    private readonly Mock<ISystemConfigurationReader> _configReader = new();
     private readonly LoginUserHandler _handler;
 
     public LoginUserHandlerTests()
@@ -34,12 +36,21 @@ public class LoginUserHandlerTests
         _sessionRepo.Setup(r => r.GetActiveSessionsByUserIdAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<AuthSession>());
         _sessionRepo.Setup(r => r.Add(It.IsAny<AuthSession>())).Returns((AuthSession s) => s);
+        _configReader.Setup(r => r.GetIntAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string key, CancellationToken _) => key switch
+            {
+                nameof(ConfigurationKey.MaxFailedLoginAttempts) => 5,
+                nameof(ConfigurationKey.LockoutDurationMinutes) => 15,
+                nameof(ConfigurationKey.SessionTimeoutHours) => 8,
+                _ => 0
+            });
 
         _handler = new LoginUserHandler(
             _userRepo.Object,
             _sessionRepo.Object,
             _passwordHasher.Object,
             _timeProvider.Object,
+            _configReader.Object,
             NullLogger<LoginUserHandler>.Instance);
     }
 
@@ -117,9 +128,9 @@ public class LoginUserHandlerTests
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeNull();
-        result.Value!.IpAddress.Should().Be("192.168.1.1");
-        result.Value.UserAgent.Should().Be("TestBrowser");
-        result.Value.IsActive.Should().BeTrue();
+        result.Value!.Session.IpAddress.Should().Be("192.168.1.1");
+        result.Value.Session.UserAgent.Should().Be("TestBrowser");
+        result.Value.Session.IsActive.Should().BeTrue();
     }
 
     [Fact]

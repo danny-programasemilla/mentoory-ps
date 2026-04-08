@@ -31,6 +31,7 @@ public static class DependencyInjection
 
         builder.Services.AddScoped<IIncubatorRepository, IncubatorRepository>();
         builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
+        builder.Services.AddScoped<IProjectInvitationRepository, ProjectInvitationRepository>();
 
         return builder;
     }

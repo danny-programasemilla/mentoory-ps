@@ -1,9 +1,10 @@
 using MediatR;
 using Mentoory.Access.Domain.Aggregates.AuthSession;
+using Mentoory.Access.Domain.Aggregates.Country;
 using Mentoory.Access.Domain.Aggregates.RoleAssignment;
+using Mentoory.Access.Domain.Aggregates.SystemConfiguration;
 using Mentoory.Access.Domain.Aggregates.User;
 using Mentoory.Access.Domain.Enums;
-using Mentoory.Access.Domain.ReadModels;
 using Mentoory.Shared.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -54,10 +55,9 @@ public class AccessDbContext : SharedAbstractDbContext
     /// </summary>
     public virtual DbSet<RoleAssignment> RoleAssignments { get; set; } = null!;
 
-    /// <summary>
-    /// Gets or sets the DbSet for UserProfile read model entities.
-    /// </summary>
-    public virtual DbSet<UserProfile> UserProfiles { get; set; } = null!;
+    public virtual DbSet<SystemConfiguration> SystemConfigurations { get; set; } = null!;
+
+    public virtual DbSet<Country> Countries { get; set; } = null!;
 
     /// <summary>
     /// Configures the entity mappings and database schema for the Access domain.
@@ -71,7 +71,8 @@ public class AccessDbContext : SharedAbstractDbContext
         ConfigureEmailVerificationToken(modelBuilder);
         ConfigurePasswordResetToken(modelBuilder);
         ConfigureRoleAssignment(modelBuilder);
-        ConfigureUserProfile(modelBuilder);
+        ConfigureSystemConfiguration(modelBuilder);
+        ConfigureCountry(modelBuilder);
     }
 
     private static void ConfigureUser(ModelBuilder modelBuilder)
@@ -341,47 +342,41 @@ public class AccessDbContext : SharedAbstractDbContext
         });
     }
 
-    private static void ConfigureUserProfile(ModelBuilder modelBuilder)
+    private static void ConfigureSystemConfiguration(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<UserProfile>(entity =>
+        modelBuilder.Entity<SystemConfiguration>(entity =>
         {
-            entity.ToTable("UserProfiles", "access");
-
+            entity.ToTable("SystemConfigurations", "access");
             entity.HasKey(e => e.Id);
+            entity.Property(e => e.ExternalId).IsRequired();
+            entity.HasIndex(e => e.ExternalId).IsUnique();
+            entity.Property(e => e.Key).IsRequired().HasMaxLength(100);
+            entity.HasIndex(e => e.Key).IsUnique();
+            entity.Property(e => e.Value).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.DataType).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.CreatedAtUtc).IsRequired();
+            entity.Property(e => e.UpdatedAtUtc).IsRequired();
+        });
+    }
 
-            entity.Property(e => e.UserId)
-                .IsRequired();
-
-            entity.HasIndex(e => e.UserId)
-                .IsUnique();
-
-            entity.Property(e => e.UserExternalId)
-                .IsRequired();
-
-            entity.HasIndex(e => e.UserExternalId)
-                .IsUnique();
-
-            entity.Property(e => e.Email)
-                .IsRequired()
-                .HasMaxLength(256);
-
-            entity.Property(e => e.FirstName)
-                .IsRequired()
-                .HasMaxLength(100);
-
-            entity.Property(e => e.LastName)
-                .IsRequired()
-                .HasMaxLength(100);
-
-            entity.Property(e => e.AccountStatus)
-                .IsRequired()
-                .HasMaxLength(50);
-
-            entity.Property(e => e.CreatedAtUtc)
-                .IsRequired();
-
-            entity.Property(e => e.LastSyncedAtUtc)
-                .IsRequired();
+    private static void ConfigureCountry(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Country>(entity =>
+        {
+            entity.ToTable("Countries", "access");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ExternalId).IsRequired();
+            entity.HasIndex(e => e.ExternalId).IsUnique();
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Code).IsRequired().HasMaxLength(3);
+            entity.HasIndex(e => e.Code).IsUnique();
+            entity.Property(e => e.IdentificationLabel).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.IdentificationMask).HasMaxLength(50);
+            entity.Property(e => e.IdentificationRegex).HasMaxLength(200);
+            entity.Property(e => e.IdentificationMaxLength).IsRequired();
+            entity.Property(e => e.IsActive).IsRequired().HasDefaultValue(true);
+            entity.Property(e => e.CreatedAtUtc).IsRequired();
         });
     }
 }
