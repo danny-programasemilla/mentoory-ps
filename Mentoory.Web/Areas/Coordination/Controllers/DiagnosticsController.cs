@@ -4,6 +4,7 @@ using Mentoory.Diagnostic.Application.Queries.ListFormTemplates;
 using Mentoory.Diagnostic.Application.Queries.ListProjectForms;
 using Mentoory.Shared.Application.DataTables;
 using Mentoory.Web.Areas.Coordination.Models;
+using Mentoory.Web.Infrastructure;
 using Mentoory.Web.Models;
 using Mentoory.Web.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -26,8 +27,7 @@ public class DiagnosticsController : Controller
     [HttpGet("")]
     public IActionResult Index()
     {
-        var hasProjectContext = long.TryParse(User.FindFirst("ActiveProjectId")?.Value, out _);
-        ViewBag.HasProjectContext = hasProjectContext;
+        ViewBag.HasProjectContext = User.GetActiveProjectId().HasValue;
         return View();
     }
 
@@ -35,13 +35,13 @@ public class DiagnosticsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Data([FromForm] DataTableServerRequest request, CancellationToken ct)
     {
-        var projectIdClaim = User.FindFirst("ActiveProjectId")?.Value;
-        if (!long.TryParse(projectIdClaim, out var projectId))
+        var projectId = User.GetActiveProjectId();
+        if (!projectId.HasValue)
         {
             return Json(new { draw = 0, recordsTotal = 0, recordsFiltered = 0, data = Array.Empty<object>() });
         }
 
-        var query = new ListProjectFormsQuery(request.ToDataTableRequest(), projectId);
+        var query = new ListProjectFormsQuery(request.ToDataTableRequest(), projectId.Value);
         var result = await _executor.SendOrThrowAsync(query, ct);
 
         return Json(new
@@ -56,6 +56,12 @@ public class DiagnosticsController : Controller
     [HttpGet("[action]")]
     public async Task<IActionResult> Clone(CancellationToken ct)
     {
+        if (!User.GetActiveProjectId().HasValue)
+        {
+            TempData["WarningMessage"] = "Debe seleccionar un proyecto antes de clonar un formulario.";
+            return RedirectToAction("Select", "Context", new { area = string.Empty, returnUrl = Request.Path.Value });
+        }
+
         await PopulateTemplatesViewBag(ct);
         return View(new CloneDiagnosticFormViewModel());
     }
@@ -70,11 +76,10 @@ public class DiagnosticsController : Controller
             return View(model);
         }
 
-        var incubatorIdClaim = User.FindFirst("ActiveIncubatorId")?.Value;
-        var projectIdClaim = User.FindFirst("ActiveProjectId")?.Value;
+        var incubatorId = User.GetActiveIncubatorId();
+        var cloneProjectId = User.GetActiveProjectId();
 
-        if (!long.TryParse(incubatorIdClaim, out var incubatorId) ||
-            !long.TryParse(projectIdClaim, out var projectId))
+        if (incubatorId == 0 || !cloneProjectId.HasValue)
         {
             ModelState.AddModelError(string.Empty, "No se pudo determinar el contexto activo.");
             await PopulateTemplatesViewBag(ct);
@@ -82,7 +87,7 @@ public class DiagnosticsController : Controller
         }
 
         var result = await _executor.SendAndLogIfFailureAsync(
-            new CloneFormTemplateCommand(model.SourceTemplateExternalId, projectId, incubatorId), ct);
+            new CloneFormTemplateCommand(model.SourceTemplateExternalId, cloneProjectId.Value, incubatorId), ct);
 
         if (result.IsSuccess)
         {
@@ -98,15 +103,15 @@ public class DiagnosticsController : Controller
     [HttpGet("{externalId:guid}")]
     public async Task<IActionResult> Details(Guid externalId, CancellationToken ct)
     {
-        var projectIdClaim = User.FindFirst("ActiveProjectId")?.Value;
-        if (!long.TryParse(projectIdClaim, out var projectId))
+        var detailsProjectId = User.GetActiveProjectId();
+        if (!detailsProjectId.HasValue)
         {
             TempData["WarningMessage"] = "Debe seleccionar un proyecto antes de continuar.";
             return RedirectToAction("Select", "Context", new { area = string.Empty, returnUrl = Request.Path.Value });
         }
 
         var form = await _executor.SendOrThrowAsync(
-            new GetProjectFormQuery(externalId, projectId), ct);
+            new GetProjectFormQuery(externalId, detailsProjectId.Value), ct);
 
         return View(form);
     }

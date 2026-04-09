@@ -4,6 +4,7 @@ using Mentoory.Tenant.Application.Queries.ListIncubators;
 using Mentoory.Tenant.Application.Queries.ListProjects;
 using Mentoory.Tenant.Domain.Enums;
 using Mentoory.Web.Areas.Administration.Models;
+using Mentoory.Web.Infrastructure;
 using Mentoory.Web.Models;
 using Mentoory.Web.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -26,7 +27,7 @@ public class ProjectsController : Controller
     [HttpGet("")]
     public IActionResult Index()
     {
-        if (!HasValidIncubatorContext())
+        if (!User.HasValidIncubatorContext())
         {
             TempData["WarningMessage"] = "Debe seleccionar una incubadora antes de continuar.";
             return RedirectToAction("Select", "Context", new { area = string.Empty, returnUrl = Request.Path.Value });
@@ -38,7 +39,7 @@ public class ProjectsController : Controller
     [HttpPost("[action]")]
     public async Task<IActionResult> Data([FromForm] DataTableServerRequest request, CancellationToken ct)
     {
-        var incubatorId = GetActiveIncubatorId();
+        var incubatorId = User.GetActiveIncubatorId();
         var query = new ListProjectsQuery(request.ToDataTableRequest(), incubatorId);
         var result = await _executor.SendOrThrowAsync(query, ct);
 
@@ -90,27 +91,16 @@ public class ProjectsController : Controller
     public async Task<IActionResult> Details(Guid externalId, CancellationToken ct)
     {
         var project = await _executor.SendOrThrowAsync(
-            new GetProjectByExternalIdQuery(externalId), ct);
+            new GetProjectByExternalIdQuery(externalId, User.GetActiveIncubatorIdOrNull()), ct);
 
         return View(project);
-    }
-
-    private bool HasValidIncubatorContext()
-    {
-        return long.TryParse(User.FindFirst("ActiveIncubatorId")?.Value, out var id) && id > 0;
-    }
-
-    private long GetActiveIncubatorId()
-    {
-        var claim = User.FindFirst("ActiveIncubatorId")?.Value;
-        return long.TryParse(claim, out var id) ? id : 0;
     }
 
     private async Task<Guid> GetIncubatorExternalIdAsync(CancellationToken ct)
     {
         // The incubator ID from context is the internal ID; we need the ExternalId for the command.
         // We use ListIncubators with a minimal request to get the incubator info.
-        var incubatorId = GetActiveIncubatorId();
+        var incubatorId = User.GetActiveIncubatorId();
         var request = new Mentoory.Shared.Application.DataTables.DataTableRequest(1, 0, 1, null, "asc", null, null);
         var result = await _executor.SendOrThrowAsync(new ListIncubatorsQuery(request), ct);
 

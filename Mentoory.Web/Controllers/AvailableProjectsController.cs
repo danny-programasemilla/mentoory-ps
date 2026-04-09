@@ -1,5 +1,5 @@
-using System.Security.Claims;
 using Mentoory.Tenant.Application.Invitations.Commands.RequestSelfEnrollment;
+using Mentoory.Web.Infrastructure;
 using Mentoory.Tenant.Application.Projects.Queries.ListPublicProjects;
 using Mentoory.Web.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -32,7 +32,7 @@ public class AvailableProjectsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Enroll(Guid projectExternalId, CancellationToken ct)
     {
-        var userId = TryGetUserId();
+        var userId = User.GetUserId();
         if (userId is null)
         {
             return RedirectToAction("Login", "Login", new { area = "Access" });
@@ -53,12 +53,5 @@ public class AvailableProjectsController : Controller
         }
 
         return RedirectToAction(nameof(Index));
-    }
-
-    private long? TryGetUserId()
-    {
-        return long.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id)
-            ? id
-            : null;
     }
 }

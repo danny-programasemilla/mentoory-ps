@@ -3,6 +3,7 @@ using Mentoory.Tenant.Application.Commands.UpdateIncubator;
 using Mentoory.Tenant.Application.Queries.GetIncubatorByExternalId;
 using Mentoory.Tenant.Application.Queries.ListIncubators;
 using Mentoory.Web.Areas.Platform.Models;
+using Mentoory.Web.Infrastructure;
 using Mentoory.Web.Models;
 using Mentoory.Web.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -75,7 +76,7 @@ public class IncubatorsController : Controller
     public async Task<IActionResult> Details(Guid externalId, CancellationToken ct)
     {
         var incubator = await _executor.SendOrThrowAsync(
-            new GetIncubatorByExternalIdQuery(externalId), ct);
+            new GetIncubatorByExternalIdQuery(externalId, User.GetActiveIncubatorIdOrNull()), ct);
 
         return View(incubator);
     }
@@ -84,7 +85,7 @@ public class IncubatorsController : Controller
     public async Task<IActionResult> Edit(Guid externalId, CancellationToken ct)
     {
         var incubator = await _executor.SendOrThrowAsync(
-            new GetIncubatorByExternalIdQuery(externalId), ct);
+            new GetIncubatorByExternalIdQuery(externalId, User.GetActiveIncubatorIdOrNull()), ct);
 
         var model = new EditIncubatorViewModel
         {

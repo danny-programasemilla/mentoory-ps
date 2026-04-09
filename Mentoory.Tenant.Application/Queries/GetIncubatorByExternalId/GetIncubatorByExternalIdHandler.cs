@@ -27,7 +27,14 @@ public partial class GetIncubatorByExternalIdHandler(
         {
             LogIncubatorNotFound(request.ExternalId);
             return Failure(ResultErrorCodes.GenericError,
-                (nameof(request.ExternalId), "Incubator not found"));
+                (nameof(request.ExternalId), "Incubadora no encontrada."));
+        }
+
+        if (request.CallerIncubatorId is { } callerIncubatorId
+            && incubator.Id != callerIncubatorId)
+        {
+            return Failure(ResultErrorCodes.GenericError,
+                (nameof(request.ExternalId), "No tiene autorización para acceder a esta incubadora."));
         }
 
         var dto = new IncubatorDto(

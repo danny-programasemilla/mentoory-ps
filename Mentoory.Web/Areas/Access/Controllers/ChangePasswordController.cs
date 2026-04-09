@@ -1,6 +1,6 @@
-using System.Security.Claims;
 using Mentoory.Access.Application.Commands.ForcedPasswordChange;
 using Mentoory.Web.Areas.Access.Models;
+using Mentoory.Web.Infrastructure;
 using Mentoory.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -33,13 +33,13 @@ public class ChangePasswordController : Controller
             return View(model);
         }
 
-        var userId = GetCurrentUserId();
-        if (userId == 0)
+        var userId = User.GetUserId();
+        if (userId is null)
         {
             return RedirectToAction("Index", "Login", new { area = "Access" });
         }
 
-        var command = new ForcedPasswordChangeCommand(userId, model.CurrentPassword, model.NewPassword);
+        var command = new ForcedPasswordChangeCommand(userId.Value, model.CurrentPassword, model.NewPassword);
         var result = await _executor.SendAndLogIfFailureAsync(command, ct);
 
         if (result.IsFailure)
@@ -54,11 +54,5 @@ public class ChangePasswordController : Controller
 
         TempData["SuccessMessage"] = "Contraseña actualizada exitosamente.";
         return RedirectToAction("Select", "Context", new { area = string.Empty });
-    }
-
-    private long GetCurrentUserId()
-    {
-        var claim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        return long.TryParse(claim, out var id) ? id : 0;
     }
 }

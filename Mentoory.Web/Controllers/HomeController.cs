@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Mentoory.Web.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mentoory.Web.Models;
@@ -10,7 +11,7 @@ public class HomeController : Controller
     [Authorize]
     public IActionResult Index()
     {
-        var activeRole = User.FindFirst("ActiveRole")?.Value;
+        var activeRole = User.GetActiveRole();
 
         if (string.IsNullOrEmpty(activeRole))
         {

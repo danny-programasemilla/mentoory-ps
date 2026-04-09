@@ -1,3 +1,4 @@
+using Mentoory.Web.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,8 +11,7 @@ public class DashboardController : Controller
     [HttpGet]
     public IActionResult Index()
     {
-        var incubatorIdClaim = User.FindFirst("ActiveIncubatorId")?.Value;
-        if (!long.TryParse(incubatorIdClaim, out var incubatorId) || incubatorId <= 0)
+        if (!User.HasValidIncubatorContext())
         {
             TempData["WarningMessage"] = "Debe seleccionar una incubadora antes de continuar.";
             return RedirectToAction("Select", "Context", new { area = string.Empty, returnUrl = Request.Path.Value });

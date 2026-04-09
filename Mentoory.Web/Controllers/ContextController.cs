@@ -4,6 +4,7 @@ using Mentoory.Access.Application.Queries.GetUserContexts;
 using Mentoory.Access.Domain.ReadModels;
 using Mentoory.Shared.Domain.Constants;
 using Mentoory.Tenant.Application.Queries.ListIncubatorContextOptions;
+using Mentoory.Web.Infrastructure;
 using Mentoory.Web.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -25,7 +26,7 @@ public class ContextController : Controller
     [HttpGet]
     public async Task<IActionResult> Select(string? returnUrl, CancellationToken ct)
     {
-        var userId = TryGetUserId();
+        var userId = User.GetUserId();
         if (userId is null)
         {
             return RedirectToAction("Login", "Login", new { area = "Access" });
@@ -91,7 +92,7 @@ public class ContextController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Switch([FromBody] ContextSwitchRequest request, CancellationToken ct)
     {
-        var userId = TryGetUserId();
+        var userId = User.GetUserId();
         if (userId is null)
         {
             return Unauthorized(new { message = "Sesión inválida." });
@@ -130,7 +131,7 @@ public class ContextController : Controller
 
     private async Task<IActionResult> SetContext(Guid roleAssignmentExternalId, string? returnUrl, CancellationToken ct)
     {
-        var userId = TryGetUserId();
+        var userId = User.GetUserId();
         if (userId is null)
         {
             return RedirectToAction("Login", "Login", new { area = "Access" });
@@ -191,7 +192,7 @@ public class ContextController : Controller
         string? returnUrl,
         CancellationToken ct)
     {
-        var userId = TryGetUserId();
+        var userId = User.GetUserId();
         if (userId is null)
         {
             return RedirectToAction("Login", "Login", new { area = "Access" });
@@ -266,13 +267,6 @@ public class ContextController : Controller
         await HttpContext.SignInAsync(
             CookieAuthenticationDefaults.AuthenticationScheme,
             principal);
-    }
-
-    private long? TryGetUserId()
-    {
-        return long.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id)
-            ? id
-            : null;
     }
 }
 

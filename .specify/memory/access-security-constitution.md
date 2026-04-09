@@ -469,7 +469,7 @@ The permission matrix uses a tabular format with one row per action. This format
 | Assign Mentor to Entrepreneur | MentorAssignment | No | FULL | SCOPED | SCOPED | NONE | NONE | NONE | Project | One entrepreneur can have multiple mentors | REQUIRED | |
 | View Entrepreneur Data | EntrepreneurData | No | FULL | SCOPED | SCOPED | SCOPED | SCOPED | NONE | Project | M sees only assigned entrepreneurs; E sees only own data | RECOMMENDED | **[OPEN]** Sponsor access? |
 | Manage Platform Settings | Configuration | Yes | FULL | NONE | NONE | NONE | NONE | NONE | Platform | — | REQUIRED | GlobalAdmin exclusive |
-| Batch Upload Users | User | No | FULL | SCOPED | NONE | NONE | NONE | NONE | Incubator | IA can upload for own incubator only | REQUIRED | |
+| Batch Upload Users | User | No | FULL | SCOPED | SCOPED | NONE | NONE | NONE | Incubator | GA: unrestricted. IA: own incubator. PC: assigned projects only | REQUIRED | |
 | View User Profile | UserProfile | No | FULL | SCOPED | SCOPED | READ | READ | NONE | Incubator | PC/M/E see profiles within project scope | NONE | |
 | Manage Templates | Template | Yes | FULL | NONE | NONE | NONE | NONE | NONE | Platform | — | REQUIRED | GlobalAdmin exclusive |
 | Manage Subscriptions | Subscription | Yes | FULL | NONE | NONE | NONE | NONE | NONE | Platform | — | REQUIRED | GlobalAdmin exclusive |
@@ -1042,7 +1042,7 @@ Quick-reference version. For full details (constraints, audit, notes), see Secti
 | Assign Mentor to Entrepreneur | FULL | SCOPED | SCOPED | - | - | - |
 | View Entrepreneur Data | FULL | SCOPED | SCOPED | SCOPED | SCOPED | - |
 | Manage Platform Settings | FULL | - | - | - | - | - |
-| Batch Upload Users | FULL | SCOPED | - | - | - | - |
+| Batch Upload Users | FULL | SCOPED | SCOPED | - | - | - |
 | View User Profile | FULL | SCOPED | SCOPED | READ | READ | - |
 | Manage Templates | FULL | - | - | - | - | - |
 | Manage Subscriptions | FULL | - | - | - | - | - |

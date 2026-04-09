@@ -24,6 +24,7 @@ public class TemplatesController : Controller
         return View();
     }
 
+    // GlobalAdmin-only: unscoped template listing is intentional
     [HttpPost("Diagnostics/Data")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DiagnosticsData([FromForm] DataTableServerRequest request, CancellationToken ct)

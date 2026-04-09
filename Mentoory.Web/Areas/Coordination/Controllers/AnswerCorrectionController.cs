@@ -1,5 +1,5 @@
-using System.Security.Claims;
 using Mentoory.Diagnostic.Application.Commands.CorrectAnswer;
+using Mentoory.Web.Infrastructure;
 using Mentoory.Diagnostic.Application.Queries.GetDiagnosticResponse;
 using Mentoory.Web.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -22,15 +22,15 @@ public class AnswerCorrectionController : Controller
     [HttpGet("{diagnosticExternalId:guid}")]
     public async Task<IActionResult> Index(Guid diagnosticExternalId, CancellationToken ct)
     {
-        var projectIdClaim = User.FindFirst("ActiveProjectId")?.Value;
-        if (!long.TryParse(projectIdClaim, out var projectId))
+        var projectId = User.GetActiveProjectId();
+        if (!projectId.HasValue)
         {
             TempData["WarningMessage"] = "Debe seleccionar un proyecto antes de continuar.";
             return RedirectToAction("Select", "Context", new { area = string.Empty });
         }
 
         var response = await _executor.SendOrThrowAsync(
-            new GetDiagnosticResponseQuery(diagnosticExternalId, projectId), ct);
+            new GetDiagnosticResponseQuery(diagnosticExternalId, projectId.Value), ct);
 
         return View(response);
     }
@@ -46,14 +46,13 @@ public class AnswerCorrectionController : Controller
         string? reason,
         CancellationToken ct)
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (!long.TryParse(userIdClaim, out var userId))
+        var userId = User.GetUserId();
+        if (!userId.HasValue)
         {
             return BadRequest("No se pudo determinar el usuario.");
         }
 
-        var projectIdClaim = User.FindFirst("ActiveProjectId")?.Value;
-        long.TryParse(projectIdClaim, out var projectId);
+        var correctProjectId = User.GetActiveProjectId();
 
         var result = await _executor.SendAndLogIfFailureAsync(
             new CorrectAnswerCommand(
@@ -62,9 +61,9 @@ public class AnswerCorrectionController : Controller
                 newTextValue,
                 newNumericValue,
                 newSelectedOptionIds,
-                userId,
+                userId.Value,
                 reason,
-                projectId > 0 ? projectId : null),
+                correctProjectId),
             ct);
 
         if (result.IsSuccess)

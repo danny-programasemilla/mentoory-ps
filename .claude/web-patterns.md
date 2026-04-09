@@ -297,11 +297,14 @@ All JS files live in `/wwwroot/js/` (never inside Views folders).
 - `password-reset`: 3 requests / 60 min per IP
 
 ### Session Context
-Claims available in authenticated controllers:
-- `User.FindFirst("UserId")` — internal user ID
-- `User.FindFirst("ActiveIncubatorId")` — current incubator context
-- `User.FindFirst("ActiveProjectId")` — current project context
-- `User.FindFirst("ActiveRole")` — current role
+Use extension methods from `Mentoory.Web.Infrastructure.ClaimsPrincipalExtensions`:
+- `User.GetUserId()` → `long?` — internal user ID
+- `User.GetActiveIncubatorId()` → `long` — current incubator context (0 if unset)
+- `User.HasValidIncubatorContext()` → `bool` — true if incubator ID is set and > 0
+- `User.GetActiveProjectId()` → `long?` — current project context
+- `User.GetActiveRole()` → `string?` — current role
+
+Never use raw `User.FindFirst("ActiveIncubatorId")` etc. — always use the extension methods.
 
 ## Phoenix Admin Template
 

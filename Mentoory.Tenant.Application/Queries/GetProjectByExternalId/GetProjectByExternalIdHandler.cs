@@ -27,7 +27,14 @@ public partial class GetProjectByExternalIdHandler(
         {
             LogProjectNotFound(request.ExternalId);
             return Failure(ResultErrorCodes.GenericError,
-                (nameof(request.ExternalId), "Project not found"));
+                (nameof(request.ExternalId), "Proyecto no encontrado."));
+        }
+
+        if (request.CallerIncubatorId is { } callerIncubatorId
+            && project.IncubatorId != callerIncubatorId)
+        {
+            return Failure(ResultErrorCodes.GenericError,
+                (nameof(request.ExternalId), "No tiene autorización para acceder a este proyecto."));
         }
 
         var dto = new ProjectDto(

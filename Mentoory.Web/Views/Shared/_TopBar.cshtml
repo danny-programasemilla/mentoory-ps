@@ -2,7 +2,7 @@
     <div class="container-fluid">
         @if (User.Identity?.IsAuthenticated == true)
         {
-            var activeRole = User.FindFirst("ActiveRole")?.Value;
+            var activeRole = User.GetActiveRole();
             var activeIncubatorName = User.FindFirst("ActiveIncubatorName")?.Value;
             var activeProjectName = User.FindFirst("ActiveProjectName")?.Value;
 

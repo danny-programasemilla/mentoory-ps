@@ -1,5 +1,5 @@
-using System.Security.Claims;
 using Mentoory.Diagnostic.Application.Commands.SubmitDiagnosticResponse;
+using Mentoory.Web.Infrastructure;
 using Mentoory.Diagnostic.Application.Queries.GetProjectForm;
 using Mentoory.Diagnostic.Application.Queries.ListProjectForms;
 using Mentoory.Shared.Application.DataTables;
@@ -26,8 +26,8 @@ public class DiagnosticController : Controller
     [HttpGet("")]
     public async Task<IActionResult> Index(Guid? formExternalId, int evaluationStage = 0, CancellationToken ct = default)
     {
-        var projectIdClaim = User.FindFirst("ActiveProjectId")?.Value;
-        if (!long.TryParse(projectIdClaim, out var projectId))
+        var projectId = User.GetActiveProjectId();
+        if (!projectId.HasValue)
         {
             TempData["WarningMessage"] = "Debe seleccionar un proyecto antes de continuar.";
             return RedirectToAction("Select", "Context", new { area = string.Empty, returnUrl = Request.Path.Value });
@@ -44,7 +44,7 @@ public class DiagnosticController : Controller
         }
 
         var form = await _executor.SendOrThrowAsync(
-            new GetProjectFormQuery(formExternalId.Value, projectId), ct);
+            new GetProjectFormQuery(formExternalId.Value, projectId.Value), ct);
 
         if (form is null)
         {
@@ -86,13 +86,13 @@ public class DiagnosticController : Controller
     [HttpPost("[action]")]
     public async Task<IActionResult> Data([FromForm] DataTableServerRequest request, CancellationToken ct)
     {
-        var projectIdClaim = User.FindFirst("ActiveProjectId")?.Value;
-        if (!long.TryParse(projectIdClaim, out var projectId))
+        var dataProjectId = User.GetActiveProjectId();
+        if (!dataProjectId.HasValue)
         {
             return Json(new { draw = 0, recordsTotal = 0, recordsFiltered = 0, data = Array.Empty<object>() });
         }
 
-        var query = new ListProjectFormsQuery(request.ToDataTableRequest(), projectId);
+        var query = new ListProjectFormsQuery(request.ToDataTableRequest(), dataProjectId.Value);
         var result = await _executor.SendOrThrowAsync(query, ct);
 
         return Json(new
@@ -113,13 +113,11 @@ public class DiagnosticController : Controller
             return RedirectToAction(nameof(Index), new { formExternalId = model.FormExternalId });
         }
 
-        var incubatorIdClaim = User.FindFirst("ActiveIncubatorId")?.Value;
-        var projectIdClaim = User.FindFirst("ActiveProjectId")?.Value;
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var incubatorId = User.GetActiveIncubatorId();
+        var submitProjectId = User.GetActiveProjectId();
+        var userId = User.GetUserId();
 
-        if (!long.TryParse(incubatorIdClaim, out var incubatorId) ||
-            !long.TryParse(projectIdClaim, out var projectId) ||
-            !long.TryParse(userIdClaim, out var userId))
+        if (incubatorId == 0 || !submitProjectId.HasValue || !userId.HasValue)
         {
             TempData["ErrorMessage"] = "No se pudo determinar el contexto activo.";
             return RedirectToAction(nameof(Index), new { formExternalId = model.FormExternalId });
@@ -131,9 +129,9 @@ public class DiagnosticController : Controller
         var result = await _executor.SendAndLogIfFailureAsync(
             new SubmitDiagnosticResponseCommand(
                 model.FormExternalId,
-                projectId,
+                submitProjectId.Value,
                 incubatorId,
-                userId,
+                userId.Value,
                 (Mentoory.Diagnostic.Domain.Enums.EvaluationStage)model.EvaluationStage,
                 responses),
             ct);

@@ -13,7 +13,7 @@ public class MenuService : IMenuService
 
     public IReadOnlyList<MenuItem> GetVisibleMenuItems()
     {
-        var role = _httpContextAccessor.HttpContext?.User?.FindFirst("ActiveRole")?.Value;
+        var role = _httpContextAccessor.HttpContext?.User?.GetActiveRole();
         if (string.IsNullOrEmpty(role))
         {
             return Array.Empty<MenuItem>();

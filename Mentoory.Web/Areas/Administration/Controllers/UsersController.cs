@@ -5,6 +5,7 @@ using Mentoory.Access.Application.Commands.RegisterUser;
 using Mentoory.Access.Application.Countries.Queries.ListCountries;
 using Mentoory.Access.Application.Queries.ListIncubatorMembers;
 using Mentoory.Web.Areas.Administration.Models;
+using Mentoory.Web.Infrastructure;
 using Mentoory.Web.Models;
 using Mentoory.Web.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -26,7 +27,7 @@ public class UsersController : Controller
     [HttpGet]
     public IActionResult Index()
     {
-        if (!HasValidIncubatorContext())
+        if (!User.HasValidIncubatorContext())
         {
             TempData["WarningMessage"] = "Debe seleccionar una incubadora antes de continuar.";
             return RedirectToAction("Select", "Context", new { area = string.Empty, returnUrl = Request.Path.Value });
@@ -38,7 +39,7 @@ public class UsersController : Controller
     [HttpPost]
     public async Task<IActionResult> Data([FromForm] DataTableServerRequest request, CancellationToken ct)
     {
-        var incubatorId = GetActiveIncubatorId();
+        var incubatorId = User.GetActiveIncubatorId();
         var query = new ListIncubatorMembersQuery(request.ToDataTableRequest(), incubatorId);
         var result = await _executor.SendOrThrowAsync(query, ct);
 
@@ -179,16 +180,5 @@ public class UsersController : Controller
         }
 
         return RedirectToAction(nameof(Index));
-    }
-
-    private bool HasValidIncubatorContext()
-    {
-        return long.TryParse(User.FindFirst("ActiveIncubatorId")?.Value, out var id) && id > 0;
-    }
-
-    private long GetActiveIncubatorId()
-    {
-        var claim = User.FindFirst("ActiveIncubatorId")?.Value;
-        return long.TryParse(claim, out var id) ? id : 0;
     }
 }

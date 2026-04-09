@@ -14,6 +14,13 @@ public class ListRegistrationProjectsHandler(
         ListRegistrationProjectsQuery request,
         CancellationToken cancellationToken)
     {
+        if (request.CallerIncubatorId is { } callerIncubatorId
+            && callerIncubatorId != request.IncubatorId)
+        {
+            return Failure(ResultErrorCodes.GenericError,
+                (nameof(request.IncubatorId), "No tiene autorización para acceder a esta incubadora."));
+        }
+
         var incubator = await incubatorRepository.GetByIdAsync(
             request.IncubatorId, cancellationToken);
 
@@ -23,12 +30,18 @@ public class ListRegistrationProjectsHandler(
                 (nameof(request.IncubatorId), "Incubadora no encontrada."));
         }
 
+        var query = projectRepository.Query()
+            .Where(p => p.IsActive
+                        && p.CurrentStageType == StageType.Registration
+                        && p.CurrentStageState == StageState.InProgress);
+
+        if (request.AuthorizedProjectIds is not null)
+        {
+            query = query.Where(p => request.AuthorizedProjectIds.Contains(p.Id));
+        }
+
         var projects = await projectRepository.ToListAsync(
-            projectRepository.Query()
-                .Where(p => p.IsActive
-                            && p.CurrentStageType == StageType.Registration
-                            && p.CurrentStageState == StageState.InProgress)
-                .OrderBy(p => p.Name)
+            query.OrderBy(p => p.Name)
                 .Select(p => new RegistrationProjectDto(p.ExternalId, p.Name)),
             cancellationToken);
 
