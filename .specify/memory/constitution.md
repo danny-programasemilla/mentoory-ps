@@ -2,7 +2,14 @@
   ============================================================
   SYNC IMPACT REPORT
   ============================================================
-  Version change: 1.0.1 -> 1.1.0
+  Version change: 1.1.0 -> 1.1.1
+
+  Patches:
+    - Added Related Governance Documents section linking to
+      Access & Security Constitution (access-security-constitution.md)
+    - Updated version footer to 1.1.1
+
+  Previous version: 1.0.1 -> 1.1.0
 
   Minor:
     - Added Principle X: Role Hierarchy & Session Context
@@ -369,10 +376,17 @@ MUST:
 - **PATCH**: Clarifications, wording, typo fixes, non-semantic
   refinements
 
+### Related Governance Documents
+
+- [Access & Security Constitution](access-security-constitution.md) —
+  Foundational governance for role hierarchy, scope boundaries,
+  permission matrix, threat model, and secure feature delivery
+  workflow. Independently versioned.
+
 ### Compliance Review
 
 All specifications and implementations produced by `/speckit`
 workflows are subject to validation against this constitution.
 Non-compliant outputs MUST be revised before approval.
 
-**Version**: 1.1.0 | **Ratified**: 2026-01-27 | **Last Amended**: 2026-03-31
+**Version**: 1.1.1 | **Ratified**: 2026-01-27 | **Last Amended**: 2026-04-08
