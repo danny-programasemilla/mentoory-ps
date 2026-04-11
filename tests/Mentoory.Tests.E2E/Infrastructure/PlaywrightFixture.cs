@@ -26,8 +26,7 @@ public class PlaywrightFixture : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private const string DatabaseName = "MentooryDb";
 
-    private readonly MsSqlContainer _dbContainer = new MsSqlBuilder()
-        .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
+    private readonly MsSqlContainer _dbContainer = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-latest")
         .Build();
 
     private IHost? _kestrelHost;

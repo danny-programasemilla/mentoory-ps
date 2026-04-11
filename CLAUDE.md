@@ -74,6 +74,8 @@ Feature artifacts live in `specs/{###-feature-name}/`. See [`.specify/templates/
 - C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, MediatR 14.1, FluentValidation 12.1, Mapperly 4.x, EF Core 10.x, CsvHelper (004-phase1-3-hardening)
 - Markdown governance documentation (no application code) + Existing codebase analysis (PlatformRole enum, Permission enum, CheckPermissionHandler, RoleAssignment aggregate, TenantContextMiddleware, ITenantContext, Authorize attributes) (005-access-security-constitution)
 - `.specify/memory/access-security-constitution.md` — version-controlled governance artifact (005-access-security-constitution)
+- C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, CsvHelper (007-csv-sample-download)
+- N/A (no database changes) (007-csv-sample-download)
 
 ## Code Review Standards
 After completing any implementation, review the code for:
@@ -89,6 +91,6 @@ After completing any implementation, review the code for:
 Run /simplify before presenting code to the user.
 
 ## Recent Changes
+- 007-csv-sample-download: Added C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, CsvHelper
 - 006-fix-batch-upload-scope: Added C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, MediatR 14.1, FluentValidation 12.1, Mapperly 4.x, EF Core 10.x, CsvHelper
 - 005-access-security-constitution: Added Markdown governance documentation (no application code) + Existing codebase analysis (PlatformRole enum, Permission enum, CheckPermissionHandler, RoleAssignment aggregate, TenantContextMiddleware, ITenantContext, Authorize attributes)
-- 004-phase1-3-hardening: Added C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, MediatR 14.1, FluentValidation 12.1, Mapperly 4.x, EF Core 10.x, CsvHelper

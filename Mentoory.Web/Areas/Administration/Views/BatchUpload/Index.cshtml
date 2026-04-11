@@ -38,7 +38,10 @@
                         <div class="mb-3">
                             <label asp-for="CsvFile" class="form-label"></label>
                             <input asp-for="CsvFile" class="form-control" accept=".csv" />
-                            <div class="form-text">Formato CSV con columnas: Country, Identification, Email, FirstName, LastName. Maximo 500 filas.</div>
+                            <div class="form-text">
+                                Formato CSV con columnas: Country, Identification, Email, FirstName, LastName. Máximo 500 filas.
+                                <a asp-action="DownloadSample" class="ms-1">Descargar plantilla CSV</a>
+                            </div>
                             <span asp-validation-for="CsvFile" class="text-danger"></span>
                         </div>
 

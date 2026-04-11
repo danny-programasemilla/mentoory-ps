@@ -31,7 +31,8 @@ public class ListRegistrationProjectsHandler(
         }
 
         var query = projectRepository.Query()
-            .Where(p => p.IsActive
+            .Where(p => p.IncubatorId == request.IncubatorId
+                        && p.IsActive
                         && p.CurrentStageType == StageType.Registration
                         && p.CurrentStageState == StageState.InProgress);
 

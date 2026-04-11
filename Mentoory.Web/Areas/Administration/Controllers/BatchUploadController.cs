@@ -107,6 +107,41 @@ public class BatchUploadController : Controller
         return View("Results", result.Value);
     }
 
+    [HttpGet]
+    public IActionResult DownloadSample()
+    {
+        using var memoryStream = new MemoryStream();
+        using (var writer = new StreamWriter(memoryStream, leaveOpen: true))
+        using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+        {
+            csv.Context.RegisterClassMap<CsvUserMap>();
+            csv.WriteHeader<CsvUserRecord>();
+            csv.NextRecord();
+
+            csv.WriteRecord(new CsvUserRecord
+            {
+                Country = "CRI",
+                Identification = "101110111",
+                Email = "juan.ejemplo@correo.com",
+                FirstName = "Juan",
+                LastName = "Ejemplo"
+            });
+            csv.NextRecord();
+
+            csv.WriteRecord(new CsvUserRecord
+            {
+                Country = "CRI",
+                Identification = "202220222",
+                Email = "maria.muestra@correo.com",
+                FirstName = "Maria",
+                LastName = "Muestra"
+            });
+            csv.NextRecord();
+        }
+
+        return File(memoryStream.ToArray(), "text/csv", "plantilla-carga-masiva.csv");
+    }
+
     private static List<BatchUserRow> ParseCsvFile(IFormFile csvFile)
     {
         using var stream = csvFile.OpenReadStream();

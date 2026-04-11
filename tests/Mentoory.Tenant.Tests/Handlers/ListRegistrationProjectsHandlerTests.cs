@@ -90,7 +90,7 @@ public class ListRegistrationProjectsHandlerTests
     public async Task Handle_WithNullCallerIncubatorId_SkipsIncubatorValidation()
     {
         SetupIncubator(1);
-        SetupProjects((1, "Alpha"), (2, "Beta"));
+        SetupProjects(1, (1, "Alpha"), (2, "Beta"));
 
         var handler = CreateHandler();
         var query = new ListRegistrationProjectsQuery(1, null, null);
@@ -98,6 +98,25 @@ public class ListRegistrationProjectsHandlerTests
 
         result.IsSuccess.Should().BeTrue();
         result.Value!.Projects.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task Handle_ExcludesProjectsFromOtherIncubators()
+    {
+        SetupIncubator(1);
+        SetupProjectsMultiIncubator(
+            (1, 1, "OwnProject"),
+            (2, 2, "OtherIncubatorProject"),
+            (3, 1, "AnotherOwnProject"));
+
+        var handler = CreateHandler();
+        var query = new ListRegistrationProjectsQuery(1, null, 1L);
+        var result = await handler.Handle(query, CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.Projects.Should().HaveCount(2);
+        result.Value.Projects.Select(p => p.Name)
+            .Should().BeEquivalentTo(["AnotherOwnProject", "OwnProject"]);
     }
 
     private static List<Project> CreateProjects(long incubatorId, params (long Id, string Name)[] projects)
@@ -136,8 +155,32 @@ public class ListRegistrationProjectsHandlerTests
 
     private void SetupProjects(params (long Id, string Name)[] projects)
     {
-        var allProjects = CreateProjects(1, projects);
+        SetupProjects(1, projects);
+    }
 
+    private void SetupProjects(long incubatorId, params (long Id, string Name)[] projects)
+    {
+        var allProjects = CreateProjects(incubatorId, projects);
+        SetupProjectRepository(allProjects);
+    }
+
+    private void SetupProjectsMultiIncubator(params (long Id, long IncubatorId, string Name)[] projects)
+    {
+        var allProjects = new List<Project>();
+        foreach (var (id, incubatorId, name) in projects)
+        {
+            var project = Project.Create(incubatorId, name, null, UtcNow);
+            typeof(Mentoory.Shared.Domain.SeedWork.Entity)
+                .GetProperty(nameof(Mentoory.Shared.Domain.SeedWork.Entity.Id))!
+                .SetValue(project, id);
+            allProjects.Add(project);
+        }
+
+        SetupProjectRepository(allProjects);
+    }
+
+    private void SetupProjectRepository(List<Project> allProjects)
+    {
         _projectRepo.Setup(r => r.Query()).Returns(allProjects.AsQueryable());
         _projectRepo.Setup(r => r.ToListAsync(
                 It.IsAny<IQueryable<RegistrationProjectDto>>(),
