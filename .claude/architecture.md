@@ -4,235 +4,225 @@
 - **Strict layer separation**: Domain → Application → Infrastructure → Web
 - **Dependency rule**: Dependencies only point inward (Web → Infrastructure → Application → Domain)
 - **No web concerns in inner layers**: Convert IFormFile to Stream at controller boundary
+- **Modular monolith**: 7 bounded contexts, each with Domain/Application/Infrastructure projects
+- **Schema-based isolation**: Each bounded context owns its SQL schema (e.g., `[access]`, `[diagnostic]`)
+
+## Bounded Contexts
+
+| Context | Schema | Status | Purpose |
+|---------|--------|--------|---------|
+| Access | `[access]` | Implemented (US1) | Users, credentials, sessions, email verification, password reset, role assignments, context selection, permissions |
+| Tenant | `[tenant]` | Implemented (US1) | Incubators, projects, stages, participants, mentor assignments |
+| Diagnostic | `[diagnostic]` | Implemented (US2) | Form templates, project forms, responses, answer corrections |
+| Knowledge | `[knowledge]` | Scaffolded | Knowledge structures, modules, topics, subjects, resources |
+| Mentoring | `[mentoring]` | Scaffolded | Plans, sessions, assignments, submissions |
+| Subscription | `[subscription]` | Scaffolded | Plans, features, overrides |
+| Notification | `[notification]` | Scaffolded | Email delivery, preferences |
+
+Cross-domain communication is via **integration events** only (MediatR `INotification`).
 
 ## Project Structure
-- **Mentoory.Web**: Main web application (Controllers, Views, Models)
-- **Example.Domain**: Example Core business logic and aggregates
-- **Example.Application**: Example CQRS commands/queries with MediatR
-- **Example.Infrastructure**: Example Data persistence and external services
-- **LindaDb**: SQL Server database project (SSDT)
+
+### Per Bounded Context (example: Diagnostic)
+```
+Mentoory.Diagnostic.Domain/
+├── Aggregates/
+│   ├── FormTemplate/          # Aggregate root + child entities
+│   ├── ProjectForm/           # Aggregate root + child entities
+│   └── DiagnosticResponse/    # Aggregate root + child entities
+├── Enums/
+├── ValueObjects/
+└── Repositories/              # Interfaces only
+
+Mentoory.Diagnostic.Application/
+├── Commands/
+│   ├── CloneFormTemplate/     # Command + Handler + Validator
+│   ├── CustomizeProjectForm/
+│   ├── SubmitDiagnosticResponse/
+│   ├── CorrectAnswer/
+│   └── SyncFromTemplate/
+├── Queries/
+│   ├── GetProjectForm/        # Query + Handler + DTO
+│   ├── GetDiagnosticResponse/
+│   ├── ListFormTemplates/
+│   └── GetTopicScoreAggregation/
+├── IntegrationEvents/
+└── DependencyInjection.cs
+
+Mentoory.Diagnostic.Infrastructure/
+├── Persistence/
+│   ├── DiagnosticDbContext.cs
+│   └── Repositories/
+└── DependencyInjection.cs
+```
+
+### Shared Kernel
+```
+Mentoory.Shared.Domain/
+├── SeedWork/                  # Entity, ValueObject, IAggregateRoot, IRepository, IUnitOfWork
+└── Constants/                 # Roles
+
+Mentoory.Shared.Application/
+├── MediatR/                   # IBaseRequest, BaseCommandHandler
+├── DataTables/                # DataTableRequest, DataTableResponse<T>
+├── IntegrationEvents/         # IntegrationEvent, IIntegrationEventService
+├── TimeProvider/              # ITimeProvider
+├── Behaviors/                 # ValidatorBehavior, TransactionBehavior
+├── Result.cs                  # Result pattern
+├── Result{T}.cs
+└── ResultErrorCodes.cs
+
+Mentoory.Shared.Infrastructure/
+├── Persistence/
+│   ├── SharedAbstractDbContext.cs   # Base DbContext with IUnitOfWork + domain event dispatch
+│   └── Repositories/
+│       └── AbstractRepository.cs    # Base repository
+└── Services/                        # DefaultSystemTimeProvider, TenantContextService
+```
+
+### Web Layer (organized by user role)
+```
+Mentoory.Web/
+├── Areas/
+│   ├── Identity/              # Login, register, password reset (unauthenticated)
+│   ├── Platform/              # GlobalAdmin: incubators, users, subscriptions, templates
+│   ├── Administration/        # IncubatorAdmin: projects, users, settings
+│   ├── Coordination/          # ProjectCoordinator: diagnostics, knowledge, lifecycle
+│   ├── Mentoring/             # Mentor: plans, sessions, assignments
+│   ├── Participant/           # Entrepreneur: diagnostics, learning, submissions
+│   └── Sponsor/               # Sponsor: read-only dashboards
+├── Controllers/               # Root: Home, Error, Context
+├── Infrastructure/
+│   ├── Authentication/        # Session cookie middleware
+│   ├── Authorization/         # Tenant context middleware
+│   └── Menu/                  # Role-based navigation
+├── Services/
+│   └── MediatRExecutor.cs     # Centralized MediatR dispatch with error handling
+├── Models/
+│   └── DataTableServerRequest.cs
+├── Views/Shared/              # Phoenix Admin layout, components
+├── wwwroot/js/                # All JS files (never in Views)
+└── Program.cs                 # Service registration + middleware pipeline
+```
+
+### Database
+```
+Mentoory.Db/                   # SSDT SQL project
+├── access/
+│   ├── Schema.sql
+│   └── Tables/                # Users, Credentials, AuthSessions, Roles, etc.
+├── tenant/Tables/
+├── diagnostic/Tables/         # FormTemplates, ProjectForms, Questions, etc.
+├── knowledge/Tables/
+├── mentoring/Tables/
+├── subscription/Tables/
+├── notification/Tables/
+└── audit/Tables/
+
+Mentoory.Db.PostDeployment/    # Seed scripts (outside Mentoory.Db/)
+├── 001.SeedRoles.sql
+├── 002.SeedGlobalAdmin.sql
+├── 003.SeedDefaultSubscriptionPlan.sql
+└── Script.PostDeployment.sql
+```
+
+### Tests
+```
+tests/
+├── Mentoory.Access.Tests/          # Domain unit tests
+├── Mentoory.Tenant.Tests/
+├── Mentoory.Diagnostic.Tests/
+├── Mentoory.Tests.Integration/     # Integration tests (WebApplicationFactory + Testcontainers)
+└── Mentoory.Tests.E2E/             # End-to-end (Playwright)
+```
 
 ## Architecture Patterns
-- **CQRS with MediatR**: Commands for write operations, Queries for read operations
-- **Repository pattern**: Data abstraction with EF Core implementation
-- **Result pattern**: Use `Result<T>` for error handling instead of exceptions
-- **Domain events**: For cross-aggregate communication
-- **Value objects**: For complex domain concepts without identity
+
+- **CQRS with MediatR**: Commands for writes, Queries for reads
+- **Repository pattern**: Interfaces in Domain, implementations in Infrastructure
+- **Result pattern**: `Result` / `Result<T>` for error handling at command/query boundaries
+- **Integration events**: Cross-domain communication via `INotificationHandler<T>`
+- **Value objects**: Self-validating domain concepts without identity
+- **Multi-tenancy**: EF Core global query filters on `IncubatorId`
 
 ## Layer Responsibilities
 
 ### Domain Layer
-- Business logic and rules
-- Domain entities and aggregates
-- Domain services
-- Value objects
-- Domain events
-- Repository interfaces (no implementation)
+- Aggregate roots with private constructors and static factory methods
+- Child entities with `internal static` factory methods
+- Value objects extending `ValueObject` with `GetEqualityComponents()`
+- Enums with explicit numeric values for DB storage
+- Repository interfaces (`IRepository<T>` constraint: `IAggregateRoot`)
+- No framework dependencies
 
 ### Application Layer
-- CQRS commands and queries  
-- DTOs for data transfer
-- Validation logic (FluentValidation)
-- Mapping between domain and DTOs
-- Domain-focused services only (no infrastructure concerns)
-- **Result<T> Pattern**: Use ONLY for commands/queries at architectural boundaries
+- Commands: sealed records implementing `IBaseRequest` / `IBaseRequest<T>`
+- Handlers: partial classes extending `BaseCommandHandler<T>` with `[LoggerMessage]`
+- Validators: `AbstractValidator<T>` with Spanish messages
+- Queries: sealed records implementing `IBaseRequest<TResult>`
+- DTOs: sealed records for data transfer
+- Integration events: sealed records extending `IntegrationEvent`
+- `DependencyInjection.cs`: registers MediatR + FluentValidation from assembly
 
 ### Infrastructure Layer
-- EF Core DbContext and configurations
-- Repository implementations
-- External service integrations
-- Email services
-- File system operations
-
-### Orchestration Layer
-- Cross-domain coordination
-- Multi-step workflows
-- Transaction boundaries across domains
-- Complex business processes
-- Infrastructure services for orchestration needs (e.g., CSV parsing)
-- Workflow-specific utilities and helpers
-- **Service Pattern**: Infrastructure services can live here when supporting orchestration workflows
-- **Pragmatic Exception**: May directly use domain repositories for audit/tracking operations when the alternative adds unnecessary complexity (must be well-documented)
-- **User Administration**: Coordinates user creation across Auth (Identity), UserManagement (profiles), and BusinessIncubator (assignments) domains
+- DbContext extending `SharedAbstractDbContext` (provides IUnitOfWork + domain event dispatch)
+- Entity configurations via Fluent API in `OnModelCreating`
+- Repository implementations extending `AbstractRepository<T>`
+- `DependencyInjection.cs`: registers DbContext (with Aspire enrichment), repositories, services
+- Connection string from `IHostApplicationBuilder.Configuration`
 
 ### Web Layer
-- MVC Controllers (inherit from BaseController)
-- ViewModels for forms
-- Razor Views
-- API endpoints
-- Authentication/Authorization
-- Convert web types (IFormFile) to domain types (Stream)
+- Controllers: `[Area]` + `[Route("[area]/[controller]")]` + `[Authorize(Roles = "...")]`
+- Inject `MediatRExecutor` (not repositories, not IMediator directly)
+- `SendOrThrowAsync` for queries, `SendAndLogIfFailureAsync` for commands
+- DataTable endpoints: `[HttpPost("[action]")]` returning JSON
+- `TempData["SuccessMessage"]` for success toasts
+- `ValidateAntiForgeryToken` on all POST actions
+- Spanish UI text, English code
 
-## Key Principles
+## Key Integration Points
 
-### Clean Architecture File Upload Pattern
+### Adding a New Bounded Context
+1. Create `{BC}.Domain`, `{BC}.Application`, `{BC}.Infrastructure` projects
+2. Add project references (Domain → Shared.Domain; App → Domain + Shared.App; Infra → Domain + Shared.Infra)
+3. Create DbContext extending `SharedAbstractDbContext`
+4. Register in `Program.cs`: `builder.Services.Add{BC}Application()` + `builder.Add{BC}Infrastructure()`
+5. Create SSDT schema + tables in `Mentoory.Db/{schema}/`
+
+### Adding a New Feature to an Existing Context
+1. Domain: Add/modify aggregates, entities, value objects
+2. Application: Add Command + Handler + Validator (or Query + Handler + DTO)
+3. Infrastructure: Update DbContext entity configuration if needed
+4. Web: Add controller action + view in the appropriate Area
+5. SSDT: Add/modify table definitions
+6. Tests: Domain unit tests + integration tests
+
+### Dependency Injection Pattern
 ```csharp
-// ❌ WRONG - Web dependency in domain
-public record BatchCommand(IFormFile CsvFile);
-
-// ✅ CORRECT - Infrastructure agnostic
-public record BatchCommand(Stream CsvStream, string FileName);
-
-// Web layer conversion
-var command = new BatchCommand(
-    model.CsvFile.OpenReadStream(),
-    model.CsvFile.FileName);
-```
-
-### .NET Aspire Integration Pattern
-```csharp
-// ❌ WRONG - Manual service configuration
-services.AddSingleton(sp => 
+// Application layer (IServiceCollection extension)
+public static IServiceCollection AddDiagnosticApplication(this IServiceCollection services)
 {
-    var connectionString = configuration["Storage:ConnectionString"];
-    return new BlobServiceClient(connectionString);
-});
+    services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()));
+    FluentValidation.AssemblyScanner
+        .FindValidatorsInAssembly(Assembly.GetExecutingAssembly())
+        .ForEach(item => services.AddScoped(item.InterfaceType, item.ValidatorType));
+    return services;
+}
 
-// ✅ CORRECT - Aspire automatic configuration
-// In Program.cs
-builder.AddAzureBlobClient("avatars");
-
-// In service constructor - auto-injected
-public AvatarService(BlobServiceClient blobServiceClient) 
+// Infrastructure layer (IHostApplicationBuilder extension)
+public static IHostApplicationBuilder AddDiagnosticInfrastructure(
+    this IHostApplicationBuilder builder, string connectionName = "DefaultConnection")
 {
-    _blobServiceClient = blobServiceClient; // Configured by Aspire
+    var cs = builder.Configuration.GetConnectionString(connectionName)
+        ?? throw new InvalidOperationException($"Connection string '{connectionName}' not found.");
+    builder.Services.AddDbContext<DiagnosticDbContext>(opts => opts.UseSqlServer(cs));
+    builder.EnrichSqlServerDbContext<DiagnosticDbContext>(s => s.CommandTimeout = 30);
+    builder.Services.AddScoped<IFormTemplateRepository, FormTemplateRepository>();
+    return builder;
 }
 ```
 
-### Dependency Injection
-- Configure in each layer's DependencyInjection.cs
-- Use IServiceCollection extensions
-- Scoped lifetime for DbContext and repositories
-- Transient for commands/queries
-
-### Database Design
-- Entity Framework Code First
-- Proper indexes for query performance
-- Foreign key relationships
-- Soft deletes where appropriate
-
-## Result<T> Pattern Usage (CRITICAL)
-
-### When to Use Result<T>
-- **ONLY at architectural boundaries**: Commands, Queries, and their handlers
-- **Public APIs**: Methods exposed to other layers or external systems
-- **Error propagation**: When multiple error types need to be communicated across layers
-
-### When NOT to Use Result<T>
-- **Internal service methods**: Use standard C# patterns instead
-- **Private methods**: Use bool with out parameters, exceptions, or nullable types
-- **Infrastructure services**: Use appropriate return types for the operation
-
-### Example - Correct Pattern
-```csharp
-// ❌ WRONG - Abusing Result<T> for internal method
-private Result<bool> ValidateCsvStream(Stream stream)
-{
-    if (stream == null)
-        return Result<bool>.Failure(ErrorCode, "Stream is null");
-    return Result<bool>.Success(true);
-}
-
-// ✅ CORRECT - Standard C# pattern for internal method
-private bool ValidateCsvStream(
-    [NotNullWhen(true)] Stream? csvStream, 
-    string fileName, 
-    out (ResultErrorCodes ErrorCode, string ErrorMessage) error)
-{
-    error = default;
-    if (csvStream is not { CanRead: true })
-    {
-        error = (ResultErrorCodes.InvalidCsv, "Stream is invalid");
-        return false;
-    }
-    return true;
-}
-```
-
-## Infrastructure Service Placement
-
-### Domain Application Layer
-- Should NOT contain infrastructure services
-- No file parsing, email sending, or external integrations
-- Focus on domain logic and business rules only
-
-### Orchestration Application Layer
-- CAN contain infrastructure services that support workflows
-- Examples: CSV parsing, file processing, complex data transformations
-- These services support the orchestration's coordination role
-
-### Infrastructure Layer
-- Primary home for infrastructure services
-- Database access, external APIs, file system operations
-- Services used across multiple domains
-
-## Architectural Decisions & Trade-offs
-
-### Controllers and DDD Compliance
-**Context**: Controllers must not directly use repositories
-
-**Decision**: Controllers should only use queries/commands through MediatR
-
-**Pattern**:
-```csharp
-// ❌ WRONG - Controller using repository
-public class ProjectsController(IBusinessIncubatorRepository repository)
-{
-    var project = await repository.GetProjectByExternalIdAsync(id);
-}
-
-// ✅ CORRECT - Controller using query
-public class ProjectsController(MediatorExecutor mediator)
-{
-    var query = new GetProjectByExternalIdQuery(id);
-    var result = await mediator.SendAndLogIfFailureAsync(query);
-}
-```
-
-**Enhanced Query Pattern for Access Checks**:
-```csharp
-// Query can optionally verify access
-public record GetProjectByExternalIdQuery(
-    Guid ExternalId, 
-    string? CheckAccessForUserId = null) : IBaseRequest<ProjectByExternalIdDto>;
-```
-- Multiple domains need to coordinate complex state changes
-- Testing or maintenance becomes difficult due to coupling
-
-## Feature Consolidation Pattern
-
-When unifying duplicate features across the codebase:
-
-### 1. Analysis Phase
-- Compare both implementations for feature completeness
-- Identify the implementation with better UI/UX
-- Document missing features in the chosen base
-- Check for role-based access requirements
-
-### 2. Enhancement Phase  
-- Add missing business logic to chosen implementation
-- Integrate proper domain commands (never use placeholder GUIDs)
-- Add progress tracking for bulk operations
-- Ensure multi-role access support
-
-### 3. Cleanup Phase
-**Order of removal is critical to avoid build breaks:**
-1. Delete command/query classes from Orchestration/Application layers
-2. Remove service interfaces and implementations
-3. Delete views (.cshtml) and view models
-4. Update controllers (remove actions, fix using statements)
-5. Update navigation links in remaining views
-6. Remove WebFeatures.sql entries for deleted actions
-7. Update DependencyInjection.cs service registrations
-
-### 4. Verification
-- Build must be clean (0 errors, 0 warnings)
-- All navigation links must point to unified interface
-- Database seed scripts must be consistent
-- Test with all affected user roles
-
-**Example: Bulk Invitation Consolidation**
-- Kept: BulkInviteParticipantsCommand (better UI with Excel support)
-- Removed: ProcessBatchUserRegistrationOrchestrationCommand
-- Enhanced with: CreateProjectInvitationCommand integration, progress tracking
-- Result: Single implementation serving all roles
+### .NET Aspire Integration
+- `Mentoory.Aspire.AppHost` orchestrates Web + SQL Server resources
+- Each DbContext uses `EnrichSqlServerDbContext<T>()` for connection resilience and health checks
+- Single SQL Server database with schema-based isolation per bounded context

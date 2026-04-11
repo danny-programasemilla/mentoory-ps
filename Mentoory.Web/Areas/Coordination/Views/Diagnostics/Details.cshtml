@@ -1,0 +1,118 @@
+@using Mentoory.Diagnostic.Application.Queries.GetProjectForm
+@model ProjectFormDto
+@{
+    ViewData["Title"] = "Detalle del Formulario";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>@Model?.Name</h2>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Volver
+    </a>
+</div>
+
+@if (Model is null)
+{
+    <div class="alert alert-warning">Formulario no encontrado.</div>
+    return;
+}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Información del Formulario</h5>
+    </div>
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Nombre</dt>
+            <dd class="col-sm-9">@Model.Name</dd>
+            <dt class="col-sm-3">Modo de Sincronización</dt>
+            <dd class="col-sm-9">@Model.SyncMode</dd>
+            <dt class="col-sm-3">Fecha de Creación</dt>
+            <dd class="col-sm-9">@Model.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
+            <dt class="col-sm-3">Preguntas</dt>
+            <dd class="col-sm-9">@Model.Questions.Count</dd>
+        </dl>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Preguntas</h5>
+    </div>
+    <div class="card-body">
+        @if (!Model.Questions.Any())
+        {
+            <p class="text-muted">No hay preguntas en este formulario.</p>
+        }
+        else
+        {
+            <div class="accordion" id="questionsAccordion">
+                @foreach (var (question, index) in Model.Questions.Select((q, i) => (q, i)))
+                {
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading-@index">
+                            <button class="accordion-button collapsed" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#collapse-@index">
+                                <span class="me-2 badge bg-secondary">@(index + 1)</span>
+                                @question.QuestionText
+                                <span class="ms-2 badge bg-info">@question.QuestionType</span>
+                                @if (question.IsOptional)
+                                {
+                                    <span class="ms-1 badge bg-warning">Opcional</span>
+                                }
+                            </button>
+                        </h2>
+                        <div id="collapse-@index" class="accordion-collapse collapse"
+                             data-bs-parent="#questionsAccordion">
+                            <div class="accordion-body">
+                                <p><strong>Tipo:</strong> @question.QuestionType</p>
+                                <p><strong>Aplicabilidad:</strong> @question.StageApplicability</p>
+                                @if (question.BlockGroup is not null)
+                                {
+                                    <p><strong>Grupo:</strong> @question.BlockGroup</p>
+                                }
+
+                                @if (question.AnswerOptions.Any())
+                                {
+                                    <h6>Opciones de Respuesta</h6>
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Texto</th>
+                                                <th>Puntaje</th>
+                                                <th>FODA</th>
+                                                <th>ODSR</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var option in question.AnswerOptions)
+                                            {
+                                                <tr>
+                                                    <td>@option.OptionText</td>
+                                                    <td>@option.Score</td>
+                                                    <td>@option.SwotClassification</td>
+                                                    <td>@option.OdsrOrientation</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                }
+
+                                @if (question.FollowUpQuestions.Any())
+                                {
+                                    <h6>Preguntas de Seguimiento</h6>
+                                    <ul>
+                                        @foreach (var followUp in question.FollowUpQuestions)
+                                        {
+                                            <li>@followUp.QuestionText</li>
+                                        }
+                                    </ul>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>

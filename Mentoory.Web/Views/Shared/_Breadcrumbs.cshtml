@@ -1,0 +1,22 @@
+@{
+    var area = ViewContext.RouteData.Values["area"]?.ToString();
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+        @if (!string.IsNullOrEmpty(area))
+        {
+            <li class="breadcrumb-item">@area</li>
+        }
+        @if (!string.IsNullOrEmpty(controller) && controller != "Home")
+        {
+            <li class="breadcrumb-item">@controller</li>
+        }
+        @if (!string.IsNullOrEmpty(action) && action != "Index")
+        {
+            <li class="breadcrumb-item active" aria-current="page">@action</li>
+        }
+    </ol>
+</nav>

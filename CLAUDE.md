@@ -1,4 +1,4 @@
-# LinaSys Project Memory
+# Mentoory Project Memory
 
 ## Project Overview
 - **Platform**: ASP.NET Core 10 business incubator management system
@@ -6,16 +6,15 @@
 - **Architecture**: Clean Architecture with Domain-Driven Design (modular monolith)
 - **Cloud Native**: .NET Aspire 13.2.0 for orchestration and observability
 - **Frontend**: Razor Views with Bootstrap 5 (Phoenix Admin Template)
-- **Authentication**: Microsoft Identity
+- **Authentication**: Not defined yet, but should avoid vendor lock
 - **Language**: Spanish UI (all user-facing text)
 
 ## Key Commands
 - **Build**: `dotnet build`d
-- **Run with Aspire**: `dotnet run --project Aspire.AppHost`
-- **Run Web Only**: `dotnet run --project LinaSys.Web`
+- **Run with Aspire**: `dotnet run --project Mentoory.Aspire.AppHost`
+- **Run Web Only**: `dotnet run --project Mentoory.Web`
 - **Test**: `dotnet test`
-- **Database Build**: `cd Db && dotnet build` (generates DACPAC with PostDeployment scripts)
-- **Infrastructure**: `docker compose --file infrastructure-docker-compose.yml up -d`
+- **Database Build**: `cd Mentoory.Db && publish-mentoorydb.sh` (generates DACPAC with PostDeployment scripts)
 
 ## Knowledge Base
 **Quick lookup by scenario:**
@@ -64,24 +63,34 @@ Feature artifacts live in `specs/{###-feature-name}/`. See [`.specify/templates/
 /wwwroot/js/                               # All JavaScript files (NOT in Views)
 ```
 
-## Custom Commands
-
-### Quality & Security (read-only audits)
-| Command | Purpose |
-|---------|---------|
-| `/architecture-guard` | Audit constitution compliance, layer boundaries, forbidden patterns |
-| `/security-scan` | OWASP-based security audit (auth, injection, CSRF, dependencies) |
-| `/code-review` | Deep review against all governance docs (constitution, standards, DDD, ADRs) |
-| `/dacpac-review` | Validate SQL files for BOM, index syntax, naming, seed integrity |
-
-### DevOps
-| Command | Purpose |
-|---------|---------|
-| `/ci-generate [status\|add <workflow>\|update]` | Manage GitHub Actions CI/CD workflows |
-
-## CI/CD Pipeline
-- **claude-code-review.yml**: AI code review against constitution and standards on every PR
-- **Dependabot**: Weekly NuGet updates, monthly GitHub Actions updates (grouped by ecosystem)
-
 ## Project Context
 - **Base Branch**: Always work from `develop`, not `main`
+
+## Active Technologies
+- C# / .NET 10.0 (SDK 10.0.0 with pre-release) + ASP.NET Core MVC, MediatR 14.1, FluentValidation 12.1, Mapperly 4.x, EF Core 10.x, MailKit/MimeKit (001-mentory-platform-core)
+- SQL Server with SSDT/DACPAC schema management, EF Core 10.x ORM (001-mentory-platform-core)
+- C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC + MediatR 14.1, FluentValidation 12.1, Mapperly 4.x, EF Core 10.x, MailKit/MimeKit (002-phase1-4-hardening)
+- C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, MediatR 14.1, FluentValidation 12.1, Mapperly 4.x, EF Core 10.x, MailKit/MimeKit (003-merge-identity-auth-domains)
+- C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, MediatR 14.1, FluentValidation 12.1, Mapperly 4.x, EF Core 10.x, CsvHelper (004-phase1-3-hardening)
+- Markdown governance documentation (no application code) + Existing codebase analysis (PlatformRole enum, Permission enum, CheckPermissionHandler, RoleAssignment aggregate, TenantContextMiddleware, ITenantContext, Authorize attributes) (005-access-security-constitution)
+- `.specify/memory/access-security-constitution.md` — version-controlled governance artifact (005-access-security-constitution)
+- C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, CsvHelper (007-csv-sample-download)
+- N/A (no database changes) (007-csv-sample-download)
+
+## Code Review Standards
+After completing any implementation, review the code for:
+- Methods longer than 30 lines (likely doing too much — extract private helpers)
+- Logic duplicated more than twice (extract to shared utility or base class)
+- Domain entities accepting invalid state at construction (guard clauses in factory methods)
+- Commands/handlers with 7+ parameters (group into value objects or nested records)
+- Magic strings where enums or constants exist in the codebase
+- Dead code: unused value objects, unreachable switch branches, methods never called
+- `AsNoTracking()` missing on read-only query paths (repositories, query handlers)
+- EF Include() chains loading more data than the caller needs
+
+Run /simplify before presenting code to the user.
+
+## Recent Changes
+- 007-csv-sample-download: Added C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, CsvHelper
+- 006-fix-batch-upload-scope: Added C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, MediatR 14.1, FluentValidation 12.1, Mapperly 4.x, EF Core 10.x, CsvHelper
+- 005-access-security-constitution: Added Markdown governance documentation (no application code) + Existing codebase analysis (PlatformRole enum, Permission enum, CheckPermissionHandler, RoleAssignment aggregate, TenantContextMiddleware, ITenantContext, Authorize attributes)

@@ -7,11 +7,29 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="CsvHelper"/>
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="..\Mentoory.Aspire.AppHost.ServiceDefaults\Mentoory.Aspire.AppHost.ServiceDefaults.csproj" />
       <ProjectReference Include="..\Mentoory.Example.Application\Mentoory.Example.Application.csproj" />
       <ProjectReference Include="..\Mentoory.Example.Infrastructure\Mentoory.Example.Infrastructure.csproj" />
       <ProjectReference Include="..\Mentoory.Shared.Application\Mentoory.Shared.Application.csproj" />
       <ProjectReference Include="..\Mentoory.Shared.Infrastructure\Mentoory.Shared.Infrastructure.csproj" />
+      <ProjectReference Include="..\Mentoory.Access.Application\Mentoory.Access.Application.csproj" />
+      <ProjectReference Include="..\Mentoory.Access.Infrastructure\Mentoory.Access.Infrastructure.csproj" />
+      <ProjectReference Include="..\Mentoory.Tenant.Application\Mentoory.Tenant.Application.csproj" />
+      <ProjectReference Include="..\Mentoory.Tenant.Infrastructure\Mentoory.Tenant.Infrastructure.csproj" />
+      <ProjectReference Include="..\Mentoory.Diagnostic.Application\Mentoory.Diagnostic.Application.csproj" />
+      <ProjectReference Include="..\Mentoory.Diagnostic.Infrastructure\Mentoory.Diagnostic.Infrastructure.csproj" />
+      <ProjectReference Include="..\Mentoory.Knowledge.Application\Mentoory.Knowledge.Application.csproj" />
+      <ProjectReference Include="..\Mentoory.Knowledge.Infrastructure\Mentoory.Knowledge.Infrastructure.csproj" />
+      <ProjectReference Include="..\Mentoory.Mentoring.Application\Mentoory.Mentoring.Application.csproj" />
+      <ProjectReference Include="..\Mentoory.Mentoring.Infrastructure\Mentoory.Mentoring.Infrastructure.csproj" />
+      <ProjectReference Include="..\Mentoory.Subscription.Application\Mentoory.Subscription.Application.csproj" />
+      <ProjectReference Include="..\Mentoory.Subscription.Infrastructure\Mentoory.Subscription.Infrastructure.csproj" />
+      <ProjectReference Include="..\Mentoory.Notification.Application\Mentoory.Notification.Application.csproj" />
+      <ProjectReference Include="..\Mentoory.Notification.Infrastructure\Mentoory.Notification.Infrastructure.csproj" />
     </ItemGroup>
 
 </Project>

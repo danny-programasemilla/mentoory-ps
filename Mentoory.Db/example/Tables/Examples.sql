@@ -2,6 +2,6 @@ CREATE TABLE [example].[Examples]
 (
   [Id] BIGINT IDENTITY(1, 1) NOT NULL,
   [Title] NVARCHAR(50) NOT NULL,
-  [DateCreated] DATETIME NOT NULL,
+  [DateCreated] DATETIME2 NOT NULL,
   CONSTRAINT [PK_example_Examples] PRIMARY KEY CLUSTERED ([Id] ASC)
 )

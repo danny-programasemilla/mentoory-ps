@@ -1,12 +1,21 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Mentoory.Access.Infrastructure.Persistence;
+using Mentoory.Diagnostic.Infrastructure.Persistence;
 using Mentoory.Example.Infrastructure.Persistence;
 using Mentoory.Shared.Infrastructure.Persistence;
+using Mentoory.Tenant.Infrastructure.Persistence;
 
 namespace Mentoory.Web.Infrastructure.Persistence;
 
 public class DbContextFactory(IServiceProvider serviceProvider) : IDbContextFactory
 {
-    private readonly Dictionary<string, Type> _mapping = new() { { "Example", typeof(ExampleDbContext) }, };
+    private readonly Dictionary<string, Type> _mapping = new()
+    {
+        { "Access", typeof(AccessDbContext) },
+        { "Diagnostic", typeof(DiagnosticDbContext) },
+        { "Example", typeof(ExampleDbContext) },
+        { "Tenant", typeof(TenantDbContext) },
+    };
 
     public bool TryGetDbContextForRequest<TRequest>([NotNullWhen(true)] out IDbContext? dbContext)
     {
