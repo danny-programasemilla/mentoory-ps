@@ -227,6 +227,7 @@ WHERE [CurrentStageType] = 0 AND [CurrentStageState] = 0;
 DECLARE @Project1Id BIGINT;  -- Proyecto Innovación (Incubator 1)
 DECLARE @Project2Id BIGINT;  -- Proyecto Sostenibilidad (Incubator 1)
 DECLARE @Project3Id BIGINT;  -- Proyecto Digital (Incubator 2)
+DECLARE @Project4Id BIGINT;  -- Proyecto Comunitario (Incubator 2)
 
 -- ------------------------------------------------------------------------------------------
 -- Project: Proyecto Innovación (Incubadora Alpha)
@@ -266,6 +267,19 @@ BEGIN
 END
 ELSE
     SELECT @Project3Id = [Id] FROM [tenant].[Projects] WHERE [Name] = N'Proyecto Digital' AND [IncubatorId] = @Incubator2Id;
+
+-- ------------------------------------------------------------------------------------------
+-- Project: Proyecto Comunitario (Incubadora Beta)
+-- ------------------------------------------------------------------------------------------
+IF NOT EXISTS (SELECT 1 FROM [tenant].[Projects] WHERE [Name] = N'Proyecto Comunitario' AND [IncubatorId] = @Incubator2Id)
+BEGIN
+    INSERT INTO [tenant].[Projects] ([ExternalId], [IncubatorId], [Name], [Description], [CurrentStageType], [CurrentStageState], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @Incubator2Id, N'Proyecto Comunitario', N'Iniciativa de desarrollo comunitario para fortalecer redes de emprendimiento local', 0, 1, 1, @Now, @Now);
+
+    SET @Project4Id = SCOPE_IDENTITY();
+END
+ELSE
+    SELECT @Project4Id = [Id] FROM [tenant].[Projects] WHERE [Name] = N'Proyecto Comunitario' AND [IncubatorId] = @Incubator2Id;
 
 
 -- ==========================================================================================
@@ -348,21 +362,127 @@ BEGIN
 END
 
 -- ------------------------------------------------------------------------------------------
--- Multi-Role User: IncubatorAdmin for Incubadora Alpha
+-- Multi-Role User: All roles across both incubators (2+ projects per incubator)
+-- Covers: GlobalAdmin, IncubatorAdmin, ProjectCoordinator, Mentor, Entrepreneur, Sponsor
 -- ------------------------------------------------------------------------------------------
+
+-- GlobalAdmin (incubator-scoped base assignment — cascade shows all incubators)
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @MultiRoleId AND [IncubatorId] = @Incubator1Id AND [ProjectId] IS NULL AND [Role] = N'GlobalAdmin' AND [IsActive] = 1)
+BEGIN
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @MultiRoleId, @Incubator1Id, NULL, N'GlobalAdmin', 1, @Now, @Now);
+END
+
+-- IncubatorAdmin @ Alpha
 IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @MultiRoleId AND [IncubatorId] = @Incubator1Id AND [ProjectId] IS NULL AND [Role] = N'IncubatorAdmin' AND [IsActive] = 1)
 BEGIN
     INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
     VALUES (NEWID(), @MultiRoleId, @Incubator1Id, NULL, N'IncubatorAdmin', 1, @Now, @Now);
 END
 
--- ------------------------------------------------------------------------------------------
--- Multi-Role User: ProjectCoordinator for Incubadora Alpha, Proyecto Sostenibilidad
--- ------------------------------------------------------------------------------------------
+-- IncubatorAdmin @ Beta
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @MultiRoleId AND [IncubatorId] = @Incubator2Id AND [ProjectId] IS NULL AND [Role] = N'IncubatorAdmin' AND [IsActive] = 1)
+BEGIN
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @MultiRoleId, @Incubator2Id, NULL, N'IncubatorAdmin', 1, @Now, @Now);
+END
+
+-- ProjectCoordinator @ Alpha / Innovación
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @MultiRoleId AND [IncubatorId] = @Incubator1Id AND [ProjectId] = @Project1Id AND [Role] = N'ProjectCoordinator' AND [IsActive] = 1)
+BEGIN
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @MultiRoleId, @Incubator1Id, @Project1Id, N'ProjectCoordinator', 1, @Now, @Now);
+END
+
+-- ProjectCoordinator @ Alpha / Sostenibilidad
 IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @MultiRoleId AND [IncubatorId] = @Incubator1Id AND [ProjectId] = @Project2Id AND [Role] = N'ProjectCoordinator' AND [IsActive] = 1)
 BEGIN
     INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
     VALUES (NEWID(), @MultiRoleId, @Incubator1Id, @Project2Id, N'ProjectCoordinator', 1, @Now, @Now);
+END
+
+-- ProjectCoordinator @ Beta / Digital
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @MultiRoleId AND [IncubatorId] = @Incubator2Id AND [ProjectId] = @Project3Id AND [Role] = N'ProjectCoordinator' AND [IsActive] = 1)
+BEGIN
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @MultiRoleId, @Incubator2Id, @Project3Id, N'ProjectCoordinator', 1, @Now, @Now);
+END
+
+-- ProjectCoordinator @ Beta / Comunitario
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @MultiRoleId AND [IncubatorId] = @Incubator2Id AND [ProjectId] = @Project4Id AND [Role] = N'ProjectCoordinator' AND [IsActive] = 1)
+BEGIN
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @MultiRoleId, @Incubator2Id, @Project4Id, N'ProjectCoordinator', 1, @Now, @Now);
+END
+
+-- Mentor @ Alpha / Innovación
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @MultiRoleId AND [IncubatorId] = @Incubator1Id AND [ProjectId] = @Project1Id AND [Role] = N'Mentor' AND [IsActive] = 1)
+BEGIN
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @MultiRoleId, @Incubator1Id, @Project1Id, N'Mentor', 1, @Now, @Now);
+END
+
+-- Mentor @ Alpha / Sostenibilidad
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @MultiRoleId AND [IncubatorId] = @Incubator1Id AND [ProjectId] = @Project2Id AND [Role] = N'Mentor' AND [IsActive] = 1)
+BEGIN
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @MultiRoleId, @Incubator1Id, @Project2Id, N'Mentor', 1, @Now, @Now);
+END
+
+-- Mentor @ Beta / Digital
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @MultiRoleId AND [IncubatorId] = @Incubator2Id AND [ProjectId] = @Project3Id AND [Role] = N'Mentor' AND [IsActive] = 1)
+BEGIN
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @MultiRoleId, @Incubator2Id, @Project3Id, N'Mentor', 1, @Now, @Now);
+END
+
+-- Mentor @ Beta / Comunitario
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @MultiRoleId AND [IncubatorId] = @Incubator2Id AND [ProjectId] = @Project4Id AND [Role] = N'Mentor' AND [IsActive] = 1)
+BEGIN
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @MultiRoleId, @Incubator2Id, @Project4Id, N'Mentor', 1, @Now, @Now);
+END
+
+-- Entrepreneur @ Alpha / Innovación
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @MultiRoleId AND [IncubatorId] = @Incubator1Id AND [ProjectId] = @Project1Id AND [Role] = N'Entrepreneur' AND [IsActive] = 1)
+BEGIN
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @MultiRoleId, @Incubator1Id, @Project1Id, N'Entrepreneur', 1, @Now, @Now);
+END
+
+-- Entrepreneur @ Alpha / Sostenibilidad
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @MultiRoleId AND [IncubatorId] = @Incubator1Id AND [ProjectId] = @Project2Id AND [Role] = N'Entrepreneur' AND [IsActive] = 1)
+BEGIN
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @MultiRoleId, @Incubator1Id, @Project2Id, N'Entrepreneur', 1, @Now, @Now);
+END
+
+-- Entrepreneur @ Beta / Digital
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @MultiRoleId AND [IncubatorId] = @Incubator2Id AND [ProjectId] = @Project3Id AND [Role] = N'Entrepreneur' AND [IsActive] = 1)
+BEGIN
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @MultiRoleId, @Incubator2Id, @Project3Id, N'Entrepreneur', 1, @Now, @Now);
+END
+
+-- Entrepreneur @ Beta / Comunitario
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @MultiRoleId AND [IncubatorId] = @Incubator2Id AND [ProjectId] = @Project4Id AND [Role] = N'Entrepreneur' AND [IsActive] = 1)
+BEGIN
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @MultiRoleId, @Incubator2Id, @Project4Id, N'Entrepreneur', 1, @Now, @Now);
+END
+
+-- Sponsor @ Alpha
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @MultiRoleId AND [IncubatorId] = @Incubator1Id AND [ProjectId] IS NULL AND [Role] = N'Sponsor' AND [IsActive] = 1)
+BEGIN
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @MultiRoleId, @Incubator1Id, NULL, N'Sponsor', 1, @Now, @Now);
+END
+
+-- Sponsor @ Beta
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @MultiRoleId AND [IncubatorId] = @Incubator2Id AND [ProjectId] IS NULL AND [Role] = N'Sponsor' AND [IsActive] = 1)
+BEGIN
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @MultiRoleId, @Incubator2Id, NULL, N'Sponsor', 1, @Now, @Now);
 END
 
 

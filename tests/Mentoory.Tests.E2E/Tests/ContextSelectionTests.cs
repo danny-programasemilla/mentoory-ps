@@ -202,11 +202,11 @@ public class ContextSelectionTests
         var page = await _fixture.CreatePageAsync();
         try
         {
-            await LoginAsync(page, "multirole@test.mentoory.com", "Test123!@#");
+            // incadmin1 is IncubatorAdmin for Alpha ONLY (single-role, auto-skips selection)
+            await LoginAsync(page, "incadmin1@test.mentoory.com", "Test123!@#");
 
             var body = await FetchJsonAsync(page, "/api/context/incubators?role=IncubatorAdmin");
 
-            // multirole is IncubatorAdmin for Alpha ONLY — must NOT see Beta
             body.Should().Contain("Incubadora Alpha");
             body.Should().NotContain("Incubadora Beta",
                 "tenant isolation: user must only see incubators they are assigned to");
@@ -224,7 +224,8 @@ public class ContextSelectionTests
         var page = await _fixture.CreatePageAsync();
         try
         {
-            await LoginAsync(page, "multirole@test.mentoory.com", "Test123!@#");
+            // coord1 is ProjectCoordinator for Alpha/Innovación ONLY (single-role, auto-skips)
+            await LoginAsync(page, "coord1@test.mentoory.com", "Test123!@#");
 
             var incBody = await FetchJsonAsync(page, "/api/context/incubators?role=ProjectCoordinator");
             incBody.Should().Contain("Incubadora Alpha");
@@ -236,9 +237,9 @@ public class ContextSelectionTests
 
             var projBody = await FetchJsonAsync(page, $"/api/context/projects?role=ProjectCoordinator&incubatorId={alphaId}");
 
-            // multirole as ProjectCoordinator is assigned to Sostenibilidad ONLY
-            projBody.Should().Contain("Sostenibilidad");
-            projBody.Should().NotContain("Innovación",
+            // coord1 is assigned to Innovación ONLY under Alpha
+            projBody.Should().Contain("Innovación");
+            projBody.Should().NotContain("Sostenibilidad",
                 "tenant isolation: user must only see projects they are assigned to for that role");
         }
         finally
