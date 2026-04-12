@@ -107,9 +107,29 @@ public class AdministrationUsersTests
         // If redirected to context selection, pick the first available context
         if (page.Url.Contains("/Context/Select"))
         {
-            var firstContextLink = page.Locator("a[href*='/Context/Set/']").First;
-            await firstContextLink.WaitForAsync(new LocatorWaitForOptions { Timeout = 5000 });
-            await firstContextLink.ClickAsync();
+            var roleDropdown = page.Locator("[data-mode='page'] [data-cs='role']");
+            await page.WaitForFunctionAsync(
+                "sel => sel.options.length > 1",
+                await roleDropdown.ElementHandleAsync(),
+                new() { Timeout = 10000 });
+            if (await roleDropdown.IsEnabledAsync())
+            {
+                await roleDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
+            }
+
+            var incubatorDropdown = page.Locator("[data-mode='page'] [data-cs='incubator']");
+            await page.WaitForFunctionAsync(
+                "sel => sel.options.length > 1",
+                await incubatorDropdown.ElementHandleAsync(),
+                new() { Timeout = 10000 });
+            if (await incubatorDropdown.IsEnabledAsync())
+            {
+                await incubatorDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
+            }
+
+            var confirmBtn = page.Locator("[data-mode='page'] [data-cs='confirm']");
+            await Assertions.Expect(confirmBtn).ToBeEnabledAsync(new() { Timeout = 15000 });
+            await confirmBtn.ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         }
     }

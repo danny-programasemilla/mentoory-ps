@@ -259,17 +259,29 @@ public class BatchUploadScopeTests
 
         if (page.Url.Contains("/Context/Select"))
         {
-            var firstSubmitButton = page.Locator(".context-card button[type='submit']").First;
-            if (await firstSubmitButton.CountAsync() > 0)
+            var roleDropdown = page.Locator("[data-mode='page'] [data-cs='role']");
+            await page.WaitForFunctionAsync(
+                "sel => sel.options.length > 1",
+                await roleDropdown.ElementHandleAsync(),
+                new() { Timeout = 10000 });
+            if (await roleDropdown.IsEnabledAsync())
             {
-                await firstSubmitButton.ClickAsync();
-            }
-            else
-            {
-                var firstContextLink = page.Locator("a[href*='/Context/Set/']").First;
-                await firstContextLink.ClickAsync();
+                await roleDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
             }
 
+            var incubatorDropdown = page.Locator("[data-mode='page'] [data-cs='incubator']");
+            await page.WaitForFunctionAsync(
+                "sel => sel.options.length > 1",
+                await incubatorDropdown.ElementHandleAsync(),
+                new() { Timeout = 10000 });
+            if (await incubatorDropdown.IsEnabledAsync())
+            {
+                await incubatorDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
+            }
+
+            var confirmBtn = page.Locator("[data-mode='page'] [data-cs='confirm']");
+            await Assertions.Expect(confirmBtn).ToBeEnabledAsync(new() { Timeout = 15000 });
+            await confirmBtn.ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         }
     }

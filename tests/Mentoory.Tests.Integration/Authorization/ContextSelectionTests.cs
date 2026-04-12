@@ -2,6 +2,7 @@ using FluentAssertions;
 using Mentoory.Access.Application.Commands.AssignRole;
 using Mentoory.Access.Application.Commands.SetActiveContext;
 using Mentoory.Access.Application.Queries.GetUserContexts;
+using Mentoory.Access.Application.Queries.ListContextRoles;
 using Mentoory.Access.Infrastructure.Persistence;
 using Mentoory.Shared.Application;
 using Mentoory.Shared.Domain.Constants;
@@ -124,6 +125,58 @@ public class ContextSelectionTests : IntegrationTestBase
         // Assert
         result.IsFailure.Should().BeTrue();
         result.ErrorCode.Should().Be(ResultErrorCodes.GenericError);
+    }
+
+    [Fact]
+    public async Task ListContextRoles_ReturnsDistinctRolesWithDisplayNames()
+    {
+        // Arrange
+        var (_, userId) = await RegisterAndActivateUserAsync(
+            email: "roles@example.com", nationalId: "900600600");
+
+        var incubatorResult = await SendAsync(new CreateIncubatorCommand("Roles Incubator", null));
+        incubatorResult.IsSuccess.Should().BeTrue();
+        var incubatorId = await GetIncubatorIdAsync(incubatorResult.Value!);
+
+        await SendAsync(new AssignRoleCommand(userId, incubatorId, null, Roles.IncubatorAdmin));
+        await SendAsync(new AssignRoleCommand(userId, incubatorId, null, Roles.Mentor));
+
+        // Act
+        var result = await SendAsync(new ListContextRolesQuery(userId));
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().HaveCount(2);
+        result.Value![0].Role.Should().Be(Roles.IncubatorAdmin);
+        result.Value[0].DisplayName.Should().Be("Administrador de Incubadora");
+        result.Value[1].Role.Should().Be(Roles.Mentor);
+        result.Value[1].DisplayName.Should().Be("Mentor");
+    }
+
+    [Fact]
+    public async Task ListContextRoles_OrdersByRoleHierarchy()
+    {
+        // Arrange
+        var (_, userId) = await RegisterAndActivateUserAsync(
+            email: "hierarchy@example.com", nationalId: "900700700");
+
+        var incubatorResult = await SendAsync(new CreateIncubatorCommand("Hierarchy Incubator", null));
+        incubatorResult.IsSuccess.Should().BeTrue();
+        var incubatorId = await GetIncubatorIdAsync(incubatorResult.Value!);
+
+        // Assign in reverse order
+        await SendAsync(new AssignRoleCommand(userId, incubatorId, null, Roles.Mentor));
+        await SendAsync(new AssignRoleCommand(userId, incubatorId, null, Roles.IncubatorAdmin));
+
+        // Act
+        var result = await SendAsync(new ListContextRolesQuery(userId));
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().HaveCount(2);
+        // IncubatorAdmin comes before Mentor in hierarchy
+        result.Value![0].Role.Should().Be(Roles.IncubatorAdmin);
+        result.Value[1].Role.Should().Be(Roles.Mentor);
     }
 
     private async Task<long> GetIncubatorIdAsync(Guid externalId)

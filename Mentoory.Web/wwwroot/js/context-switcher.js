@@ -1,4 +1,4 @@
-// Mentoory - Context switcher for top-bar AJAX context switching
+// Mentoory - Context switcher for top-bar AJAX context switching and modal integration
 
 var _areaRoleMap = {
     '/Administration/': ['IncubatorAdmin', 'GlobalAdmin'],
@@ -34,11 +34,11 @@ function canAccessCurrentArea(newRole) {
 }
 
 /**
- * Switch the active context via AJAX
- * @param {string} roleAssignmentExternalId - The GUID of the role assignment to activate
- * @param {string} [newRole] - The role being switched to, for safe navigation
+ * Switch the active context via AJAX (used by modal confirm)
+ * @param {Object} payload - The context switch request payload
+ * @param {string} newRole - The role being switched to
  */
-function switchContext(roleAssignmentExternalId, newRole) {
+function switchContextAjax(payload, newRole) {
     if (hasUnsavedChanges()) {
         if (!confirm('Tiene cambios sin guardar. ¿Desea cambiar el contexto de todas formas?')) {
             return;
@@ -53,11 +53,19 @@ function switchContext(roleAssignmentExternalId, newRole) {
             'Content-Type': 'application/json',
             'RequestVerificationToken': token
         },
-        body: JSON.stringify({ roleAssignmentExternalId: roleAssignmentExternalId })
+        body: JSON.stringify(payload)
     })
     .then(function (response) {
+        if (response.status === 401) {
+            window.location.href = '/Access/Login';
+            return;
+        }
         if (response.ok) {
-            showToast('Contexto actualizado exitosamente', 'success');
+            var modal = bootstrap.Modal.getInstance(document.getElementById('contextSwitcherModal'));
+            if (modal) {
+                modal.hide();
+            }
+            showToast('Contexto actualizado exitosamente.', 'success');
             setTimeout(function () {
                 if (newRole && !canAccessCurrentArea(newRole)) {
                     window.location.href = '/';
@@ -67,12 +75,67 @@ function switchContext(roleAssignmentExternalId, newRole) {
             }, 500);
         } else {
             return response.json().then(function (data) {
-                showToast(data.message || 'Error al cambiar el contexto', 'danger');
+                showToast(data.message || 'No se pudo cambiar el contexto.', 'danger');
             });
         }
     })
     .catch(function () {
-        showToast('Error de conexión al cambiar el contexto', 'danger');
+        showToast('Error de conexión al cambiar el contexto.', 'danger');
+    });
+}
+
+/**
+ * Switch the active context via AJAX (legacy support for data-context-switch)
+ * @param {string} roleAssignmentExternalId - The GUID of the role assignment to activate
+ * @param {string} [newRole] - The role being switched to, for safe navigation
+ */
+function switchContext(roleAssignmentExternalId, newRole) {
+    switchContextAjax({ roleAssignmentExternalId: roleAssignmentExternalId }, newRole);
+}
+
+/**
+ * Initialize modal context switcher
+ */
+function initModalContextSwitcher() {
+    var modalEl = document.getElementById('contextSwitcherModal');
+    if (!modalEl) return;
+
+    modalEl.addEventListener('shown.bs.modal', function () {
+        var container = modalEl.querySelector('[data-mode="modal"]');
+        if (container) {
+            initContextSelector(container);
+
+            var confirmBtn = container.querySelector('[data-cs="confirm"]');
+            if (confirmBtn) {
+                confirmBtn.type = 'button';
+                confirmBtn.onclick = function () {
+                    var externalId = container.querySelector('[name="roleAssignmentExternalId"]').value;
+                    var incubatorId = container.querySelector('[name="selectedIncubatorId"]').value;
+                    var incubatorName = container.querySelector('[name="selectedIncubatorName"]').value;
+                    var projectId = container.querySelector('[name="selectedProjectId"]').value;
+                    var projectName = container.querySelector('[name="selectedProjectName"]').value;
+                    var roleSelect = container.querySelector('[data-cs="role"]');
+                    var newRole = roleSelect ? roleSelect.value : '';
+
+                    if (!externalId) {
+                        showToast('Seleccione un contexto completo.', 'warning');
+                        return;
+                    }
+
+                    var payload = { roleAssignmentExternalId: externalId };
+                    if (incubatorId) {
+                        payload.incubatorId = parseInt(incubatorId, 10);
+                        payload.incubatorName = incubatorName;
+                    }
+                    if (projectId) {
+                        payload.projectId = parseInt(projectId, 10);
+                        payload.projectName = projectName;
+                    }
+
+                    switchContextAjax(payload, newRole);
+                };
+            }
+        }
     });
 }
 
@@ -100,6 +163,9 @@ function initContextSwitcher() {
             form.dataset.dirty = 'false';
         });
     });
+
+    // Initialize modal context switcher
+    initModalContextSwitcher();
 }
 
 // Initialize when DOM is ready

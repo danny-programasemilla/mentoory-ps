@@ -1,0 +1,56 @@
+@* Shared cascading context selector partial — used by Select.cshtml (page) and _TopBar.cshtml (modal) *@
+@* data-mode="page" for form POST, data-mode="modal" for AJAX switch *@
+
+<div class="context-selector" data-mode="@ViewBag.ContextSelectorMode">
+    @Html.AntiForgeryToken()
+
+    <input type="hidden" name="roleAssignmentExternalId" value="" />
+    <input type="hidden" name="selectedIncubatorId" value="" />
+    <input type="hidden" name="selectedIncubatorName" value="" />
+    <input type="hidden" name="selectedProjectId" value="" />
+    <input type="hidden" name="selectedProjectName" value="" />
+    <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+
+    <div class="mb-3">
+        <label class="form-label fw-semibold">Rol</label>
+        <div class="position-relative">
+            <select data-cs="role" class="form-select" disabled>
+                <option value="">Seleccione un rol...</option>
+            </select>
+            <div class="spinner-border spinner-border-sm text-primary position-absolute top-50 end-0 translate-middle-y me-4 d-none" data-spinner-for="role" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+        <div class="text-danger small mt-1 d-none" data-error-for="role"></div>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-semibold">Incubadora</label>
+        <div class="position-relative">
+            <select data-cs="incubator" class="form-select" disabled>
+                <option value="">Seleccione una incubadora...</option>
+            </select>
+            <div class="spinner-border spinner-border-sm text-primary position-absolute top-50 end-0 translate-middle-y me-4 d-none" data-spinner-for="incubator" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+        <div class="text-danger small mt-1 d-none" data-error-for="incubator"></div>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-semibold">Proyecto</label>
+        <div class="position-relative">
+            <select data-cs="project" class="form-select" disabled>
+                <option value="">Seleccione un proyecto...</option>
+            </select>
+            <div class="spinner-border spinner-border-sm text-primary position-absolute top-50 end-0 translate-middle-y me-4 d-none" data-spinner-for="project" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+        <div class="text-danger small mt-1 d-none" data-error-for="project"></div>
+    </div>
+
+    <button type="submit" data-cs="confirm" class="btn btn-primary w-100" disabled>
+        Confirmar
+    </button>
+</div>

@@ -30,10 +30,31 @@ public class LoginRoutingTests
             page.Url.Should().Contain("/Context/Select",
                 "GlobalAdmin should see context selection after login");
 
-            // Select the first available context
-            var firstSubmitButton = page.Locator(".context-card button[type='submit']").First;
-            await firstSubmitButton.WaitForAsync(new LocatorWaitForOptions { Timeout = 5000 });
-            await firstSubmitButton.ClickAsync();
+            // Select the first available context via cascade dropdowns
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            var roleDropdown = page.Locator("[data-mode='page'] [data-cs='role']");
+            await page.WaitForFunctionAsync(
+                "sel => sel.options.length > 1",
+                await roleDropdown.ElementHandleAsync(),
+                new() { Timeout = 10000 });
+            if (await roleDropdown.IsEnabledAsync())
+            {
+                await roleDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
+            }
+
+            var incubatorDropdown = page.Locator("[data-mode='page'] [data-cs='incubator']");
+            await page.WaitForFunctionAsync(
+                "sel => sel.options.length > 1",
+                await incubatorDropdown.ElementHandleAsync(),
+                new() { Timeout = 10000 });
+            if (await incubatorDropdown.IsEnabledAsync())
+            {
+                await incubatorDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
+            }
+
+            var confirmBtn = page.Locator("[data-mode='page'] [data-cs='confirm']");
+            await Assertions.Expect(confirmBtn).ToBeEnabledAsync(new() { Timeout = 15000 });
+            await confirmBtn.ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             page.Url.Should().Contain("/Platform/Incubators");

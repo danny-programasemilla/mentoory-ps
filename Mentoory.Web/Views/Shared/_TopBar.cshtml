@@ -1,3 +1,6 @@
+@{
+    ViewBag.ContextSelectorMode = "modal";
+}
 <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom px-4">
     <div class="container-fluid">
         @if (User.Identity?.IsAuthenticated == true)
@@ -22,11 +25,13 @@
                             <i class="fas fa-project-diagram me-1"></i>@activeProjectName
                         </span>
                     }
-                    <a asp-controller="Context" asp-action="Select" asp-area=""
-                       class="btn btn-outline-primary btn-sm ms-2"
-                       title="Cambiar contexto">
+                    <button type="button"
+                            class="btn btn-outline-primary btn-sm ms-2"
+                            data-bs-toggle="modal"
+                            data-bs-target="#contextSwitcherModal"
+                            title="Cambiar contexto">
                         <i class="fas fa-exchange-alt me-1"></i>Cambiar contexto
-                    </a>
+                    </button>
                 </div>
             }
         }
@@ -42,3 +47,20 @@
         </div>
     </div>
 </nav>
+
+@if (User.Identity?.IsAuthenticated == true)
+{
+    <div class="modal fade" id="contextSwitcherModal" tabindex="-1" aria-labelledby="contextSwitcherModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="contextSwitcherModalLabel">Cambiar Contexto de Trabajo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    @await Html.PartialAsync("_ContextSelector")
+                </div>
+            </div>
+        </div>
+    </div>
+}
