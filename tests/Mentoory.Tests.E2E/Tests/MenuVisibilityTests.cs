@@ -136,9 +136,13 @@ public class MenuVisibilityTests
         // GlobalAdmin sees context selection with incubator choices; pick the first one
         if (page.Url.Contains("/Context/Select"))
         {
-            var firstSubmitButton = page.Locator(".context-card button[type='submit']").First;
-            await firstSubmitButton.WaitForAsync(new LocatorWaitForOptions { Timeout = 5000 });
-            await firstSubmitButton.ClickAsync();
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            var roleDropdown = page.Locator("[data-cs='role']");
+            await roleDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            var confirmBtn = page.Locator("[data-cs='confirm']");
+            await confirmBtn.ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         }
     }

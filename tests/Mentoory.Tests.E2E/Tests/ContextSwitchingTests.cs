@@ -6,7 +6,7 @@ using Xunit;
 namespace Mentoory.Tests.E2E.Tests;
 
 /// <summary>
-/// T048 - Validates context switching behavior from the top bar navigation.
+/// Validates context switching behavior from the top-bar modal.
 /// </summary>
 [Collection(E2ETestCollection.Name)]
 public class ContextSwitchingTests
@@ -39,39 +39,98 @@ public class ContextSwitchingTests
     }
 
     [Fact]
-    public async Task CambiarContextoLink_ShouldNavigateTo_ContextSelection()
+    public async Task CambiarContextoButton_ShouldOpen_Modal()
     {
         var page = await _fixture.CreatePageAsync();
         try
         {
-            await LoginAsync(page, "multirole@test.mentoory.com", "Test123!@#");
+            await LoginAndSelectContextAsync(page, "multirole@test.mentoory.com", "Test123!@#");
 
-            // Multi-role user lands on context selection — pick the first context
-            var selectButton = page.Locator("button[type='submit']").Filter(new LocatorFilterOptions
-            {
-                HasText = "Seleccionar"
-            });
-            await selectButton.First.ClickAsync();
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-
-            // Now the top bar should show the "Cambiar contexto" link
-            var switchLink = page.Locator("a").Filter(new LocatorFilterOptions
+            // "Cambiar contexto" should be a button that opens a modal
+            var switchButton = page.Locator("button").Filter(new LocatorFilterOptions
             {
                 HasText = "Cambiar contexto"
             });
-            (await switchLink.CountAsync()).Should().BeGreaterThan(0,
-                "a 'Cambiar contexto' link must be visible in the navigation");
+            (await switchButton.CountAsync()).Should().BeGreaterThan(0,
+                "'Cambiar contexto' button must be visible in the navigation");
 
-            await switchLink.First.ClickAsync();
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            await switchButton.First.ClickAsync();
 
-            // Should navigate to the context selection page
-            page.Url.Should().Contain("/Context",
-                "clicking 'Cambiar contexto' should navigate to the context selection page");
+            // Modal should appear
+            var modal = page.Locator("#contextSwitcherModal");
+            await modal.WaitForAsync(new LocatorWaitForOptions
+            {
+                State = WaitForSelectorState.Visible,
+                Timeout = 5000
+            });
+
+            (await modal.IsVisibleAsync()).Should().BeTrue("context switcher modal must be visible");
+
+            // Modal should contain cascade dropdowns
+            var roleDropdown = modal.Locator("[data-cs='role']");
+            (await roleDropdown.CountAsync()).Should().Be(1, "modal must contain role dropdown");
+
+            // Should NOT have navigated away
+            page.Url.Should().NotContain("/Context/Select",
+                "modal should open without page navigation");
         }
         finally
         {
-            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(CambiarContextoLink_ShouldNavigateTo_ContextSelection));
+            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(CambiarContextoButton_ShouldOpen_Modal));
+            await page.Context.DisposeAsync();
+        }
+    }
+
+    [Fact]
+    public async Task ContextSwitch_ViaModal_ShouldShowToastAndReload()
+    {
+        var page = await _fixture.CreatePageAsync();
+        try
+        {
+            await LoginAndSelectContextAsync(page, "multirole@test.mentoory.com", "Test123!@#");
+
+            // Open modal
+            var switchButton = page.Locator("button").Filter(new LocatorFilterOptions
+            {
+                HasText = "Cambiar contexto"
+            });
+            await switchButton.First.ClickAsync();
+
+            var modal = page.Locator("#contextSwitcherModal");
+            await modal.WaitForAsync(new LocatorWaitForOptions
+            {
+                State = WaitForSelectorState.Visible,
+                Timeout = 5000
+            });
+
+            // Wait for roles to load in modal
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            // Select IncubatorAdmin (should have it)
+            var roleDropdown = modal.Locator("[data-cs='role']");
+            await roleDropdown.SelectOptionAsync(new SelectOptionValue { Label = "Administrador de Incubadora" });
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            // Wait for auto-cascade to complete
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            // Click Confirmar in modal
+            var confirmBtn = modal.Locator("[data-cs='confirm']");
+            await confirmBtn.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Attached });
+
+            if (!await confirmBtn.IsDisabledAsync())
+            {
+                await confirmBtn.ClickAsync();
+                await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+                // After switch, page should not show errors
+                var pageContent = await page.ContentAsync();
+                pageContent.Should().NotContain("Internal Server Error");
+            }
+        }
+        finally
+        {
+            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(ContextSwitch_ViaModal_ShouldShowToastAndReload));
             await page.Context.DisposeAsync();
         }
     }
@@ -82,32 +141,16 @@ public class ContextSwitchingTests
         var page = await _fixture.CreatePageAsync();
         try
         {
-            await LoginAsync(page, "multirole@test.mentoory.com", "Test123!@#");
+            await LoginAndSelectContextAsync(page, "multirole@test.mentoory.com", "Test123!@#");
 
-            // Navigate to a known page first
-            await page.GotoAsync($"{_fixture.BaseUrl}/Administration/Dashboard");
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-
-            // Switch context via the link
-            var switchLink = page.Locator("a").Filter(new LocatorFilterOptions
-            {
-                HasText = "Cambiar contexto"
-            });
-
-            if (await switchLink.CountAsync() > 0)
-            {
-                await switchLink.First.ClickAsync();
-                await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-            }
-
-            // After context switch, the page should not show a server error
+            // The page should not show a server error
             var pageContent = await page.ContentAsync();
             pageContent.Should().NotContain("500");
             pageContent.Should().NotContain("Internal Server Error");
 
-            // The response status should be healthy (no crash)
+            // The response status should be healthy
             var title = await page.TitleAsync();
-            title.Should().NotBeEmpty("the page should render correctly after context switch");
+            title.Should().NotBeEmpty("the page should render correctly after context selection");
         }
         finally
         {
@@ -123,5 +166,26 @@ public class ContextSwitchingTests
         await page.FillAsync("input[name='Password']", password);
         await page.ClickAsync("button[type='submit']");
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+    }
+
+    private async Task LoginAndSelectContextAsync(IPage page, string email, string password)
+    {
+        await LoginAsync(page, email, password);
+
+        if (page.Url.Contains("/Context/Select"))
+        {
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            var roleDropdown = page.Locator("[data-cs='role']");
+            await roleDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            // Wait for auto-cascade
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            var confirmBtn = page.Locator("[data-cs='confirm']");
+            await confirmBtn.ClickAsync();
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        }
     }
 }

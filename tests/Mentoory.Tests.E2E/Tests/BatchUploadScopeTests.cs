@@ -259,17 +259,13 @@ public class BatchUploadScopeTests
 
         if (page.Url.Contains("/Context/Select"))
         {
-            var firstSubmitButton = page.Locator(".context-card button[type='submit']").First;
-            if (await firstSubmitButton.CountAsync() > 0)
-            {
-                await firstSubmitButton.ClickAsync();
-            }
-            else
-            {
-                var firstContextLink = page.Locator("a[href*='/Context/Set/']").First;
-                await firstContextLink.ClickAsync();
-            }
-
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            var roleDropdown = page.Locator("[data-cs='role']");
+            await roleDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            var confirmBtn = page.Locator("[data-cs='confirm']");
+            await confirmBtn.ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         }
     }

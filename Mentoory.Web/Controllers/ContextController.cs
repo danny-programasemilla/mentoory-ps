@@ -1,6 +1,9 @@
 using System.Security.Claims;
 using Mentoory.Access.Application.Commands.SetActiveContext;
 using Mentoory.Access.Application.Queries.GetUserContexts;
+using Mentoory.Access.Application.Queries.ListContextIncubators;
+using Mentoory.Access.Application.Queries.ListContextProjects;
+using Mentoory.Access.Application.Queries.ListContextRoles;
 using Mentoory.Access.Domain.ReadModels;
 using Mentoory.Shared.Domain.Constants;
 using Mentoory.Tenant.Application.Queries.ListIncubatorContextOptions;
@@ -39,26 +42,26 @@ public class ContextController : Controller
             return RedirectToAction("Index", "AvailableProjects");
         }
 
-        if (contexts.Count == 1 && contexts[0].Role == Roles.GlobalAdmin)
-        {
-            var globalAdminContexts = await BuildGlobalAdminContextsAsync(contexts[0], ct);
-
-            if (globalAdminContexts.Count == 0)
-            {
-                return await SetContext(contexts[0].RoleAssignmentExternalId, returnUrl, ct);
-            }
-
-            ViewBag.ReturnUrl = returnUrl;
-            return View(globalAdminContexts);
-        }
-
-        if (contexts.Count == 1)
+        // Auto-skip: single non-GlobalAdmin context
+        if (contexts.Count == 1 && contexts[0].Role != Roles.GlobalAdmin)
         {
             return await SetContext(contexts[0].RoleAssignmentExternalId, returnUrl, ct);
         }
 
+        // Auto-skip: single GlobalAdmin with no incubators to browse
+        if (contexts.Count == 1 && contexts[0].Role == Roles.GlobalAdmin)
+        {
+            var options = await _executor.SendOrThrowAsync(
+                new ListIncubatorContextOptionsQuery(), ct);
+
+            if (options.Count == 0)
+            {
+                return await SetContext(contexts[0].RoleAssignmentExternalId, returnUrl, ct);
+            }
+        }
+
         ViewBag.ReturnUrl = returnUrl;
-        return View(contexts);
+        return View();
     }
 
     [HttpPost]
@@ -87,6 +90,116 @@ public class ContextController : Controller
         return await SetContext(roleAssignmentExternalId, returnUrl, ct);
     }
 
+    [HttpGet]
+    [Route("api/context/roles")]
+    public async Task<IActionResult> GetRoles(CancellationToken ct)
+    {
+        var userId = User.GetUserId();
+        if (userId is null)
+        {
+            return Unauthorized(new { message = "Sesión inválida." });
+        }
+
+        var roles = await _executor.SendOrThrowAsync(
+            new ListContextRolesQuery(userId.Value), ct);
+
+        return Ok(roles);
+    }
+
+    [HttpGet]
+    [Route("api/context/incubators")]
+    public async Task<IActionResult> GetIncubators([FromQuery] string role, CancellationToken ct)
+    {
+        var userId = User.GetUserId();
+        if (userId is null)
+        {
+            return Unauthorized(new { message = "Sesión inválida." });
+        }
+
+        if (string.IsNullOrWhiteSpace(role) || !Roles.All.Contains(role))
+        {
+            return BadRequest(new { message = "Rol inválido." });
+        }
+
+        var (contexts, options) = await LoadCascadeDataAsync(userId.Value, ct);
+        var incubatorNames = options.ToDictionary(o => o.IncubatorId, o => o.IncubatorName);
+
+        if (role == Roles.GlobalAdmin)
+        {
+            var ga = contexts.FirstOrDefault(c => c.Role == Roles.GlobalAdmin);
+            if (ga is null)
+            {
+                return Ok(Array.Empty<ContextIncubatorDto>());
+            }
+
+            return Ok(options
+                .Select(o => new ContextIncubatorDto(o.IncubatorId, o.IncubatorName, ga.RoleAssignmentExternalId))
+                .ToList());
+        }
+
+        var result = contexts
+            .Where(c => c.Role == role)
+            .GroupBy(a => a.IncubatorId)
+            .Select(g => new ContextIncubatorDto(
+                g.Key,
+                incubatorNames.GetValueOrDefault(g.Key, $"Incubadora #{g.Key}"),
+                g.First().RoleAssignmentExternalId))
+            .OrderBy(i => i.Name)
+            .ToList();
+
+        return Ok(result);
+    }
+
+    [HttpGet]
+    [Route("api/context/projects")]
+    public async Task<IActionResult> GetProjects(
+        [FromQuery] string role,
+        [FromQuery] long incubatorId,
+        CancellationToken ct)
+    {
+        var userId = User.GetUserId();
+        if (userId is null)
+        {
+            return Unauthorized(new { message = "Sesión inválida." });
+        }
+
+        if (string.IsNullOrWhiteSpace(role) || !Roles.All.Contains(role))
+        {
+            return BadRequest(new { message = "Rol inválido." });
+        }
+
+        var (contexts, options) = await LoadCascadeDataAsync(userId.Value, ct);
+        var incubatorOption = options.FirstOrDefault(o => o.IncubatorId == incubatorId);
+
+        if (role == Roles.GlobalAdmin)
+        {
+            var ga = contexts.FirstOrDefault(c => c.Role == Roles.GlobalAdmin);
+            if (ga is null || incubatorOption is null)
+            {
+                return Ok(Array.Empty<ContextProjectDto>());
+            }
+
+            return Ok(incubatorOption.Projects
+                .Select(p => new ContextProjectDto(p.ProjectId, p.ProjectName, ga.RoleAssignmentExternalId))
+                .ToList());
+        }
+
+        var projectNames = incubatorOption?.Projects
+            .ToDictionary(p => p.ProjectId, p => p.ProjectName)
+            ?? [];
+
+        var result = contexts
+            .Where(c => c.Role == role && c.IncubatorId == incubatorId && c.ProjectId.HasValue)
+            .Select(c => new ContextProjectDto(
+                c.ProjectId!.Value,
+                projectNames.GetValueOrDefault(c.ProjectId.Value, $"Proyecto #{c.ProjectId.Value}"),
+                c.RoleAssignmentExternalId))
+            .OrderBy(p => p.Name)
+            .ToList();
+
+        return Ok(result);
+    }
+
     [HttpPost]
     [Route("api/context/switch")]
     [ValidateAntiForgeryToken]
@@ -107,6 +220,19 @@ public class ContextController : Controller
         }
 
         var context = result.Value!;
+
+        if (context.Role == Roles.GlobalAdmin
+            && request.IncubatorId.HasValue)
+        {
+            context = context with
+            {
+                IncubatorId = request.IncubatorId.Value,
+                IncubatorName = request.IncubatorName,
+                ProjectId = request.ProjectId,
+                ProjectName = request.ProjectName,
+            };
+        }
+
         await UpdateAuthCookie(context);
 
         return Ok(new { message = "Contexto actualizado exitosamente." });
@@ -119,14 +245,21 @@ public class ContextController : Controller
             return false;
         }
 
-        // Only allow relative paths (local URLs)
-        // Reject absolute URIs, protocol-relative URLs (//), and backslash tricks
         if (url.StartsWith('/') && !url.StartsWith("//") && !url.StartsWith("/\\"))
         {
             return true;
         }
 
         return false;
+    }
+
+    private async Task<(List<UserContext> Contexts, List<IncubatorContextOptionDto> Options)> LoadCascadeDataAsync(
+        long userId, CancellationToken ct)
+    {
+        var contextsTask = _executor.SendOrThrowAsync(new GetUserContextsQuery(userId), ct);
+        var optionsTask = _executor.SendOrThrowAsync(new ListIncubatorContextOptionsQuery(), ct);
+        await Task.WhenAll(contextsTask, optionsTask);
+        return (contextsTask.Result, optionsTask.Result);
     }
 
     private async Task<IActionResult> SetContext(Guid roleAssignmentExternalId, string? returnUrl, CancellationToken ct)
@@ -148,39 +281,6 @@ public class ContextController : Controller
         }
 
         return RedirectToAction("Index", "Home");
-    }
-
-    private async Task<List<UserContext>> BuildGlobalAdminContextsAsync(
-        UserContext globalContext, CancellationToken ct)
-    {
-        var options = await _executor.SendOrThrowAsync(
-            new ListIncubatorContextOptionsQuery(), ct);
-
-        var contexts = new List<UserContext>();
-
-        foreach (var incubator in options)
-        {
-            contexts.Add(globalContext with
-            {
-                IncubatorId = incubator.IncubatorId,
-                IncubatorName = incubator.IncubatorName,
-                ProjectId = null,
-                ProjectName = null,
-            });
-
-            foreach (var project in incubator.Projects)
-            {
-                contexts.Add(globalContext with
-                {
-                    IncubatorId = incubator.IncubatorId,
-                    IncubatorName = incubator.IncubatorName,
-                    ProjectId = project.ProjectId,
-                    ProjectName = project.ProjectName,
-                });
-            }
-        }
-
-        return contexts;
     }
 
     private async Task<IActionResult> SetGlobalAdminContext(
@@ -270,4 +370,9 @@ public class ContextController : Controller
     }
 }
 
-public sealed record ContextSwitchRequest(Guid RoleAssignmentExternalId);
+public sealed record ContextSwitchRequest(
+    Guid RoleAssignmentExternalId,
+    long? IncubatorId = null,
+    string? IncubatorName = null,
+    long? ProjectId = null,
+    string? ProjectName = null);

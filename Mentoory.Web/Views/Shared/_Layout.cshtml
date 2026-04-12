@@ -38,6 +38,12 @@
     <script src="~/lib/datatables/dataTables.min.js"></script>
     <script src="~/lib/datatables/dataTables.bootstrap5.min.js"></script>
     <script src="~/js/site.js"></script>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <script src="~/js/context-selector.js"></script>
+        <script src="~/js/context-switcher.js"></script>
+    }
     @await RenderSectionAsync("Scripts", required: false)
+    @await Component.InvokeAsync("Toast")
 </body>
 </html>

@@ -30,10 +30,14 @@ public class LoginRoutingTests
             page.Url.Should().Contain("/Context/Select",
                 "GlobalAdmin should see context selection after login");
 
-            // Select the first available context
-            var firstSubmitButton = page.Locator(".context-card button[type='submit']").First;
-            await firstSubmitButton.WaitForAsync(new LocatorWaitForOptions { Timeout = 5000 });
-            await firstSubmitButton.ClickAsync();
+            // Select the first available context via cascade dropdowns
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            var roleDropdown = page.Locator("[data-cs='role']");
+            await roleDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            var confirmBtn = page.Locator("[data-cs='confirm']");
+            await confirmBtn.ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             page.Url.Should().Contain("/Platform/Incubators");

@@ -107,9 +107,13 @@ public class AdministrationUsersTests
         // If redirected to context selection, pick the first available context
         if (page.Url.Contains("/Context/Select"))
         {
-            var firstContextLink = page.Locator("a[href*='/Context/Set/']").First;
-            await firstContextLink.WaitForAsync(new LocatorWaitForOptions { Timeout = 5000 });
-            await firstContextLink.ClickAsync();
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            var roleDropdown = page.Locator("[data-cs='role']");
+            await roleDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            var confirmBtn = page.Locator("[data-cs='confirm']");
+            await confirmBtn.ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         }
     }
