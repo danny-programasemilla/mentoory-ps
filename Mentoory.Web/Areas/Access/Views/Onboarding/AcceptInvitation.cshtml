@@ -1,0 +1,43 @@
+@{
+    ViewData["Title"] = "Aceptar Invitacion";
+    Layout = "_Layout";
+}
+
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6 col-lg-5">
+            <div class="card">
+                <div class="card-header text-center">
+                    <h5 class="card-title mb-0">Aceptar Invitacion</h5>
+                </div>
+                <div class="card-body">
+                    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                    <form asp-action="AcceptInvitation" method="post">
+                        <input type="hidden" name="invitationExternalId" value="@ViewBag.InvitationExternalId" />
+                        <input type="hidden" name="userExternalId" value="@ViewBag.UserExternalId" />
+                        <input type="hidden" name="needsPassword" value="@(ViewBag.NeedsPassword ? "true" : "false")" />
+
+                        <p class="text-muted mb-3">Ha sido invitado a participar en un proyecto. Acepte la invitacion para continuar.</p>
+
+                        @if ((bool)ViewBag.NeedsPassword)
+                        {
+                            <div class="mb-3">
+                                <label for="newPassword" class="form-label">Contrasena</label>
+                                <input type="password" class="form-control" id="newPassword" name="newPassword" required minlength="12" />
+                                <div class="form-text">Minimo 12 caracteres, con mayusculas, minusculas, digitos y caracteres especiales.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="confirmPassword" class="form-label">Confirmar contrasena</label>
+                                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required />
+                            </div>
+                        }
+
+                        <button type="submit" class="btn btn-primary w-100">Aceptar Invitacion</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -19,6 +19,7 @@ public class ProjectInvitation : Entity, IAggregateRoot
     public DateTime CreatedAtUtc { get; private set; }
     public long CreatedByUserId { get; private set; }
     public bool IsActive { get; private set; }
+    public bool RequiresAcceptance { get; private set; }
 
     public static ProjectInvitation Create(
         long projectId,
@@ -26,7 +27,8 @@ public class ProjectInvitation : Entity, IAggregateRoot
         string tokenHash,
         DateTime expiresAtUtc,
         long createdByUserId,
-        DateTime utcNow)
+        DateTime utcNow,
+        bool requiresAcceptance = true)
     {
         return new ProjectInvitation
         {
@@ -39,6 +41,7 @@ public class ProjectInvitation : Entity, IAggregateRoot
             CreatedAtUtc = utcNow,
             CreatedByUserId = createdByUserId,
             IsActive = true,
+            RequiresAcceptance = requiresAcceptance,
         };
     }
 

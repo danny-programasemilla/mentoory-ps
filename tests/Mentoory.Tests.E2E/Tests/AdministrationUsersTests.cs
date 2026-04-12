@@ -88,10 +88,51 @@ public class AdministrationUsersTests
             firstUser.TryGetProperty("firstName", out _).Should().BeTrue("user records must include firstName");
             firstUser.TryGetProperty("lastName", out _).Should().BeTrue("user records must include lastName");
             firstUser.TryGetProperty("accountStatus", out _).Should().BeTrue("user records must include accountStatus");
+            firstUser.TryGetProperty("onboardingStatus", out _).Should().BeTrue("user records must include onboardingStatus");
         }
         finally
         {
             await _fixture.TakeScreenshotOnFailureAsync(page, nameof(IncubatorAdmin_UsersDataTableAjax_ReturnsUserDetails));
+            await page.Context.DisposeAsync();
+        }
+    }
+
+    [Fact]
+    public async Task UsersIndex_ShowsCreateUserButton()
+    {
+        var page = await _fixture.CreatePageAsync();
+        try
+        {
+            await LoginAndSelectContextAsync(page, "incadmin1@test.mentoory.com", "Test123!@#");
+            await page.GotoAsync($"{_fixture.BaseUrl}/Administration/Users");
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            var createUserLink = page.GetByRole(AriaRole.Link, new() { Name = "Crear Usuario" });
+            await Assertions.Expect(createUserLink).ToBeVisibleAsync(new() { Timeout = 5000 });
+        }
+        finally
+        {
+            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(UsersIndex_ShowsCreateUserButton));
+            await page.Context.DisposeAsync();
+        }
+    }
+
+    [Fact]
+    public async Task UsersIndex_HasOnboardingStatusColumn()
+    {
+        var page = await _fixture.CreatePageAsync();
+        try
+        {
+            await LoginAndSelectContextAsync(page, "incadmin1@test.mentoory.com", "Test123!@#");
+            await page.GotoAsync($"{_fixture.BaseUrl}/Administration/Users");
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            var onboardingHeader = page.Locator("th", new() { HasTextString = "Incorporacion" });
+            await Assertions.Expect(onboardingHeader).ToBeVisibleAsync(new() { Timeout = 5000 });
+        }
+        finally
+        {
+            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(UsersIndex_HasOnboardingStatusColumn));
             await page.Context.DisposeAsync();
         }
     }

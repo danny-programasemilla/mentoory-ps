@@ -15,4 +15,8 @@ public sealed record IncubatorMemberListItemDto(
     string FirstName,
     string LastName,
     string AccountStatus,
-    DateTime CreatedAtUtc);
+    DateTime CreatedAtUtc)
+{
+    public long UserId { get; init; }
+    public string OnboardingStatus { get; init; } = string.Empty;
+}

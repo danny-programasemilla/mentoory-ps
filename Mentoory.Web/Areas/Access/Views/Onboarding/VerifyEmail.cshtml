@@ -1,0 +1,39 @@
+@{
+    ViewData["Title"] = "Verificar Correo Electronico";
+    Layout = "_Layout";
+}
+
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6 col-lg-5">
+            <div class="card">
+                <div class="card-header text-center">
+                    <h5 class="card-title mb-0">Verificar Correo y Configurar Contrasena</h5>
+                </div>
+                <div class="card-body">
+                    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                    <form asp-action="VerifyEmail" method="post">
+                        <input type="hidden" name="token" value="@ViewBag.Token" />
+                        <input type="hidden" name="userExternalId" value="@ViewBag.UserExternalId" />
+
+                        <p class="text-muted mb-3">Configure su contrasena para completar la verificacion de su cuenta.</p>
+
+                        <div class="mb-3">
+                            <label for="newPassword" class="form-label">Contrasena</label>
+                            <input type="password" class="form-control" id="newPassword" name="newPassword" required minlength="12" />
+                            <div class="form-text">Minimo 12 caracteres, con mayusculas, minusculas, digitos y caracteres especiales.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label">Confirmar contrasena</label>
+                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required />
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Verificar y Configurar Contrasena</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -11,6 +11,7 @@ CREATE TABLE [tenant].[ProjectInvitations]
     [CreatedAtUtc] DATETIME2 NOT NULL,
     [CreatedByUserId] BIGINT NOT NULL,
     [IsActive] BIT NOT NULL DEFAULT 1,
+    [RequiresAcceptance] BIT NOT NULL DEFAULT 1,
     CONSTRAINT [PK_tenant_ProjectInvitations] PRIMARY KEY CLUSTERED ([Id] ASC),
     CONSTRAINT [UQ_ProjectInvitations_ExternalId] UNIQUE ([ExternalId]),
     CONSTRAINT [FK_ProjectInvitations_Projects] FOREIGN KEY ([ProjectId]) REFERENCES [tenant].[Projects] ([Id])

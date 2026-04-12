@@ -19,8 +19,8 @@
 
 **Purpose**: Verify prerequisites and branch readiness
 
-- [ ] T001 Verify spec 008 (context selector) is implemented — check `ContextController.Select` exists and `GetActiveProjectId()` returns data
-- [ ] T002 Verify clean build on branch 009-unified-user-creation with `dotnet build`
+- [X] T001 Verify spec 008 (context selector) is implemented — check `ContextController.Select` exists and `GetActiveProjectId()` returns data
+- [X] T002 Verify clean build on branch 009-unified-user-creation with `dotnet build`
 
 **Checkpoint**: Branch is clean, spec 008 dependency confirmed
 
@@ -32,13 +32,13 @@
 
 **CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 Add `RequiresAcceptance` (bool, default true) property to `ProjectInvitation.Create()` factory method in `Mentoory.Tenant.Domain/Aggregates/ProjectInvitation/ProjectInvitation.cs`
-- [ ] T004 [P] Add `RequiresAcceptance` column (BIT NOT NULL DEFAULT 1) to `Mentoory.Db/tenant/Tables/ProjectInvitations.sql`
-- [ ] T005 Add `RequiresAcceptance` parameter to `CreateInvitationCommand` record in `Mentoory.Tenant.Application/Invitations/Commands/CreateInvitation/CreateInvitationCommand.cs`
-- [ ] T006 Pass `RequiresAcceptance` through `CreateInvitationHandler` to `ProjectInvitation.Create()` in `Mentoory.Tenant.Application/Invitations/Commands/CreateInvitation/CreateInvitationHandler.cs`
-- [ ] T007 Modify `UserRegisteredEventHandler` to compute `RequiresAcceptance` from `EnrollmentVariant` (FullFlow=true, Bypass=false) and pass to `CreateInvitationCommand` in `Mentoory.Tenant.Application/Enrollment/IntegrationEventHandlers/UserRegisteredEventHandler.cs`
-- [ ] T008 Modify `UserEmailVerifiedEventHandler` to check `invitation.RequiresAcceptance` instead of `project.EnrollmentVariant` for auto-accept logic in `Mentoory.Tenant.Application/Invitations/IntegrationEventHandlers/UserEmailVerifiedEventHandler.cs`
-- [ ] T009 Verify build passes with `dotnet build` — zero warnings
+- [X] T003 Add `RequiresAcceptance` (bool, default true) property to `ProjectInvitation.Create()` factory method in `Mentoory.Tenant.Domain/Aggregates/ProjectInvitation/ProjectInvitation.cs`
+- [X] T004 [P] Add `RequiresAcceptance` column (BIT NOT NULL DEFAULT 1) to `Mentoory.Db/tenant/Tables/ProjectInvitations.sql`
+- [X] T005 Add `RequiresAcceptance` parameter to `CreateInvitationCommand` record in `Mentoory.Tenant.Application/Invitations/Commands/CreateInvitation/CreateInvitationCommand.cs`
+- [X] T006 Pass `RequiresAcceptance` through `CreateInvitationHandler` to `ProjectInvitation.Create()` in `Mentoory.Tenant.Application/Invitations/Commands/CreateInvitation/CreateInvitationHandler.cs`
+- [X] T007 Modify `UserRegisteredEventHandler` to compute `RequiresAcceptance` from `EnrollmentVariant` (FullFlow=true, Bypass=false) and pass to `CreateInvitationCommand` in `Mentoory.Tenant.Application/Enrollment/IntegrationEventHandlers/UserRegisteredEventHandler.cs`
+- [X] T008 Modify `UserEmailVerifiedEventHandler` to check `invitation.RequiresAcceptance` instead of `project.EnrollmentVariant` for auto-accept logic in `Mentoory.Tenant.Application/Invitations/IntegrationEventHandlers/UserEmailVerifiedEventHandler.cs`
+- [X] T009 Verify build passes with `dotnet build` — zero warnings
 
 **Checkpoint**: Invitation infrastructure supports RequiresAcceptance flag. Existing tests still pass.
 
@@ -52,34 +52,34 @@
 
 ### Application Layer
 
-- [ ] T010 [P] [US1] Create `CreateUserCommand` record and `CreateUserResult` record in `Mentoory.Access.Application/Commands/CreateUser/CreateUserCommand.cs` — fields per contracts/internal-contracts.md
-- [ ] T011 [P] [US1] Create `CreateUserCommandValidator` with FluentValidation rules (email format, required fields, country validation) in `Mentoory.Access.Application/Commands/CreateUser/CreateUserCommandValidator.cs`
-- [ ] T012 [US1] Create `CreateUserCommandHandler` in `Mentoory.Access.Application/Commands/CreateUser/CreateUserCommandHandler.cs` — check existing user, create or enroll, hash password (temp when both ON), publish `UserRegisteredEvent` with toggle-derived fields (RequiresVerification=!SkipEmailVerification, EnrollmentVariant=SkipInvitationAcceptance?"Bypass":"FullFlow")
-- [ ] T013 [P] [US1] Create `SetInitialPasswordCommand` record in `Mentoory.Access.Application/Commands/SetInitialPassword/SetInitialPasswordCommand.cs` — UserExternalId, Token, TokenType (Verification/Invitation), NewPassword, ConfirmPassword
-- [ ] T014 [P] [US1] Create `SetInitialPasswordCommandValidator` in `Mentoory.Access.Application/Commands/SetInitialPassword/SetInitialPasswordCommandValidator.cs` — password min 12 chars, match confirmation
-- [ ] T015 [US1] Create `SetInitialPasswordCommandHandler` in `Mentoory.Access.Application/Commands/SetInitialPassword/SetInitialPasswordCommandHandler.cs` — validate token, set password hash, activate account (if verification token), mark token used
+- [X] T010 [P] [US1] Create `CreateUserCommand` record and `CreateUserResult` record in `Mentoory.Access.Application/Commands/CreateUser/CreateUserCommand.cs` — fields per contracts/internal-contracts.md
+- [X] T011 [P] [US1] Create `CreateUserCommandValidator` with FluentValidation rules (email format, required fields, country validation) in `Mentoory.Access.Application/Commands/CreateUser/CreateUserCommandValidator.cs`
+- [X] T012 [US1] Create `CreateUserCommandHandler` in `Mentoory.Access.Application/Commands/CreateUser/CreateUserCommandHandler.cs` — check existing user, create or enroll, hash password (temp when both ON), publish `UserRegisteredEvent` with toggle-derived fields (RequiresVerification=!SkipEmailVerification, EnrollmentVariant=SkipInvitationAcceptance?"Bypass":"FullFlow")
+- [X] T013 [P] [US1] Create `SetInitialPasswordCommand` record in `Mentoory.Access.Application/Commands/SetInitialPassword/SetInitialPasswordCommand.cs` — UserExternalId, Token, TokenType (Verification/Invitation), NewPassword, ConfirmPassword
+- [X] T014 [P] [US1] Create `SetInitialPasswordCommandValidator` in `Mentoory.Access.Application/Commands/SetInitialPassword/SetInitialPasswordCommandValidator.cs` — password min 12 chars, match confirmation
+- [X] T015 [US1] Create `SetInitialPasswordCommandHandler` in `Mentoory.Access.Application/Commands/SetInitialPassword/SetInitialPasswordCommandHandler.cs` — validate token, set password hash, activate account (if verification token), mark token used
 
 ### Web Layer — Admin Form
 
-- [ ] T016 [P] [US3] Create `CreateUserViewModel` in `Mentoory.Web/Areas/Administration/Models/CreateUserViewModel.cs` — Email, Country, Identification, FirstName, LastName, SkipEmailVerification, SkipInvitationAcceptance, CountryList
-- [ ] T017 [US1] Add `Create` GET and POST actions to `Mentoory.Web/Areas/Administration/Controllers/UsersController.cs` — GET loads countries + checks session context, POST dispatches `CreateUserCommand` with ProjectExternalId/IncubatorExternalId from claims
-- [ ] T018 [US3] Add session context enforcement to `Create` GET action — if `GetActiveProjectId()` is null, set ViewBag flag to disable form and show alert "Seleccione un proyecto desde el selector de contexto para continuar"
-- [ ] T019 [US1] Create unified form view `Mentoory.Web/Areas/Administration/Views/Users/Create.cshtml` — Email, Country dropdown, Identification, FirstName, LastName, two toggle switches (Bootstrap 5), project name display from session context, submit button
-- [ ] T020 [P] [US1] Create `Mentoory.Web/wwwroot/js/user-creation.js` — country-dependent identification mask (reuse existing pattern from Register), toggle switch visual feedback, form validation
-- [ ] T021 [US2] Display temp password in success result on `Create` POST response — show alert with generated password when both toggles ON, show onboarding status message when toggles OFF
+- [X] T016 [P] [US3] Create `CreateUserViewModel` in `Mentoory.Web/Areas/Administration/Models/CreateUserViewModel.cs` — Email, Country, Identification, FirstName, LastName, SkipEmailVerification, SkipInvitationAcceptance, CountryList
+- [X] T017 [US1] Add `Create` GET and POST actions to `Mentoory.Web/Areas/Administration/Controllers/UsersController.cs` — GET loads countries + checks session context, POST dispatches `CreateUserCommand` with ProjectExternalId/IncubatorExternalId from claims
+- [X] T018 [US3] Add session context enforcement to `Create` GET action — if `GetActiveProjectId()` is null, set ViewBag flag to disable form and show alert "Seleccione un proyecto desde el selector de contexto para continuar"
+- [X] T019 [US1] Create unified form view `Mentoory.Web/Areas/Administration/Views/Users/Create.cshtml` — Email, Country dropdown, Identification, FirstName, LastName, two toggle switches (Bootstrap 5), project name display from session context, submit button
+- [X] T020 [P] [US1] Create `Mentoory.Web/wwwroot/js/user-creation.js` — country-dependent identification mask (reuse existing pattern from Register), toggle switch visual feedback, form validation
+- [X] T021 [US2] Display temp password in success result on `Create` POST response — show alert with generated password when both toggles ON, show onboarding status message when toggles OFF
 
 ### Web Layer — Public Onboarding Pages
 
-- [ ] T022 [US1] Create `OnboardingController` in `Mentoory.Web/Areas/Access/Controllers/OnboardingController.cs` — `[AllowAnonymous]`, actions: VerifyEmail (GET/POST), AcceptInvitation (GET/POST), Expired (GET)
-- [ ] T023 [US1] Implement `VerifyEmail` GET action — validate token, show password setup form with project name. If token expired, redirect to Expired page.
-- [ ] T024 [US1] Implement `VerifyEmail` POST action — dispatch `SetInitialPasswordCommand` (TokenType=Verification), on success redirect to login or next onboarding step
-- [ ] T025 [US1] Create `Mentoory.Web/Areas/Access/Views/Onboarding/VerifyEmail.cshtml` — password field, confirm password field, project info, submit button. Spanish labels.
-- [ ] T026 [US1] Implement `AcceptInvitation` GET action — validate invitation token via `GetInvitationDetailsQuery`, show project name + accept button + password form (if user has no password yet)
-- [ ] T027 [US1] Implement `AcceptInvitation` POST action — dispatch `SetInitialPasswordCommand` (if needed) + `AcceptInvitationCommand`, on success redirect to login
-- [ ] T028 [US1] Create `Mentoory.Web/Areas/Access/Views/Onboarding/AcceptInvitation.cshtml` — project name, "Aceptar invitacion" button, conditional password form, Spanish labels
-- [ ] T029 [P] [US1] Create `Mentoory.Web/Areas/Access/Views/Onboarding/Expired.cshtml` — "Invitacion expirada" message with instructions to contact admin
+- [X] T022 [US1] Create `OnboardingController` in `Mentoory.Web/Areas/Access/Controllers/OnboardingController.cs` — `[AllowAnonymous]`, actions: VerifyEmail (GET/POST), AcceptInvitation (GET/POST), Expired (GET)
+- [X] T023 [US1] Implement `VerifyEmail` GET action — validate token, show password setup form with project name. If token expired, redirect to Expired page.
+- [X] T024 [US1] Implement `VerifyEmail` POST action — dispatch `SetInitialPasswordCommand` (TokenType=Verification), on success redirect to login or next onboarding step
+- [X] T025 [US1] Create `Mentoory.Web/Areas/Access/Views/Onboarding/VerifyEmail.cshtml` — password field, confirm password field, project info, submit button. Spanish labels.
+- [X] T026 [US1] Implement `AcceptInvitation` GET action — validate invitation token via `GetInvitationDetailsQuery`, show project name + accept button + password form (if user has no password yet)
+- [X] T027 [US1] Implement `AcceptInvitation` POST action — dispatch `SetInitialPasswordCommand` (if needed) + `AcceptInvitationCommand`, on success redirect to login
+- [X] T028 [US1] Create `Mentoory.Web/Areas/Access/Views/Onboarding/AcceptInvitation.cshtml` — project name, "Aceptar invitacion" button, conditional password form, Spanish labels
+- [X] T029 [P] [US1] Create `Mentoory.Web/Areas/Access/Views/Onboarding/Expired.cshtml` — "Invitacion expirada" message with instructions to contact admin
 
-- [ ] T030 Verify build passes with `dotnet build` — zero warnings
+- [X] T030 Verify build passes with `dotnet build` — zero warnings
 
 **Checkpoint**: US1 (full onboarding), US2 (bypass), and US3 (context enforcement) are all functional. Admin can create users via the unified form.
 
@@ -93,18 +93,18 @@
 
 ### Application Layer
 
-- [ ] T031 [P] [US4] Create `BatchCreateUsersCommand` record and `BatchCreateUsersResult` record in `Mentoory.Access.Application/Commands/BatchCreateUsers/BatchCreateUsersCommand.cs` — fields per contracts/internal-contracts.md
-- [ ] T032 [P] [US4] Create `BatchCreateUsersCommandValidator` in `Mentoory.Access.Application/Commands/BatchCreateUsers/BatchCreateUsersCommandValidator.cs` — max 500 rows, required ProjectExternalId
-- [ ] T033 [US4] Create `BatchCreateUsersCommandHandler` in `Mentoory.Access.Application/Commands/BatchCreateUsers/BatchCreateUsersCommandHandler.cs` — iterate rows, reuse CreateUser logic (check existing, create or enroll), collect per-row results with Creado/Inscrito/Error outcomes
+- [X] T031 [P] [US4] Create `BatchCreateUsersCommand` record and `BatchCreateUsersResult` record in `Mentoory.Access.Application/Commands/BatchCreateUsers/BatchCreateUsersCommand.cs` — fields per contracts/internal-contracts.md
+- [X] T032 [P] [US4] Create `BatchCreateUsersCommandValidator` in `Mentoory.Access.Application/Commands/BatchCreateUsers/BatchCreateUsersCommandValidator.cs` — max 500 rows, required ProjectExternalId
+- [X] T033 [US4] Create `BatchCreateUsersCommandHandler` in `Mentoory.Access.Application/Commands/BatchCreateUsers/BatchCreateUsersCommandHandler.cs` — iterate rows, reuse CreateUser logic (check existing, create or enroll), collect per-row results with Creado/Inscrito/Error outcomes
 
 ### Web Layer
 
-- [ ] T034 [US4] Modify `BatchUploadController.Index` GET action in `Mentoory.Web/Areas/Administration/Controllers/BatchUploadController.cs` — remove project dropdown fetch, add session context enforcement, pass toggle defaults to view
-- [ ] T035 [US4] Modify `BatchUploadController.Index` POST action — read toggles from form, read ProjectExternalId from session context claims, dispatch `BatchCreateUsersCommand`
-- [ ] T036 [US4] Modify `Mentoory.Web/Areas/Administration/Views/BatchUpload/Index.cshtml` — remove project dropdown, add two toggle switches, add session context enforcement alert (same pattern as Create form)
-- [ ] T037 [US4] Update `Mentoory.Web/Areas/Administration/Views/BatchUpload/Results.cshtml` — replace "Exitoso"/"Omitido" with "Creado"/"Inscrito"/"Error", show temp passwords only when both toggles ON, update summary cards
+- [X] T034 [US4] Modify `BatchUploadController.Index` GET action in `Mentoory.Web/Areas/Administration/Controllers/BatchUploadController.cs` — remove project dropdown fetch, add session context enforcement, pass toggle defaults to view
+- [X] T035 [US4] Modify `BatchUploadController.Index` POST action — read toggles from form, read ProjectExternalId from session context claims, dispatch `BatchCreateUsersCommand`
+- [X] T036 [US4] Modify `Mentoory.Web/Areas/Administration/Views/BatchUpload/Index.cshtml` — remove project dropdown, add two toggle switches, add session context enforcement alert (same pattern as Create form)
+- [X] T037 [US4] Update `Mentoory.Web/Areas/Administration/Views/BatchUpload/Results.cshtml` — replace "Exitoso"/"Omitido" with "Creado"/"Inscrito"/"Error", show temp passwords only when both toggles ON, update summary cards
 
-- [ ] T038 Verify build passes with `dotnet build` — zero warnings
+- [X] T038 Verify build passes with `dotnet build` — zero warnings
 
 **Checkpoint**: US4 is functional. Admin can batch upload with toggles and see correct per-row results.
 
@@ -118,16 +118,16 @@
 
 ### Existing User Detection (US6)
 
-- [ ] T039 [US6] Enhance `CreateUserCommandHandler` — when user already exists, check if already enrolled in target project. If not enrolled, publish `UserRegisteredEvent` for enrollment. Return `Enrolled` or `AlreadyEnrolled` outcome. Handle Locked/Disabled accounts with warning message.
-- [ ] T040 [US6] Enhance `BatchCreateUsersCommandHandler` — same existing user detection per row. Map to "Inscrito" status in results. Skip verification toggle for already-verified users (only invitation toggle applies).
-- [ ] T041 [US6] Update Create.cshtml success display — show different messages for Created vs Enrolled vs AlreadyEnrolled outcomes, include account status warnings
+- [X] T039 [US6] Enhance `CreateUserCommandHandler` — when user already exists, check if already enrolled in target project. If not enrolled, publish `UserRegisteredEvent` for enrollment. Return `Enrolled` or `AlreadyEnrolled` outcome. Handle Locked/Disabled accounts with warning message.
+- [X] T040 [US6] Enhance `BatchCreateUsersCommandHandler` — same existing user detection per row. Map to "Inscrito" status in results. Skip verification toggle for already-verified users (only invitation toggle applies).
+- [X] T041 [US6] Update Create.cshtml success display — show different messages for Created vs Enrolled vs AlreadyEnrolled outcomes, include account status warnings
 
 ### Mixed Toggle Verification (US5)
 
-- [ ] T042 [US5] Verify Case 3 (skip verification ON, skip invitation OFF) works end-to-end — user auto-verified, invitation created with RequiresAcceptance=true, invitation acceptance page works
-- [ ] T043 [US5] Verify Case 4 (skip verification OFF, skip invitation ON) works end-to-end — user PendingVerification, invitation created with RequiresAcceptance=false, after verification auto-accepts and enrolls
+- [X] T042 [US5] Verify Case 3 (skip verification ON, skip invitation OFF) works end-to-end — user auto-verified, invitation created with RequiresAcceptance=true, invitation acceptance page works
+- [X] T043 [US5] Verify Case 4 (skip verification OFF, skip invitation ON) works end-to-end — user PendingVerification, invitation created with RequiresAcceptance=false, after verification auto-accepts and enrolls
 
-- [ ] T044 Verify build passes with `dotnet build` — zero warnings
+- [X] T044 Verify build passes with `dotnet build` — zero warnings
 
 **Checkpoint**: All 4 toggle combinations verified. Existing user handling works for both individual and batch flows.
 
@@ -139,13 +139,13 @@
 
 **Independent Test**: Create users in different onboarding states, verify status column accuracy and filtering.
 
-- [ ] T045 [US7] Extend `IncubatorMemberListItemDto` with `OnboardingStatus` (string) field in `Mentoory.Access.Application/Queries/ListIncubatorMembers/`
-- [ ] T046 [US7] Modify `ListIncubatorMembersHandler` — after fetching users, query ProjectInvitation status for each user in the active project (via cross-domain query or Tenant application query). Compute combined status: "Pendiente verificacion" / "Pendiente invitacion" / "Pendiente ambos" / "Activo"
-- [ ] T047 [US7] Add `OnboardingStatus` column to DataTable in `Mentoory.Web/Areas/Administration/Views/Users/Index.cshtml` — display with appropriate badge colors
-- [ ] T048 [US7] Add sort expression for OnboardingStatus in `ListIncubatorMembersHandler.SortColumns` dictionary
-- [ ] T049 [US7] Add filter support for OnboardingStatus — dropdown filter in DataTable header or server-side filter parameter
+- [X] T045 [US7] Extend `IncubatorMemberListItemDto` with `OnboardingStatus` (string) field in `Mentoory.Access.Application/Queries/ListIncubatorMembers/`
+- [X] T046 [US7] Modify `ListIncubatorMembersHandler` — after fetching users, query ProjectInvitation status for each user in the active project (via cross-domain query or Tenant application query). Compute combined status: "Pendiente verificacion" / "Pendiente invitacion" / "Pendiente ambos" / "Activo"
+- [X] T047 [US7] Add `OnboardingStatus` column to DataTable in `Mentoory.Web/Areas/Administration/Views/Users/Index.cshtml` — display with appropriate badge colors
+- [X] T048 [US7] Add sort expression for OnboardingStatus in `ListIncubatorMembersHandler.SortColumns` dictionary
+- [X] T049 [US7] Add filter support for OnboardingStatus — dropdown filter in DataTable header or server-side filter parameter
 
-- [ ] T050 Verify build passes with `dotnet build` — zero warnings
+- [X] T050 Verify build passes with `dotnet build` — zero warnings
 
 **Checkpoint**: US7 complete. Admin can see and filter onboarding status on the users list.
 
@@ -157,12 +157,12 @@
 
 **Independent Test**: Access an expired invitation link — verify "Invitacion expirada" page. Click "Reenviar invitacion" — verify new token created.
 
-- [ ] T051 [US8] Add "Reenviar invitacion" button to user detail view — dispatches `ReissueInvitationCommand` (existing handler) via POST to `/Administration/Users/ReissueInvitation`
-- [ ] T052 [US8] Add `ReissueInvitation` POST action to `Mentoory.Web/Areas/Administration/Controllers/UsersController.cs` — fetch pending invitation for user+project, dispatch `ReissueInvitationCommand`
-- [ ] T053 [US8] Verify `OnboardingController.AcceptInvitation` GET correctly detects expired tokens and redirects to Expired page
-- [ ] T054 [US8] Verify `OnboardingController.VerifyEmail` GET correctly detects expired tokens and redirects to Expired page
+- [X] T051 [US8] Add "Reenviar invitacion" button to user detail view — dispatches `ReissueInvitationCommand` (existing handler) via POST to `/Administration/Users/ReissueInvitation`
+- [X] T052 [US8] Add `ReissueInvitation` POST action to `Mentoory.Web/Areas/Administration/Controllers/UsersController.cs` — fetch pending invitation for user+project, dispatch `ReissueInvitationCommand`
+- [X] T053 [US8] Verify `OnboardingController.AcceptInvitation` GET correctly detects expired tokens and redirects to Expired page
+- [X] T054 [US8] Verify `OnboardingController.VerifyEmail` GET correctly detects expired tokens and redirects to Expired page
 
-- [ ] T055 Verify build passes with `dotnet build` — zero warnings
+- [X] T055 Verify build passes with `dotnet build` — zero warnings
 
 **Checkpoint**: US8 complete. Token lifecycle management works.
 
@@ -172,13 +172,13 @@
 
 **Purpose**: Backward compatibility, cleanup, and final verification
 
-- [ ] T056 [P] Add redirect from `/Administration/Users/Enroll` to `/Administration/Users/Create` in `UsersController`
-- [ ] T057 [P] Add redirect from `/Administration/Users/RegisterInternal` to `/Administration/Users/Create` in `UsersController`
-- [ ] T058 Remove or mark as obsolete the old `RegisterInternalUserCommand`, `RegisterInternalUserHandler`, `RegisterInternalUserCommandValidator` (keep `RegisterUserCommand` for public registration)
-- [ ] T059 [P] Update `MenuConfiguration.cs` — ensure "Usuarios" link under Administration points to updated controller actions
-- [ ] T060 Verify public self-registration flow (`/Access/Register`) is completely unaffected by all changes
-- [ ] T061 Run full test suite with `dotnet test` — all existing tests pass
-- [ ] T062 Run `dotnet build` final verification — zero warnings across all projects
+- [X] T056 [P] Add redirect from `/Administration/Users/Enroll` to `/Administration/Users/Create` in `UsersController`
+- [X] T057 [P] Add redirect from `/Administration/Users/RegisterInternal` to `/Administration/Users/Create` in `UsersController`
+- [X] T058 Remove or mark as obsolete the old `RegisterInternalUserCommand`, `RegisterInternalUserHandler`, `RegisterInternalUserCommandValidator` (keep `RegisterUserCommand` for public registration)
+- [X] T059 [P] Update `MenuConfiguration.cs` — ensure "Usuarios" link under Administration points to updated controller actions
+- [X] T060 Verify public self-registration flow (`/Access/Register`) is completely unaffected by all changes
+- [X] T061 Run full test suite with `dotnet test` — all existing tests pass
+- [X] T062 Run `dotnet build` final verification — zero warnings across all projects
 
 ---
 

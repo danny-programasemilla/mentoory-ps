@@ -6,4 +6,5 @@ public sealed record CreateInvitationCommand(
     long UserId,
     Guid ProjectExternalId,
     long CreatedByUserId,
-    int ExpiryHours) : IBaseRequest<Guid>;
+    int ExpiryHours,
+    bool RequiresAcceptance = true) : IBaseRequest<Guid>;

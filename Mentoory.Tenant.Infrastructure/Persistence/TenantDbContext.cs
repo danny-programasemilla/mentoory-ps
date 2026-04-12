@@ -160,6 +160,7 @@ public class TenantDbContext : SharedAbstractDbContext
             entity.Property(e => e.CreatedAtUtc).IsRequired();
             entity.Property(e => e.CreatedByUserId).IsRequired();
             entity.Property(e => e.IsActive).IsRequired().HasDefaultValue(true);
+            entity.Property(e => e.RequiresAcceptance).IsRequired().HasDefaultValue(true);
 
             entity.HasIndex(e => new { e.UserId, e.ProjectId })
                 .IsUnique()

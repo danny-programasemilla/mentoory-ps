@@ -55,7 +55,8 @@ public partial class CreateInvitationHandler
             tokenHash,
             utcNow.AddHours(request.ExpiryHours),
             request.CreatedByUserId,
-            utcNow);
+            utcNow,
+            request.RequiresAcceptance);
 
         _invitationRepository.Add(invitation);
         await _invitationRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);

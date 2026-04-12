@@ -8,7 +8,8 @@ namespace Mentoory.Tests.E2E.Tests;
 
 /// <summary>
 /// E2E-T012 - End-to-end composite test validating the complete batch user onboarding:
-/// CSV upload -> temp password -> forced password change -> application access.
+/// GlobalAdmin with project context -> CSV upload with both toggles ON ->
+/// temp password -> forced password change -> application access.
 /// </summary>
 [Collection(E2ETestCollection.Name)]
 public class BatchUserJourneyTests
@@ -26,12 +27,15 @@ public class BatchUserJourneyTests
         var page = await _fixture.CreatePageAsync();
         try
         {
-            // (a) Admin login and upload CSV with 1 user
-            await LoginAndSelectContextAsync(page, "incadmin1@test.mentoory.com", "Test123!@#");
+            // (a) Login as GlobalAdmin with project via cascade context selector
+            await LoginAsGlobalAdminWithProjectAsync(page);
+
+            // (b) Navigate to batch upload, upload CSV with both toggles ON
             await page.GotoAsync($"{_fixture.BaseUrl}/Administration/BatchUpload");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            var batchUserEmail = $"e2e-journey-{Guid.NewGuid():N}@test.mentoory.com";
+            var uniqueId = Guid.NewGuid().ToString("N")[..8];
+            var batchUserEmail = $"e2e-journey-{uniqueId}@test.mentoory.com";
             var csvContent = $"Country,Identification,Email,FirstName,LastName\nCRI,6-7890-1234,{batchUserEmail},Journey,BatchUser";
             var csvBytes = Encoding.UTF8.GetBytes(csvContent);
 
@@ -43,55 +47,64 @@ public class BatchUserJourneyTests
                 Buffer = csvBytes
             });
 
-            // Select the first available project from the dropdown
-            await SelectFirstProjectOptionAsync(page);
+            // Turn BOTH toggles ON to get temporary password
+            await page.Locator("input[type='checkbox'][name='SkipEmailVerification']").CheckAsync();
+            await page.Locator("input[type='checkbox'][name='SkipInvitationAcceptance']").CheckAsync();
 
+            // (c) Submit
             await page.Locator("button[type='submit']").Filter(new LocatorFilterOptions
             {
                 HasText = "Procesar Archivo"
             }).ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // (b) Extract temporary password from results table
+            var pageContent = await page.ContentAsync();
+            pageContent.Should().Contain("Resultados de Carga Masiva",
+                "results page should display after batch upload");
+
+            // (d) Extract temporary password from table (6th column of table-success row)
             var tempPasswordCell = page.Locator("table tbody tr.table-success td:nth-child(6)");
             var tempPassword = await tempPasswordCell.TextContentAsync();
             tempPassword.Should().NotBeNullOrWhiteSpace(
                 "temporary password should be present in the results table");
             tempPassword = tempPassword!.Trim();
+            tempPassword.Should().NotBe("\u2014",
+                "temporary password should not be a dash placeholder");
 
-            // (c) Logout admin
+            // (e) Logout admin
             var logoutButton = page.Locator("form[action*='Logout'] button[type='submit'], a[href*='Logout']").First;
             await logoutButton.WaitForAsync(new LocatorWaitForOptions { Timeout = 5000 });
             await logoutButton.ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // (d) Login as batch-created user with temp password
+            // (f) Login as batch-created user with temp password
             await page.GotoAsync($"{_fixture.BaseUrl}/Access/Login");
             await page.FillAsync("input[name='Email']", batchUserEmail);
             await page.FillAsync("input[name='Password']", tempPassword);
             await page.ClickAsync("button[type='submit']");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // (e) Assert redirect to ChangePassword
+            // (g) Assert redirect to ChangePassword
             page.Url.Should().Contain("/Access/ChangePassword",
                 "batch-created user should be redirected to forced password change");
 
-            // (f) Change password
+            // (h) Fill change password form
             await page.FillAsync("input[name='CurrentPassword']", tempPassword);
             await page.FillAsync("input[name='NewPassword']", "NewSecurePass12!");
             await page.FillAsync("input[name='ConfirmNewPassword']", "NewSecurePass12!");
             await page.Locator("button[type='submit']").Filter(new LocatorFilterOptions
             {
-                HasText = "Cambiar Contraseña"
+                HasText = "Cambiar Contrase"
             }).ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // (g) Assert redirect away from ChangePassword
+            // (i) Assert redirect away from ChangePassword
             page.Url.Should().NotContain("/Access/ChangePassword",
                 "after changing password, user should be redirected away from the change password page");
 
+            // (j) Assert redirect to ContextSelect or AvailableProjects
             var redirectedToContextOrProjects = page.Url.Contains("/Context/Select")
-                                                || page.Url.Contains("/AvailableProjects");
+                                                 || page.Url.Contains("/AvailableProjects");
             redirectedToContextOrProjects.Should().BeTrue(
                 "after password change, user should be redirected to context selection or available projects");
         }
@@ -108,12 +121,15 @@ public class BatchUserJourneyTests
         var page = await _fixture.CreatePageAsync();
         try
         {
-            // Admin uploads CSV with 1 user
-            await LoginAndSelectContextAsync(page, "incadmin1@test.mentoory.com", "Test123!@#");
+            // Login as GlobalAdmin with project context
+            await LoginAsGlobalAdminWithProjectAsync(page);
+
+            // Upload CSV with both toggles ON
             await page.GotoAsync($"{_fixture.BaseUrl}/Administration/BatchUpload");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            var batchUserEmail = $"e2e-skip-{Guid.NewGuid():N}@test.mentoory.com";
+            var uniqueId = Guid.NewGuid().ToString("N")[..8];
+            var batchUserEmail = $"e2e-skip-{uniqueId}@test.mentoory.com";
             var csvContent = $"Country,Identification,Email,FirstName,LastName\nCRI,7-8901-2345,{batchUserEmail},Skip,BatchUser";
             var csvBytes = Encoding.UTF8.GetBytes(csvContent);
 
@@ -125,8 +141,9 @@ public class BatchUserJourneyTests
                 Buffer = csvBytes
             });
 
-            // Select the first available project from the dropdown
-            await SelectFirstProjectOptionAsync(page);
+            // Turn BOTH toggles ON to get temporary password
+            await page.Locator("input[type='checkbox'][name='SkipEmailVerification']").CheckAsync();
+            await page.Locator("input[type='checkbox'][name='SkipInvitationAcceptance']").CheckAsync();
 
             await page.Locator("button[type='submit']").Filter(new LocatorFilterOptions
             {
@@ -166,53 +183,37 @@ public class BatchUserJourneyTests
         }
     }
 
-    private static async Task SelectFirstProjectOptionAsync(IPage page)
-    {
-        var projectSelect = page.Locator("select[name='ProjectExternalId']");
-        // Select the first non-empty option (skip the "Seleccione un proyecto" placeholder)
-        var firstOption = projectSelect.Locator("option:not([value=''])").First;
-        var value = await firstOption.GetAttributeAsync("value");
-        value.Should().NotBeNullOrWhiteSpace("there should be at least one project in Registration stage");
-        await projectSelect.SelectOptionAsync(value!);
-    }
-
-    private async Task LoginAndSelectContextAsync(IPage page, string email, string password)
+    private async Task LoginAsGlobalAdminWithProjectAsync(IPage page)
     {
         await page.GotoAsync($"{_fixture.BaseUrl}/Access/Login");
-        await page.FillAsync("input[name='Email']", email);
-        await page.FillAsync("input[name='Password']", password);
+        await page.FillAsync("input[name='Email']", "admin@mentoory.com");
+        await page.FillAsync("input[name='Password']", "123abc987");
         await page.ClickAsync("button[type='submit']");
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-        // Wait for login redirect chain to complete (login -> context -> home)
-        await page.WaitForURLAsync(url => !url.Contains("/Access/Login"), new PageWaitForURLOptions { Timeout = 10000 });
+        await page.WaitForURLAsync(url => !url.Contains("/Access/Login"),
+            new PageWaitForURLOptions { Timeout = 10000 });
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-        // If redirected to context selection, pick the first available context
         if (page.Url.Contains("/Context/Select"))
         {
-            var roleDropdown = page.Locator("[data-mode='page'] [data-cs='role']");
-            await page.WaitForFunctionAsync(
-                "sel => sel.options.length > 1",
-                await roleDropdown.ElementHandleAsync(),
-                new() { Timeout = 10000 });
-            if (await roleDropdown.IsEnabledAsync())
-            {
-                await roleDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
-            }
-
-            var incubatorDropdown = page.Locator("[data-mode='page'] [data-cs='incubator']");
-            await page.WaitForFunctionAsync(
-                "sel => sel.options.length > 1",
-                await incubatorDropdown.ElementHandleAsync(),
-                new() { Timeout = 10000 });
-            if (await incubatorDropdown.IsEnabledAsync())
-            {
-                await incubatorDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
-            }
-
+            // Wait for cascade to auto-complete or manually select
             var confirmBtn = page.Locator("[data-mode='page'] [data-cs='confirm']");
-            await Assertions.Expect(confirmBtn).ToBeEnabledAsync(new() { Timeout = 15000 });
+            await Assertions.Expect(confirmBtn).ToBeEnabledAsync(new() { Timeout = 20000 });
+
+            // Ensure project is selected (needed for batch upload)
+            var projectDropdown = page.Locator("[data-mode='page'] [data-cs='project']");
+            var currentProjectValue = await projectDropdown.InputValueAsync();
+            if (string.IsNullOrEmpty(currentProjectValue))
+            {
+                var projectOptions = projectDropdown.Locator("option:not([value=''])");
+                if (await projectOptions.CountAsync() > 0)
+                {
+                    await projectDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
+                    await page.WaitForTimeoutAsync(300);
+                }
+            }
+
             await confirmBtn.ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         }

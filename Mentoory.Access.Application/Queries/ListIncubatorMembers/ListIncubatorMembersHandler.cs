@@ -24,6 +24,7 @@ public class ListIncubatorMembersHandler(
         { "lastName", x => x.LastName },
         { "accountStatus", x => x.AccountStatus },
         { "createdAtUtc", x => x.CreatedAtUtc },
+        { "onboardingStatus", x => x.OnboardingStatus },
     };
 
     /// <inheritdoc />
@@ -46,7 +47,8 @@ public class ListIncubatorMembersHandler(
                 u.FirstName,
                 u.LastName,
                 u.AccountStatus.ToString(),
-                u.CreatedAtUtc));
+                u.CreatedAtUtc)
+            { UserId = u.Id });
 
         var totalRecords = await query.CountAsync(cancellationToken);
 
