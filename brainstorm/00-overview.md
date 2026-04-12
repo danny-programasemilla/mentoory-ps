@@ -11,6 +11,7 @@ Last updated: 2026-04-13
 | 03 | 2026-04-13 | design-system-ux-polish | spec-created | 010, 011 |
 | 04 | 2026-04-13 | table-polish | spec-created | 012 |
 | 05 | 2026-04-13 | table-filtering | spec-created | 013 |
+| 06 | 2026-04-12 | user-registration | spec-created | 009 |
 
 ## Open Threads
 - GlobalAdmin incubator dropdown may need search/filter at scale (from #01)
@@ -24,6 +25,9 @@ Last updated: 2026-04-13
 - Filter panel animation: CSS transitions vs Bootstrap collapse (from #05)
 - URL param namespacing strategy to avoid conflicts with existing query params (from #05)
 - Filter panel layout on tables with 7+ filterable columns (from #05)
+- Navigation/menu redesign (capability-based instead of role-based) — needs own brainstorm and spec (from #06)
+- Should ProjectCoordinator be able to do individual user creation? (from #06)
+- Automatic reminder emails before invitation expiration (from #06)
 
 ## Parked Ideas
 (none)
