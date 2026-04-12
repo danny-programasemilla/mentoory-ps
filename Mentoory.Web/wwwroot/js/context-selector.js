@@ -180,11 +180,14 @@ function onProjectChange(container) {
     var hiddenExternalId = container.querySelector('[name="roleAssignmentExternalId"]');
     var hiddenProjectId = container.querySelector('[name="selectedProjectId"]');
     var hiddenProjectName = container.querySelector('[name="selectedProjectName"]');
+    var isGlobalAdmin = s.role.value === 'GlobalAdmin';
 
     if (selectedOption && selectedOption.value && selectedOption.dataset.externalId) {
         hiddenExternalId.value = selectedOption.dataset.externalId;
-        hiddenProjectId.value = selectedOption.value;
-        hiddenProjectName.value = selectedOption.textContent;
+        if (isGlobalAdmin) {
+            hiddenProjectId.value = selectedOption.value;
+            hiddenProjectName.value = selectedOption.textContent;
+        }
     } else {
         hiddenProjectId.value = '';
         hiddenProjectName.value = '';
@@ -261,19 +264,26 @@ function updateHiddenFields(container) {
     var hiddenIncubatorName = container.querySelector('[name="selectedIncubatorName"]');
     var hiddenProjectId = container.querySelector('[name="selectedProjectId"]');
     var hiddenProjectName = container.querySelector('[name="selectedProjectName"]');
+    var selectedRole = s.role.value;
+    var isGlobalAdmin = selectedRole === 'GlobalAdmin';
 
     var incubatorOption = s.incubator.options[s.incubator.selectedIndex];
     if (incubatorOption && incubatorOption.value) {
-        hiddenIncubatorId.value = incubatorOption.value;
-        hiddenIncubatorName.value = incubatorOption.textContent;
         hiddenExternalId.value = incubatorOption.dataset.externalId || '';
+        // Override fields only for GlobalAdmin (POST action routes to SetGlobalAdminContext)
+        if (isGlobalAdmin) {
+            hiddenIncubatorId.value = incubatorOption.value;
+            hiddenIncubatorName.value = incubatorOption.textContent;
+        }
     }
 
     var projectOption = s.project.options[s.project.selectedIndex];
     if (projectOption && projectOption.value) {
-        hiddenProjectId.value = projectOption.value;
-        hiddenProjectName.value = projectOption.textContent;
         hiddenExternalId.value = projectOption.dataset.externalId || '';
+        if (isGlobalAdmin) {
+            hiddenProjectId.value = projectOption.value;
+            hiddenProjectName.value = projectOption.textContent;
+        }
     } else {
         hiddenProjectId.value = '';
         hiddenProjectName.value = '';

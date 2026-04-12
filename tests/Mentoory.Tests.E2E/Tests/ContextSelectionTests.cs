@@ -19,9 +19,6 @@ public class ContextSelectionTests
         _fixture = fixture;
     }
 
-    // -----------------------------------------------------------------------
-    // UI Behavior
-    // -----------------------------------------------------------------------
     [Fact]
     public async Task MultiRoleUser_ShouldSee_CascadingDropdowns()
     {
@@ -39,10 +36,13 @@ public class ContextSelectionTests
             });
             (await heading.CountAsync()).Should().Be(1);
 
-            // Should have cascading dropdowns (not card grid)
-            var roleDropdown = page.Locator("[data-cs='role']");
-            var incubatorDropdown = page.Locator("[data-cs='incubator']");
-            var projectDropdown = page.Locator("[data-cs='project']");
+            // Scope to the page-mode container (not the modal)
+            var container = page.Locator("[data-mode='page']");
+            (await container.CountAsync()).Should().BeGreaterThan(0, "page-mode container must exist");
+
+            var roleDropdown = container.Locator("[data-cs='role']");
+            var incubatorDropdown = container.Locator("[data-cs='incubator']");
+            var projectDropdown = container.Locator("[data-cs='project']");
 
             (await roleDropdown.CountAsync()).Should().Be(1, "role dropdown must be present");
             (await incubatorDropdown.CountAsync()).Should().Be(1, "incubator dropdown must be present");
@@ -67,8 +67,8 @@ public class ContextSelectionTests
         {
             await LoginAsync(page, "multirole@test.mentoory.com", "Test123!@#");
 
-            // Wait for roles to load via AJAX
-            var roleDropdown = page.Locator("[data-cs='role']");
+            var container = page.Locator("[data-mode='page']");
+            var roleDropdown = container.Locator("[data-cs='role']");
             await roleDropdown.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Attached });
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
@@ -97,17 +97,14 @@ public class ContextSelectionTests
         {
             await LoginAsync(page, "multirole@test.mentoory.com", "Test123!@#");
 
-            var roleDropdown = page.Locator("[data-cs='role']");
+            var container = page.Locator("[data-mode='page']");
+            var roleDropdown = container.Locator("[data-cs='role']");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // Select IncubatorAdmin role
             await roleDropdown.SelectOptionAsync(new SelectOptionValue { Label = "Administrador de Incubadora" });
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // Incubator dropdown should populate
-            var incubatorDropdown = page.Locator("[data-cs='incubator']");
-            await incubatorDropdown.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Attached });
-
+            var incubatorDropdown = container.Locator("[data-cs='incubator']");
             var options = incubatorDropdown.Locator("option");
             var optionTexts = await options.AllTextContentsAsync();
             optionTexts.Should().Contain("Incubadora Alpha",
@@ -128,7 +125,6 @@ public class ContextSelectionTests
         {
             await LoginAsync(page, "entrepreneur1@test.mentoory.com", "Test123!@#");
 
-            // Single-role user should skip selection and land directly on their dashboard
             page.Url.Should().NotContain("/Context/Select",
                 "single-role users should bypass the context selection screen");
         }
@@ -146,29 +142,20 @@ public class ContextSelectionTests
         try
         {
             await LoginAsync(page, "multirole@test.mentoory.com", "Test123!@#");
-
-            // Wait for roles to load
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // Select IncubatorAdmin role (incubator-scoped, no project needed)
-            var roleDropdown = page.Locator("[data-cs='role']");
+            var container = page.Locator("[data-mode='page']");
+            var roleDropdown = container.Locator("[data-cs='role']");
             await roleDropdown.SelectOptionAsync(new SelectOptionValue { Label = "Administrador de Incubadora" });
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // IncubatorAdmin has only 1 incubator (Alpha) → should auto-select
-            // Wait for projects to load after auto-cascade
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            // Wait for full cascade to complete (role → incubator auto-select → project fetch)
+            var confirmBtn = container.Locator("[data-cs='confirm']");
+            await Assertions.Expect(confirmBtn).ToBeEnabledAsync(new() { Timeout = 10000 });
 
-            // Confirmar button should be enabled
-            var confirmBtn = page.Locator("[data-cs='confirm']");
-            await confirmBtn.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Attached });
-            (await confirmBtn.IsDisabledAsync()).Should().BeFalse("Confirmar should be enabled after role+incubator selection");
-
-            // Submit
             await confirmBtn.ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // Should redirect away from context selection
             page.Url.Should().NotContain("/Context/Select",
                 "after confirming context, user should leave the selection page");
         }
@@ -185,20 +172,17 @@ public class ContextSelectionTests
         var page = await _fixture.CreatePageAsync();
         try
         {
-            // Navigate to a protected page while unauthenticated to generate returnUrl
             var targetPath = "/Coordination/Diagnostics";
             await page.GotoAsync($"{_fixture.BaseUrl}{targetPath}");
 
-            // Should be redirected to login with returnUrl
             page.Url.Should().Contain("/Access/Login");
 
-            // Login as multi-role user (coord1 has single role → auto-skip)
+            // coord1 has single role → auto-skip
             await page.FillAsync("input[name='Email']", "coord1@test.mentoory.com");
             await page.FillAsync("input[name='Password']", "Test123!@#");
             await page.ClickAsync("button[type='submit']");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // After login and context selection, the user should be redirected to the original target
             page.Url.Should().Contain(targetPath,
                 "returnUrl must be preserved through the login and context selection flow");
         }
@@ -210,7 +194,7 @@ public class ContextSelectionTests
     }
 
     // -----------------------------------------------------------------------
-    // Tenant Isolation — Non-GlobalAdmin sees only their assigned data
+    // Tenant Isolation — uses page.EvaluateAsync(fetch) to share session cookies
     // -----------------------------------------------------------------------
     [Fact]
     public async Task NonGlobalAdmin_CascadeApi_ReturnsOnlyAssignedIncubators()
@@ -220,12 +204,7 @@ public class ContextSelectionTests
         {
             await LoginAsync(page, "multirole@test.mentoory.com", "Test123!@#");
 
-            // Call cascade API directly from authenticated browser context
-            var response = await page.APIRequest.GetAsync(
-                $"{_fixture.BaseUrl}/api/context/incubators?role=IncubatorAdmin");
-
-            response.Status.Should().Be(200);
-            var body = await response.TextAsync();
+            var body = await FetchJsonAsync(page, "/api/context/incubators?role=IncubatorAdmin");
 
             // multirole is IncubatorAdmin for Alpha ONLY — must NOT see Beta
             body.Should().Contain("Incubadora Alpha");
@@ -247,27 +226,15 @@ public class ContextSelectionTests
         {
             await LoginAsync(page, "multirole@test.mentoory.com", "Test123!@#");
 
-            // Get incubators first to find Alpha's ID
-            var incResponse = await page.APIRequest.GetAsync(
-                $"{_fixture.BaseUrl}/api/context/incubators?role=ProjectCoordinator");
-
-            incResponse.Status.Should().Be(200);
-            var incBody = await incResponse.TextAsync();
+            var incBody = await FetchJsonAsync(page, "/api/context/incubators?role=ProjectCoordinator");
             incBody.Should().Contain("Incubadora Alpha");
 
-            // Extract incubator ID from JSON response
-            // multirole as ProjectCoordinator is only for Proyecto Sostenibilidad
-            // Get Alpha's ID by parsing response
             var incJson = System.Text.Json.JsonDocument.Parse(incBody);
             var alphaId = incJson.RootElement.EnumerateArray()
                 .First(e => e.GetProperty("name").GetString() == "Incubadora Alpha")
                 .GetProperty("id").GetInt64();
 
-            var projResponse = await page.APIRequest.GetAsync(
-                $"{_fixture.BaseUrl}/api/context/projects?role=ProjectCoordinator&incubatorId={alphaId}");
-
-            projResponse.Status.Should().Be(200);
-            var projBody = await projResponse.TextAsync();
+            var projBody = await FetchJsonAsync(page, $"/api/context/projects?role=ProjectCoordinator&incubatorId={alphaId}");
 
             // multirole as ProjectCoordinator is assigned to Sostenibilidad ONLY
             projBody.Should().Contain("Sostenibilidad");
@@ -289,13 +256,8 @@ public class ContextSelectionTests
         {
             await LoginAndSelectContextAsync(page, "admin@mentoory.com", "123abc987");
 
-            var response = await page.APIRequest.GetAsync(
-                $"{_fixture.BaseUrl}/api/context/incubators?role=GlobalAdmin");
+            var body = await FetchJsonAsync(page, "/api/context/incubators?role=GlobalAdmin");
 
-            response.Status.Should().Be(200);
-            var body = await response.TextAsync();
-
-            // GlobalAdmin sees ALL incubators in the system
             body.Should().Contain("Incubadora Alpha");
             body.Should().Contain("Incubadora Beta",
                 "GlobalAdmin must see all incubators regardless of assignment");
@@ -311,17 +273,17 @@ public class ContextSelectionTests
     // Security — Unauthenticated and invalid requests
     // -----------------------------------------------------------------------
     [Fact]
-    public async Task UnauthenticatedRequest_CascadeApi_Returns401()
+    public async Task UnauthenticatedRequest_CascadeApi_RedirectsToLogin()
     {
         var page = await _fixture.CreatePageAsync();
         try
         {
-            // Do NOT login — call cascade API directly
-            var rolesResponse = await page.APIRequest.GetAsync(
-                $"{_fixture.BaseUrl}/api/context/roles");
+            // Navigate directly to the API endpoint — cookie auth will redirect to login
+            await page.GotoAsync($"{_fixture.BaseUrl}/api/context/roles");
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            rolesResponse.Status.Should().NotBe(200,
-                "unauthenticated requests to cascade API must not succeed");
+            page.Url.Should().Contain("/Access/Login",
+                "unauthenticated requests to cascade API must redirect to login");
         }
         finally
         {
@@ -337,10 +299,10 @@ public class ContextSelectionTests
         {
             await LoginAsync(page, "multirole@test.mentoory.com", "Test123!@#");
 
-            var response = await page.APIRequest.GetAsync(
-                $"{_fixture.BaseUrl}/api/context/incubators?role=FakeAdminRole");
+            var status = await page.EvaluateAsync<int>(
+                "fetch('/api/context/incubators?role=FakeAdminRole').then(r => r.status)");
 
-            response.Status.Should().Be(400,
+            status.Should().Be(400,
                 "invalid role parameter must return 400 Bad Request");
         }
         finally
@@ -359,11 +321,8 @@ public class ContextSelectionTests
             // incadmin1 is IncubatorAdmin only — has no Mentor role
             await LoginAsync(page, "incadmin1@test.mentoory.com", "Test123!@#");
 
-            var response = await page.APIRequest.GetAsync(
-                $"{_fixture.BaseUrl}/api/context/incubators?role=Mentor");
+            var body = await FetchJsonAsync(page, "/api/context/incubators?role=Mentor");
 
-            response.Status.Should().Be(200);
-            var body = await response.TextAsync();
             body.Should().Be("[]",
                 "requesting incubators for a role the user doesn't have must return empty array");
         }
@@ -377,6 +336,47 @@ public class ContextSelectionTests
     // -----------------------------------------------------------------------
     // Helpers
     // -----------------------------------------------------------------------
+    private static async Task<string> FetchJsonAsync(IPage page, string path)
+    {
+        return await page.EvaluateAsync<string>(
+            "async (path) => { const r = await fetch(path); return await r.text(); }",
+            path);
+    }
+
+    private static async Task SelectFirstContextAsync(IPage page)
+    {
+        var container = page.Locator("[data-mode='page']");
+        var roleDropdown = container.Locator("[data-cs='role']");
+        var incubatorDropdown = container.Locator("[data-cs='incubator']");
+        var confirmBtn = container.Locator("[data-cs='confirm']");
+
+        // Wait for roles to load
+        await page.WaitForFunctionAsync(
+            "sel => sel.options.length > 1",
+            await roleDropdown.ElementHandleAsync(),
+            new() { Timeout = 10000 });
+
+        if (await roleDropdown.IsEnabledAsync())
+        {
+            await roleDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
+        }
+
+        // Wait for incubators to load
+        await page.WaitForFunctionAsync(
+            "sel => sel.options.length > 1",
+            await incubatorDropdown.ElementHandleAsync(),
+            new() { Timeout = 10000 });
+
+        if (await incubatorDropdown.IsEnabledAsync())
+        {
+            await incubatorDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
+        }
+
+        await Assertions.Expect(confirmBtn).ToBeEnabledAsync(new() { Timeout = 15000 });
+        await confirmBtn.ClickAsync();
+        await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+    }
+
     private async Task LoginAsync(IPage page, string email, string password)
     {
         await page.GotoAsync($"{_fixture.BaseUrl}/Access/Login");
@@ -392,20 +392,7 @@ public class ContextSelectionTests
 
         if (page.Url.Contains("/Context/Select"))
         {
-            // Wait for cascade to load, then select first available options
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-
-            var roleDropdown = page.Locator("[data-cs='role']");
-            // Select first non-placeholder option
-            await roleDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-
-            // Wait for incubator to populate (may auto-select)
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-
-            var confirmBtn = page.Locator("[data-cs='confirm']");
-            await confirmBtn.ClickAsync();
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            await SelectFirstContextAsync(page);
         }
     }
 }

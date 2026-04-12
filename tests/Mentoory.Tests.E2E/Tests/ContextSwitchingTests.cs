@@ -159,6 +159,38 @@ public class ContextSwitchingTests
         }
     }
 
+    private static async Task SelectFirstContextAsync(IPage page)
+    {
+        var container = page.Locator("[data-mode='page']");
+        var roleDropdown = container.Locator("[data-cs='role']");
+        var incubatorDropdown = container.Locator("[data-cs='incubator']");
+        var confirmBtn = container.Locator("[data-cs='confirm']");
+
+        await page.WaitForFunctionAsync(
+            "sel => sel.options.length > 1",
+            await roleDropdown.ElementHandleAsync(),
+            new() { Timeout = 10000 });
+
+        if (await roleDropdown.IsEnabledAsync())
+        {
+            await roleDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
+        }
+
+        await page.WaitForFunctionAsync(
+            "sel => sel.options.length > 1",
+            await incubatorDropdown.ElementHandleAsync(),
+            new() { Timeout = 10000 });
+
+        if (await incubatorDropdown.IsEnabledAsync())
+        {
+            await incubatorDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
+        }
+
+        await Assertions.Expect(confirmBtn).ToBeEnabledAsync(new() { Timeout = 15000 });
+        await confirmBtn.ClickAsync();
+        await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+    }
+
     private async Task LoginAsync(IPage page, string email, string password)
     {
         await page.GotoAsync($"{_fixture.BaseUrl}/Access/Login");
@@ -174,18 +206,7 @@ public class ContextSwitchingTests
 
         if (page.Url.Contains("/Context/Select"))
         {
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-
-            var roleDropdown = page.Locator("[data-cs='role']");
-            await roleDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-
-            // Wait for auto-cascade
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-
-            var confirmBtn = page.Locator("[data-cs='confirm']");
-            await confirmBtn.ClickAsync();
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            await SelectFirstContextAsync(page);
         }
     }
 }
