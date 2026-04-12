@@ -24,6 +24,9 @@ Last updated: 2026-04-13
 - Filter panel animation: CSS transitions vs Bootstrap collapse (from #05)
 - URL param namespacing strategy to avoid conflicts with existing query params (from #05)
 - Filter panel layout on tables with 7+ filterable columns (from #05)
+- Navigation/menu redesign (capability-based instead of role-based) — needs own brainstorm and spec
+- Should ProjectCoordinator be able to do individual user creation?
+- Automatic reminder emails before invitation expiration
 
 ## Parked Ideas
 (none)
