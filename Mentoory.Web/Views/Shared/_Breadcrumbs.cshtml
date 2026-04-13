@@ -3,20 +3,24 @@
     var controller = ViewContext.RouteData.Values["controller"]?.ToString();
     var action = ViewContext.RouteData.Values["action"]?.ToString();
 }
-<nav aria-label="breadcrumb" class="mb-3">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="/">Inicio</a></li>
-        @if (!string.IsNullOrEmpty(area))
-        {
-            <li class="breadcrumb-item">@area</li>
-        }
-        @if (!string.IsNullOrEmpty(controller) && controller != "Home")
-        {
-            <li class="breadcrumb-item">@controller</li>
-        }
-        @if (!string.IsNullOrEmpty(action) && action != "Index")
-        {
-            <li class="breadcrumb-item active" aria-current="page">@action</li>
-        }
-    </ol>
-</nav>
+<div class="page-header d-print-none mb-3">
+    <div class="row align-items-center">
+        <div class="col-auto">
+            <ol class="breadcrumb" aria-label="breadcrumbs">
+                <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                @if (!string.IsNullOrEmpty(area))
+                {
+                    <li class="breadcrumb-item">@area</li>
+                }
+                @if (!string.IsNullOrEmpty(controller) && controller != "Home")
+                {
+                    <li class="breadcrumb-item">@controller</li>
+                }
+                @if (!string.IsNullOrEmpty(action) && action != "Index")
+                {
+                    <li class="breadcrumb-item active" aria-current="page">@action</li>
+                }
+            </ol>
+        </div>
+    </div>
+</div>

@@ -1,43 +1,36 @@
 @model Mentoory.Web.Areas.Access.Models.ResetPasswordViewModel
 @{
     ViewData["Title"] = "Restablecer Contraseña";
-    Layout = "_Layout";
 }
 
-<div class="login-container">
-    <div class="card login-card shadow">
-        <div class="card-body">
-            <h3 class="card-title text-center mb-4">Mentoory</h3>
-            <h5 class="text-center text-muted mb-4">Restablecer Contraseña</h5>
+<h3 class="text-center mb-2">Mentoory</h3>
+<h5 class="text-center text-secondary mb-4">Restablecer Contraseña</h5>
 
-            <form asp-action="Index" method="post">
-                <div asp-validation-summary="All" class="text-danger mb-3"></div>
+<form asp-action="Index" method="post">
+    <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
-                <input asp-for="Token" type="hidden" />
+    <input asp-for="Token" type="hidden" />
 
-                <div class="mb-3">
-                    <label asp-for="NewPassword" class="form-label"></label>
-                    <input asp-for="NewPassword" class="form-control" autocomplete="new-password" autofocus />
-                    <span asp-validation-for="NewPassword" class="text-danger"></span>
-                </div>
-
-                <div class="mb-3">
-                    <label asp-for="ConfirmNewPassword" class="form-label"></label>
-                    <input asp-for="ConfirmNewPassword" class="form-control" autocomplete="new-password" />
-                    <span asp-validation-for="ConfirmNewPassword" class="text-danger"></span>
-                </div>
-
-                <div class="d-grid mb-3">
-                    <button type="submit" class="btn btn-primary">Restablecer Contraseña</button>
-                </div>
-
-                <div class="text-center">
-                    <a asp-area="Access" asp-controller="Login" asp-action="Index">Volver a Iniciar Sesión</a>
-                </div>
-            </form>
-        </div>
+    <div class="mb-3">
+        <label asp-for="NewPassword" class="form-label"></label>
+        <input asp-for="NewPassword" class="form-control" autocomplete="new-password" autofocus />
+        <span asp-validation-for="NewPassword" class="text-danger"></span>
     </div>
-</div>
+
+    <div class="mb-3">
+        <label asp-for="ConfirmNewPassword" class="form-label"></label>
+        <input asp-for="ConfirmNewPassword" class="form-control" autocomplete="new-password" />
+        <span asp-validation-for="ConfirmNewPassword" class="text-danger"></span>
+    </div>
+
+    <div class="d-grid mb-3">
+        <button type="submit" class="btn btn-primary">Restablecer Contraseña</button>
+    </div>
+
+    <div class="text-center">
+        <a asp-area="Access" asp-controller="Login" asp-action="Index">Volver a Iniciar Sesión</a>
+    </div>
+</form>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

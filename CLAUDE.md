@@ -5,7 +5,7 @@
 - **Database**: SQL Server with SSDT/DACPAC schema management and Entity Framework Core 10.x ORM
 - **Architecture**: Clean Architecture with Domain-Driven Design (modular monolith)
 - **Cloud Native**: .NET Aspire 13.2.0 for orchestration and observability
-- **Frontend**: Razor Views with Bootstrap 5 (Phoenix Admin Template)
+- **Frontend**: Razor Views with Tabler Admin Template (built on Bootstrap 5)
 - **Authentication**: Not defined yet, but should avoid vendor lock
 - **Language**: Spanish UI (all user-facing text)
 
@@ -76,7 +76,7 @@ Feature artifacts live in `specs/{###-feature-name}/`. See [`.specify/templates/
 - `.specify/memory/access-security-constitution.md` — version-controlled governance artifact (005-access-security-constitution)
 - C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, CsvHelper (007-csv-sample-download)
 - N/A (no database changes) (007-csv-sample-download)
-- C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC + MediatR 14.1, FluentValidation 12.1, EF Core 10.x, Bootstrap 5 (Phoenix Admin Template) (008-context-selector-ux)
+- C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC + MediatR 14.1, FluentValidation 12.1, EF Core 10.x, Tabler Admin Template (built on Bootstrap 5) (008-context-selector-ux)
 - SQL Server (existing RoleAssignments table — no schema changes) (008-context-selector-ux)
 
 ## Code Review Standards
@@ -93,6 +93,6 @@ After completing any implementation, review the code for:
 Run /simplify before presenting code to the user.
 
 ## Recent Changes
-- 008-context-selector-ux: Added C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC + MediatR 14.1, FluentValidation 12.1, EF Core 10.x, Bootstrap 5 (Phoenix Admin Template)
+- 009-tabler-template-migration: Added Tabler Admin Template (@tabler/core), Tabler Icons Webfont (@tabler/icons-webfont); removed standalone Bootstrap 5 CSS/JS and Font Awesome
+- 008-context-selector-ux: Added C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC + MediatR 14.1, FluentValidation 12.1, EF Core 10.x, Tabler Admin Template (built on Bootstrap 5)
 - 007-csv-sample-download: Added C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, CsvHelper
-- 006-fix-batch-upload-scope: Added C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, MediatR 14.1, FluentValidation 12.1, Mapperly 4.x, EF Core 10.x, CsvHelper

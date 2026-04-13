@@ -4,37 +4,38 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Mentoory</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/tabler/css/tabler.min.css" />
+    <link rel="stylesheet" href="~/lib/tabler-icons-webfont/tabler-icons.min.css" />
     <link rel="stylesheet" href="~/lib/datatables/dataTables.bootstrap5.min.css" />
     <link rel="stylesheet" href="~/css/mentoory.css" />
     <link rel="stylesheet" href="~/Mentoory.Web.styles.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
 </head>
-<body>
-    <div class="d-flex">
-        @if (User.Identity?.IsAuthenticated == true)
-        {
-            await Html.RenderPartialAsync("_Navigation");
-        }
-        <main class="flex-grow-1">
-            @if (User.Identity?.IsAuthenticated == true)
-            {
-                await Html.RenderPartialAsync("_TopBar");
-                <div class="container-fluid py-3 px-4">
-                    @await Html.PartialAsync("_Breadcrumbs")
-                    @RenderBody()
+<body class="@(User.Identity?.IsAuthenticated == true ? "layout-fluid" : "")">
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <div class="page">
+            @await Html.PartialAsync("_Navigation")
+            <div class="page-wrapper">
+                @await Html.PartialAsync("_TopBar")
+                <div class="page-body">
+                    <div class="container-xl">
+                        @await Html.PartialAsync("_Breadcrumbs")
+                        @RenderBody()
+                    </div>
                 </div>
-            }
-            else
-            {
-                @RenderBody()
-            }
-            @await Html.PartialAsync("_Footer")
-        </main>
-    </div>
+                @await Html.PartialAsync("_Footer")
+            </div>
+        </div>
+    }
+    else
+    {
+        @RenderBody()
+    }
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/tabler/js/tabler.min.js"></script>
+    <script>window.bootstrap = window.tabler;</script>
     <script src="~/lib/datatables/dataTables.min.js"></script>
     <script src="~/lib/datatables/dataTables.bootstrap5.min.js"></script>
     <script src="~/js/site.js"></script>
