@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Mentoory.Access.Application.Queries.ListIncubatorMembers;
 
 /// <summary>
@@ -17,6 +19,7 @@ public sealed record IncubatorMemberListItemDto(
     string AccountStatus,
     DateTime CreatedAtUtc)
 {
+    [JsonIgnore]
     public long UserId { get; init; }
     public string OnboardingStatus { get; init; } = string.Empty;
 }

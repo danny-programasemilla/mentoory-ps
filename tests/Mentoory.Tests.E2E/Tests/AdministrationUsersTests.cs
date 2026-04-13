@@ -127,7 +127,7 @@ public class AdministrationUsersTests
             await page.GotoAsync($"{_fixture.BaseUrl}/Administration/Users");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            var onboardingHeader = page.Locator("th", new() { HasTextString = "Incorporacion" });
+            var onboardingHeader = page.Locator("th", new() { HasTextString = "Incorporación" });
             await Assertions.Expect(onboardingHeader).ToBeVisibleAsync(new() { Timeout = 5000 });
         }
         finally

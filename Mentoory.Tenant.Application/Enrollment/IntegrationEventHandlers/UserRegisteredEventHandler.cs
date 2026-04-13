@@ -1,6 +1,7 @@
 using MediatR;
 using Mentoory.Access.Application.IntegrationEvents;
 using Mentoory.Shared.Application.TimeProvider;
+using Mentoory.Shared.Domain.Constants;
 using Mentoory.Tenant.Application.Commands.EnrollParticipant;
 using Mentoory.Tenant.Application.Invitations.Commands.CreateInvitation;
 using Mentoory.Tenant.Domain.Repositories;
@@ -41,7 +42,7 @@ public partial class UserRegisteredEventHandler : INotificationHandler<UserRegis
             return;
         }
 
-        var isBypass = notification.EnrollmentVariant == "Bypass";
+        var isBypass = notification.EnrollmentVariant == EnrollmentVariants.Bypass;
 
         if (isBypass && !notification.RequiresVerification)
         {

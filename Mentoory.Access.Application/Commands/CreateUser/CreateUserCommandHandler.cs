@@ -9,6 +9,7 @@ using Mentoory.Shared.Application;
 using Mentoory.Shared.Application.IntegrationEvents;
 using Mentoory.Shared.Application.MediatR;
 using Mentoory.Shared.Application.TimeProvider;
+using Mentoory.Shared.Domain.Constants;
 using Microsoft.Extensions.Logging;
 
 namespace Mentoory.Access.Application.Commands.CreateUser;
@@ -151,7 +152,7 @@ public partial class CreateUserCommandHandler
             nameof(ConfigurationKey.InvitationTokenExpiryHours), cancellationToken);
 
         var requiresVerification = !request.SkipEmailVerification;
-        var enrollmentVariant = request.SkipInvitationAcceptance ? "Bypass" : "FullFlow";
+        var enrollmentVariant = request.SkipInvitationAcceptance ? EnrollmentVariants.Bypass : EnrollmentVariants.FullFlow;
 
         await _eventService.PublishAsync(
             new UserRegisteredEvent(
@@ -199,7 +200,7 @@ public partial class CreateUserCommandHandler
         // For existing users, email verification state is inherited
         var requiresVerification = existingUser.AccountStatus == AccountStatus.PendingVerification
                                    && !request.SkipEmailVerification;
-        var enrollmentVariant = request.SkipInvitationAcceptance ? "Bypass" : "FullFlow";
+        var enrollmentVariant = request.SkipInvitationAcceptance ? EnrollmentVariants.Bypass : EnrollmentVariants.FullFlow;
 
         await _eventService.PublishAsync(
             new UserRegisteredEvent(

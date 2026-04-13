@@ -197,23 +197,43 @@ public class BatchUserJourneyTests
 
         if (page.Url.Contains("/Context/Select"))
         {
-            // Wait for cascade to auto-complete or manually select
-            var confirmBtn = page.Locator("[data-mode='page'] [data-cs='confirm']");
-            await Assertions.Expect(confirmBtn).ToBeEnabledAsync(new() { Timeout = 20000 });
+            var container = page.Locator("[data-mode='page']");
 
-            // Ensure project is selected (needed for batch upload)
-            var projectDropdown = page.Locator("[data-mode='page'] [data-cs='project']");
-            var currentProjectValue = await projectDropdown.InputValueAsync();
-            if (string.IsNullOrEmpty(currentProjectValue))
+            // Explicitly select role (first non-empty option)
+            var roleDropdown = container.Locator("[data-cs='role']");
+            await page.WaitForFunctionAsync(
+                "sel => sel.options.length > 1",
+                await roleDropdown.ElementHandleAsync(),
+                new() { Timeout = 10000 });
+            if (await roleDropdown.IsEnabledAsync())
             {
-                var projectOptions = projectDropdown.Locator("option:not([value=''])");
-                if (await projectOptions.CountAsync() > 0)
-                {
-                    await projectDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
-                    await page.WaitForTimeoutAsync(300);
-                }
+                await roleDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
             }
 
+            // Select incubator (first non-empty option)
+            var incubatorDropdown = container.Locator("[data-cs='incubator']");
+            await page.WaitForFunctionAsync(
+                "sel => sel.options.length > 1",
+                await incubatorDropdown.ElementHandleAsync(),
+                new() { Timeout = 10000 });
+            if (await incubatorDropdown.IsEnabledAsync())
+            {
+                await incubatorDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
+            }
+
+            // Select project (first non-empty option, needed for batch upload)
+            var projectDropdown = container.Locator("[data-cs='project']");
+            await page.WaitForFunctionAsync(
+                "sel => sel.options.length > 1",
+                await projectDropdown.ElementHandleAsync(),
+                new() { Timeout = 10000 });
+            if (await projectDropdown.IsEnabledAsync())
+            {
+                await projectDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
+            }
+
+            var confirmBtn = container.Locator("[data-cs='confirm']");
+            await Assertions.Expect(confirmBtn).ToBeEnabledAsync(new() { Timeout = 15000 });
             await confirmBtn.ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         }

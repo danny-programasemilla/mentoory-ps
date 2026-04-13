@@ -52,7 +52,7 @@ public class UnifiedUserCreationTests
                 await skipInvitation.UncheckAsync();
             }
 
-            await page.Locator("button[type='submit']").ClickAsync();
+            await page.GetByRole(AriaRole.Button, new() { Name = "Crear Usuario" }).ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             // On success, controller redirects to Index with TempData messages
@@ -104,7 +104,7 @@ public class UnifiedUserCreationTests
                 await skipInvitation.CheckAsync();
             }
 
-            await page.Locator("button[type='submit']").ClickAsync();
+            await page.GetByRole(AriaRole.Button, new() { Name = "Crear Usuario" }).ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             // On success, redirects to Index with temp password in TempData
@@ -114,7 +114,7 @@ public class UnifiedUserCreationTests
             var pageContent = await page.ContentAsync();
             pageContent.Should().Contain("creado exitosamente",
                 "success message should indicate user was created");
-            pageContent.Should().Contain("Contrasena temporal",
+            pageContent.Should().Contain("Contraseña temporal",
                 "temporary password section should be displayed");
 
             // Verify the <code> element with the password exists
@@ -229,7 +229,7 @@ public class UnifiedUserCreationTests
                 await skipInvitation.CheckAsync();
             }
 
-            await page.Locator("button[type='submit']").ClickAsync();
+            await page.GetByRole(AriaRole.Button, new() { Name = "Crear Usuario" }).ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             // Verify first creation succeeded
@@ -258,7 +258,7 @@ public class UnifiedUserCreationTests
                 await skipInvitation2.CheckAsync();
             }
 
-            await page.Locator("button[type='submit']").ClickAsync();
+            await page.GetByRole(AriaRole.Button, new() { Name = "Crear Usuario" }).ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             // Should show "existing user enrolled" or "already enrolled" message
@@ -314,13 +314,13 @@ public class UnifiedUserCreationTests
             await page.GotoAsync($"{_fixture.BaseUrl}/Administration/Users");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // Verify DataTable has "Incorporacion" header
+            // Verify DataTable has "Incorporación" header
             var onboardingHeader = page.Locator("#usersTable th").Filter(new LocatorFilterOptions
             {
-                HasText = "Incorporacion"
+                HasText = "Incorporación"
             });
             (await onboardingHeader.CountAsync()).Should().BeGreaterThan(0,
-                "users DataTable should have an 'Incorporacion' column header");
+                "users DataTable should have an 'Incorporación' column header");
         }
         finally
         {
@@ -418,28 +418,46 @@ public class UnifiedUserCreationTests
         await page.WaitForURLAsync(url => !url.Contains("/Access/Login"), new PageWaitForURLOptions { Timeout = 10000 });
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-        // If redirected to context selection, ensure project is selected
+        // If redirected to context selection, explicitly select role → incubator → project
         if (page.Url.Contains("/Context/Select"))
         {
             var container = page.Locator("[data-mode='page']");
-            var confirmBtn = container.Locator("[data-cs='confirm']");
 
-            // Wait for cascade to auto-complete (confirm becomes enabled)
-            await Assertions.Expect(confirmBtn).ToBeEnabledAsync(new() { Timeout = 20000 });
-
-            // Ensure project is selected (may have auto-selected already)
-            var projectDropdown = container.Locator("[data-cs='project']");
-            var projectOptions = projectDropdown.Locator("option:not([value=''])");
-            if (await projectOptions.CountAsync() > 0)
+            // Select role (first non-empty option)
+            var roleDropdown = container.Locator("[data-cs='role']");
+            await page.WaitForFunctionAsync(
+                "sel => sel.options.length > 1",
+                await roleDropdown.ElementHandleAsync(),
+                new() { Timeout = 10000 });
+            if (await roleDropdown.IsEnabledAsync())
             {
-                var selectedValue = await projectDropdown.InputValueAsync();
-                if (string.IsNullOrEmpty(selectedValue))
-                {
-                    await projectDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
-                    await page.WaitForTimeoutAsync(500);
-                }
+                await roleDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
             }
 
+            // Select incubator (first non-empty option)
+            var incubatorDropdown = container.Locator("[data-cs='incubator']");
+            await page.WaitForFunctionAsync(
+                "sel => sel.options.length > 1",
+                await incubatorDropdown.ElementHandleAsync(),
+                new() { Timeout = 10000 });
+            if (await incubatorDropdown.IsEnabledAsync())
+            {
+                await incubatorDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
+            }
+
+            // Select project if available (first non-empty option)
+            var projectDropdown = container.Locator("[data-cs='project']");
+            await page.WaitForFunctionAsync(
+                "sel => sel.options.length > 1",
+                await projectDropdown.ElementHandleAsync(),
+                new() { Timeout = 10000 });
+            if (await projectDropdown.IsEnabledAsync())
+            {
+                await projectDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
+            }
+
+            var confirmBtn = container.Locator("[data-cs='confirm']");
+            await Assertions.Expect(confirmBtn).ToBeEnabledAsync(new() { Timeout = 15000 });
             await confirmBtn.ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         }

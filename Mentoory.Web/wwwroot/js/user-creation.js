@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (label && identificationLabel) {
                 identificationLabel.textContent = label;
             } else if (identificationLabel) {
-                identificationLabel.textContent = 'Identificacion';
+                identificationLabel.textContent = 'Identificación';
             }
 
             if (maxLength) {
@@ -68,16 +68,16 @@ document.addEventListener('DOMContentLoaded', function () {
             var skipInvitation = skipInvitationAcceptance.checked;
 
             if (skipEmail && skipInvitation) {
-                toggleInfoText.textContent = 'El usuario sera creado como activo con una contrasena temporal. No se enviaran correos.';
+                toggleInfoText.textContent = 'El usuario será creado como activo con una contraseña temporal. No se enviarán correos.';
                 toggleInfo.classList.remove('d-none');
             } else if (!skipEmail && !skipInvitation) {
-                toggleInfoText.textContent = 'El usuario recibira un correo de verificacion y luego una invitacion al proyecto.';
+                toggleInfoText.textContent = 'El usuario recibirá un correo de verificación y luego una invitación al proyecto.';
                 toggleInfo.classList.remove('d-none');
             } else if (skipEmail && !skipInvitation) {
-                toggleInfoText.textContent = 'El usuario sera verificado automaticamente y recibira una invitacion al proyecto.';
+                toggleInfoText.textContent = 'El usuario será verificado automáticamente y recibirá una invitación al proyecto.';
                 toggleInfo.classList.remove('d-none');
             } else {
-                toggleInfoText.textContent = 'El usuario recibira un correo de verificacion y sera inscrito automaticamente tras verificar.';
+                toggleInfoText.textContent = 'El usuario recibirá un correo de verificación y será inscrito automáticamente tras verificar.';
                 toggleInfo.classList.remove('d-none');
             }
         }

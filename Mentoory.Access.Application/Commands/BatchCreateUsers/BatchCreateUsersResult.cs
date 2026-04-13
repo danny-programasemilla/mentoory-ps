@@ -5,4 +5,4 @@ public sealed record BatchCreateUsersResult(
     int CreatedCount,
     int EnrolledCount,
     int ErrorCount,
-    List<BatchCreateRowResult> Rows);
+    IReadOnlyList<BatchCreateRowResult> Rows);

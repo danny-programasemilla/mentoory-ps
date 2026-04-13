@@ -38,14 +38,14 @@
                                 <label asp-for="CsvFile" class="form-label"></label>
                                 <input asp-for="CsvFile" class="form-control" accept=".csv" />
                                 <div class="form-text">
-                                    Formato CSV con columnas: Country, Identification, Email, FirstName, LastName. Maximo 500 filas.
+                                    Formato CSV con columnas: Country, Identification, Email, FirstName, LastName. Máximo 500 filas.
                                     <a asp-action="DownloadSample" class="ms-1">Descargar plantilla CSV</a>
                                 </div>
                                 <span asp-validation-for="CsvFile" class="text-danger"></span>
                             </div>
 
                             <hr class="my-4">
-                            <h6 class="mb-3">Opciones de incorporacion (aplica a todas las filas)</h6>
+                            <h6 class="mb-3">Opciones de incorporación (aplica a todas las filas)</h6>
 
                             <div class="row mb-3">
                                 <div class="col-md-6">
@@ -53,14 +53,14 @@
                                         <input asp-for="SkipEmailVerification" class="form-check-input" />
                                         <label asp-for="SkipEmailVerification" class="form-check-label"></label>
                                     </div>
-                                    <small class="text-muted">Los usuarios no necesitaran verificar su correo electronico.</small>
+                                    <small class="text-muted">Los usuarios no necesitarán verificar su correo electrónico.</small>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-check form-switch">
                                         <input asp-for="SkipInvitationAcceptance" class="form-check-input" />
                                         <label asp-for="SkipInvitationAcceptance" class="form-check-label"></label>
                                     </div>
-                                    <small class="text-muted">Los usuarios seran inscritos directamente sin aceptar invitacion.</small>
+                                    <small class="text-muted">Los usuarios serán inscritos directamente sin aceptar invitación.</small>
                                 </div>
                             </div>
 

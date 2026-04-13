@@ -244,9 +244,8 @@ public class UsersController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        const int defaultInvitationExpiryHours = 168; // 7 days
         var reissueResult = await _executor.SendAndLogIfFailureAsync(
-            new ReissueInvitationCommand(pendingInvitation.Value.Value, defaultInvitationExpiryHours), ct);
+            new ReissueInvitationCommand(pendingInvitation.Value.Value), ct);
 
         if (reissueResult.IsSuccess)
         {

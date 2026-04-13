@@ -1,8 +1,7 @@
 using Mentoory.Access.Application.Commands.SetInitialPassword;
-using Mentoory.Access.Application.Queries.GetUserByExternalId;
-using Mentoory.Access.Application.Queries.GetUserById;
+using Mentoory.Access.Application.Queries.GetUserOnboardingInfo;
+using Mentoory.Access.Application.Queries.ValidateVerificationToken;
 using Mentoory.Access.Domain.Enums;
-using Mentoory.Shared.Application.TimeProvider;
 using Mentoory.Tenant.Application.Invitations.Commands.AcceptInvitation;
 using Mentoory.Tenant.Application.Invitations.Queries.GetInvitationDetails;
 using Mentoory.Web.Services;
@@ -13,17 +12,8 @@ namespace Mentoory.Web.Areas.Access.Controllers;
 
 [Area("Access")]
 [AllowAnonymous]
-public class OnboardingController : Controller
+public class OnboardingController(MediatRExecutor executor) : Controller
 {
-    private readonly MediatRExecutor _executor;
-    private readonly ITimeProvider _timeProvider;
-
-    public OnboardingController(MediatRExecutor executor, ITimeProvider timeProvider)
-    {
-        _executor = executor;
-        _timeProvider = timeProvider;
-    }
-
     [HttpGet]
     public async Task<IActionResult> VerifyEmail(string? token, Guid? userExternalId, CancellationToken ct)
     {
@@ -32,31 +22,16 @@ public class OnboardingController : Controller
             return RedirectToAction(nameof(Expired));
         }
 
-        // Validate user and token via query
-        var userResult = await _executor.SendAndLogIfFailureAsync(
-            new GetUserByExternalIdQuery(userExternalId.Value), ct);
+        var result = await executor.SendAndLogIfFailureAsync(
+            new ValidateVerificationTokenQuery(userExternalId.Value, token), ct);
 
-        if (userResult.IsFailure || userResult.Value is null)
-        {
-            return RedirectToAction(nameof(Expired));
-        }
-
-        var user = userResult.Value;
-        var verificationToken = user.EmailVerificationTokens
-            .FirstOrDefault(t => t.TokenHash == token);
-
-        if (verificationToken is null || verificationToken.IsUsed)
-        {
-            return RedirectToAction(nameof(Expired));
-        }
-
-        if (_timeProvider.UtcNow >= verificationToken.ExpiresAtUtc)
+        if (result.IsFailure || result.Value is null)
         {
             return RedirectToAction(nameof(Expired));
         }
 
         ViewBag.Token = token;
-        ViewBag.UserExternalId = user.ExternalId;
+        ViewBag.UserExternalId = result.Value.UserExternalId;
         return View();
     }
 
@@ -76,11 +51,11 @@ public class OnboardingController : Controller
             newPassword,
             confirmPassword);
 
-        var result = await _executor.SendAndLogIfFailureAsync(command, ct);
+        var result = await executor.SendAndLogIfFailureAsync(command, ct);
 
         if (result.IsSuccess)
         {
-            TempData["SuccessMessage"] = "Su correo ha sido verificado y su contrasena configurada exitosamente.";
+            TempData["SuccessMessage"] = "Su correo ha sido verificado y su contraseña configurada exitosamente.";
             return RedirectToAction("Index", "Login", new { area = "Access" });
         }
 
@@ -103,7 +78,7 @@ public class OnboardingController : Controller
             return RedirectToAction(nameof(Expired));
         }
 
-        var detailsResult = await _executor.SendAndLogIfFailureAsync(
+        var detailsResult = await executor.SendAndLogIfFailureAsync(
             new GetInvitationDetailsQuery(invitationExternalId), ct);
 
         if (detailsResult.IsFailure)
@@ -117,25 +92,18 @@ public class OnboardingController : Controller
             return RedirectToAction(nameof(Expired));
         }
 
-        if (_timeProvider.UtcNow >= details.ExpiresAtUtc)
-        {
-            return RedirectToAction(nameof(Expired));
-        }
-
-        // Resolve user via query instead of direct repository access
-        var userResult = await _executor.SendAndLogIfFailureAsync(
-            new GetUserByIdQuery(details.UserId), ct);
+        var userResult = await executor.SendAndLogIfFailureAsync(
+            new GetUserOnboardingInfoByIdQuery(details.UserId), ct);
 
         if (userResult.IsFailure || userResult.Value is null)
         {
             return RedirectToAction(nameof(Expired));
         }
 
-        var user = userResult.Value;
+        var userInfo = userResult.Value;
         ViewBag.InvitationExternalId = invitationExternalId;
-        ViewBag.UserExternalId = user.ExternalId;
-        ViewBag.NeedsPassword = user.GetActiveCredential() is null
-                                || user.AccountStatus == AccountStatus.PasswordResetRequired;
+        ViewBag.UserExternalId = userInfo.UserExternalId;
+        ViewBag.NeedsPassword = userInfo.NeedsPassword;
 
         return View();
     }
@@ -147,11 +115,31 @@ public class OnboardingController : Controller
         Guid userExternalId,
         string? newPassword,
         string? confirmPassword,
-        bool needsPassword,
         CancellationToken ct)
     {
+        // Validate invitation server-side
+        var detailsResult = await executor.SendAndLogIfFailureAsync(
+            new GetInvitationDetailsQuery(invitationExternalId), ct);
+
+        if (detailsResult.IsFailure || detailsResult.Value is null
+            || detailsResult.Value.Status != "Pending" || !detailsResult.Value.IsActive)
+        {
+            return RedirectToAction(nameof(Expired));
+        }
+
+        // Re-derive needsPassword server-side
+        var userResult = await executor.SendAndLogIfFailureAsync(
+            new GetUserOnboardingInfoByExternalIdQuery(userExternalId), ct);
+
+        if (userResult.IsFailure || userResult.Value is null)
+        {
+            return ReturnAcceptInvitationView(invitationExternalId, userExternalId, false, null);
+        }
+
+        var userInfo = userResult.Value;
+
         // Set password if needed
-        if (needsPassword && !string.IsNullOrWhiteSpace(newPassword))
+        if (userInfo.NeedsPassword && !string.IsNullOrWhiteSpace(newPassword))
         {
             var passwordCommand = new SetInitialPasswordCommand(
                 userExternalId,
@@ -160,33 +148,26 @@ public class OnboardingController : Controller
                 newPassword,
                 confirmPassword ?? string.Empty);
 
-            var passwordResult = await _executor.SendAndLogIfFailureAsync(passwordCommand, ct);
+            var passwordResult = await executor.SendAndLogIfFailureAsync(passwordCommand, ct);
 
             if (passwordResult.IsFailure)
             {
-                return ReturnAcceptInvitationView(invitationExternalId, userExternalId, true, passwordResult.ErrorMessages);
+                return ReturnAcceptInvitationView(
+                    invitationExternalId, userExternalId, true, passwordResult.ErrorMessages);
             }
         }
 
-        // Resolve userId from userExternalId server-side (never trust client-provided internal IDs)
-        var userResult = await _executor.SendAndLogIfFailureAsync(
-            new GetUserByExternalIdQuery(userExternalId), ct);
-
-        if (userResult.IsFailure || userResult.Value is null)
-        {
-            return ReturnAcceptInvitationView(invitationExternalId, userExternalId, needsPassword, null);
-        }
-
-        var acceptResult = await _executor.SendAndLogIfFailureAsync(
-            new AcceptInvitationCommand(invitationExternalId, userResult.Value.Id), ct);
+        var acceptResult = await executor.SendAndLogIfFailureAsync(
+            new AcceptInvitationCommand(invitationExternalId, userInfo.UserId), ct);
 
         if (acceptResult.IsSuccess)
         {
-            TempData["SuccessMessage"] = "Invitacion aceptada exitosamente. Ya puede iniciar sesion.";
+            TempData["SuccessMessage"] = "Invitación aceptada exitosamente. Ya puede iniciar sesión.";
             return RedirectToAction("Index", "Login", new { area = "Access" });
         }
 
-        return ReturnAcceptInvitationView(invitationExternalId, userExternalId, needsPassword, acceptResult.ErrorMessages);
+        return ReturnAcceptInvitationView(
+            invitationExternalId, userExternalId, userInfo.NeedsPassword, acceptResult.ErrorMessages);
     }
 
     [HttpGet]

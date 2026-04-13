@@ -176,28 +176,46 @@ public class AdminInternalRegistrationTests
         await page.WaitForURLAsync(url => !url.Contains("/Access/Login"), new PageWaitForURLOptions { Timeout = 10000 });
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-        // If redirected to context selection, ensure project is selected
+        // If redirected to context selection, explicitly select role → incubator → project
         if (page.Url.Contains("/Context/Select"))
         {
             var container = page.Locator("[data-mode='page']");
-            var confirmBtn = container.Locator("[data-cs='confirm']");
 
-            // Wait for cascade to auto-complete (confirm becomes enabled)
-            await Assertions.Expect(confirmBtn).ToBeEnabledAsync(new() { Timeout = 20000 });
-
-            // Ensure project is selected (may have auto-selected already)
-            var projectDropdown = container.Locator("[data-cs='project']");
-            var projectOptions = projectDropdown.Locator("option:not([value=''])");
-            if (await projectOptions.CountAsync() > 0)
+            // Select role (first non-empty option)
+            var roleDropdown = container.Locator("[data-cs='role']");
+            await page.WaitForFunctionAsync(
+                "sel => sel.options.length > 1",
+                await roleDropdown.ElementHandleAsync(),
+                new() { Timeout = 10000 });
+            if (await roleDropdown.IsEnabledAsync())
             {
-                var selectedValue = await projectDropdown.InputValueAsync();
-                if (string.IsNullOrEmpty(selectedValue))
-                {
-                    await projectDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
-                    await page.WaitForTimeoutAsync(500);
-                }
+                await roleDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
             }
 
+            // Select incubator (first non-empty option)
+            var incubatorDropdown = container.Locator("[data-cs='incubator']");
+            await page.WaitForFunctionAsync(
+                "sel => sel.options.length > 1",
+                await incubatorDropdown.ElementHandleAsync(),
+                new() { Timeout = 10000 });
+            if (await incubatorDropdown.IsEnabledAsync())
+            {
+                await incubatorDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
+            }
+
+            // Select project if available (first non-empty option)
+            var projectDropdown = container.Locator("[data-cs='project']");
+            await page.WaitForFunctionAsync(
+                "sel => sel.options.length > 1",
+                await projectDropdown.ElementHandleAsync(),
+                new() { Timeout = 10000 });
+            if (await projectDropdown.IsEnabledAsync())
+            {
+                await projectDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
+            }
+
+            var confirmBtn = container.Locator("[data-cs='confirm']");
+            await Assertions.Expect(confirmBtn).ToBeEnabledAsync(new() { Timeout = 15000 });
             await confirmBtn.ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         }

@@ -147,9 +147,16 @@ public class ContextSelectionTests
             var container = page.Locator("[data-mode='page']");
             var roleDropdown = container.Locator("[data-cs='role']");
             await roleDropdown.SelectOptionAsync(new SelectOptionValue { Label = "Administrador de Incubadora" });
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // Wait for full cascade to complete (role → incubator auto-select → project fetch)
+            // Wait for incubator dropdown to populate after role selection
+            var incubatorDropdown = container.Locator("[data-cs='incubator']");
+            await page.WaitForFunctionAsync(
+                "sel => sel.options.length > 1",
+                await incubatorDropdown.ElementHandleAsync(),
+                new() { Timeout = 10000 });
+            await incubatorDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
+
+            // Wait for confirm to become enabled after cascade completes
             var confirmBtn = container.Locator("[data-cs='confirm']");
             await Assertions.Expect(confirmBtn).ToBeEnabledAsync(new() { Timeout = 10000 });
 

@@ -10,6 +10,6 @@ public sealed record BatchCreateRowResult
     public string Email { get; init; } = string.Empty;
     public CreateUserOutcome? Outcome { get; init; }
     public string? TemporaryPassword { get; init; }
-    public List<string> Warnings { get; init; } = [];
-    public List<string> Errors { get; init; } = [];
+    public IReadOnlyList<string> Warnings { get; init; } = [];
+    public IReadOnlyList<string> Errors { get; init; } = [];
 }

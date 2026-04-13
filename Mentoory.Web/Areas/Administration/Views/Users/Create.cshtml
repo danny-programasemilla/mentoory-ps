@@ -25,12 +25,12 @@
             @if (TempData["TemporaryPassword"] is string tempPassword)
             {
                 <div class="alert alert-info" role="alert">
-                    <h6 class="alert-heading">Contrasena temporal</h6>
+                    <h6 class="alert-heading">Contraseña temporal</h6>
                     <p class="mb-0">
                         <code class="fs-5 user-select-all">@tempPassword</code>
                     </p>
                     <hr>
-                    <p class="mb-0 small text-muted">Copie esta contrasena y entreguela al usuario. No se mostrara de nuevo.</p>
+                    <p class="mb-0 small text-muted">Copie esta contraseña y entréguele al usuario. No se mostrará de nuevo.</p>
                 </div>
             }
 
@@ -71,7 +71,7 @@
                                 <div class="col-md-6">
                                     <label asp-for="Country" class="form-label"></label>
                                     <select asp-for="Country" class="form-select" id="countrySelect">
-                                        <option value="">Seleccione un pais</option>
+                                        <option value="">Seleccione un país</option>
                                         @foreach (var country in Model.Countries)
                                         {
                                             <option value="@country.Code"
@@ -105,7 +105,7 @@
                             </div>
 
                             <hr class="my-4">
-                            <h6 class="mb-3">Opciones de incorporacion</h6>
+                            <h6 class="mb-3">Opciones de incorporación</h6>
 
                             <div class="row mb-3">
                                 <div class="col-md-6">
@@ -113,14 +113,14 @@
                                         <input asp-for="SkipEmailVerification" class="form-check-input" id="skipEmailVerification" />
                                         <label asp-for="SkipEmailVerification" class="form-check-label"></label>
                                     </div>
-                                    <small class="text-muted">El usuario no necesitara verificar su correo electronico.</small>
+                                    <small class="text-muted">El usuario no necesitará verificar su correo electrónico.</small>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-check form-switch">
                                         <input asp-for="SkipInvitationAcceptance" class="form-check-input" id="skipInvitationAcceptance" />
                                         <label asp-for="SkipInvitationAcceptance" class="form-check-label"></label>
                                     </div>
-                                    <small class="text-muted">El usuario sera inscrito directamente sin aceptar invitacion.</small>
+                                    <small class="text-muted">El usuario será inscrito directamente sin aceptar invitación.</small>
                                 </div>
                             </div>
 
