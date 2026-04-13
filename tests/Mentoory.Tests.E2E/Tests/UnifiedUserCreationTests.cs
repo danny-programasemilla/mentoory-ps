@@ -358,6 +358,40 @@ public class UnifiedUserCreationTests
     }
 
     [Fact]
+    public async Task ProjectCoordinator_CanAccessCreateForm()
+    {
+        var page = await _fixture.CreatePageAsync();
+        try
+        {
+            await LoginAndSelectContextWithProjectAsync(page, "coord1@test.mentoory.com", "Test123!@#");
+
+            var response = await page.GotoAsync($"{_fixture.BaseUrl}/Administration/Users/Create");
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            response!.Status.Should().Be(200,
+                "ProjectCoordinator should receive 200 for the Create page");
+
+            var heading = page.Locator("h1, h2, h3, h4, h5").Filter(new LocatorFilterOptions
+            {
+                HasText = "Crear Usuario"
+            });
+            (await heading.CountAsync()).Should().BeGreaterThan(0,
+                "Create form heading should be visible for ProjectCoordinator");
+
+            // Verify key form fields are present
+            (await page.Locator("input[name='Email']").CountAsync()).Should().Be(1,
+                "Email field should be present");
+            (await page.Locator("select[name='Country']").CountAsync()).Should().Be(1,
+                "Country dropdown should be present");
+        }
+        finally
+        {
+            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(ProjectCoordinator_CanAccessCreateForm));
+            await page.Context.DisposeAsync();
+        }
+    }
+
+    [Fact]
     public async Task Entrepreneur_CannotAccessCreateForm()
     {
         var page = await _fixture.CreatePageAsync();

@@ -113,6 +113,11 @@ public class MenuVisibilityTests
             (await coordLinks.CountAsync()).Should().BeGreaterThan(0,
                 "ProjectCoordinator should see Coordination menu items");
 
+            // Coordinator should see Administration menu items (Usuarios, Carga Masiva)
+            var adminLinks = sidebarNav.Locator("a[href*='/Administration']");
+            (await adminLinks.CountAsync()).Should().BeGreaterThan(0,
+                "ProjectCoordinator should see Administration menu items for user management");
+
             // Coordinator should NOT see Platform menu items
             var platformLinks = sidebarNav.Locator("a[href*='/Platform/Incubators']");
             (await platformLinks.CountAsync()).Should().Be(0,

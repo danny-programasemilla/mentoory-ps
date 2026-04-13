@@ -17,7 +17,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Mentoory.Web.Areas.Administration.Controllers;
 
 [Area("Administration")]
-[Authorize(Roles = "IncubatorAdmin,GlobalAdmin")]
+[Authorize(Roles = "ProjectCoordinator,IncubatorAdmin,GlobalAdmin")]
 public class UsersController : Controller
 {
     private readonly MediatRExecutor _executor;
