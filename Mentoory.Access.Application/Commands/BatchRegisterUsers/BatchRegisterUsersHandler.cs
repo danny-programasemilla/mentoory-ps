@@ -63,7 +63,7 @@ public partial class BatchRegisterUsersHandler
             try
             {
                 var rowResult = await ProcessRowAsync(
-                    record, rowNumber, request.ProjectExternalId, invitationExpiryHours, utcNow, cancellationToken);
+                    record, rowNumber, request.ProjectExternalId, invitationExpiryHours, request.CreatedByUserId, utcNow, cancellationToken);
 
                 rows.Add(rowResult);
 
@@ -133,6 +133,7 @@ public partial class BatchRegisterUsersHandler
         int rowNumber,
         Guid projectExternalId,
         int invitationExpiryHours,
+        long createdByUserId,
         DateTime utcNow,
         CancellationToken cancellationToken)
     {
@@ -164,6 +165,7 @@ public partial class BatchRegisterUsersHandler
                     false,
                     EnrollmentVariants.FullFlow,
                     invitationExpiryHours,
+                    createdByUserId,
                     existingUser.CreatedAtUtc,
                     utcNow),
                 cancellationToken);
@@ -221,7 +223,8 @@ public partial class BatchRegisterUsersHandler
                 user.FirstName, user.LastName,
                 user.AccountStatus.ToString(),
                 projectExternalId, false, EnrollmentVariants.FullFlow,
-                invitationExpiryHours, user.CreatedAtUtc, utcNow),
+                invitationExpiryHours, 0, // System-initiated (legacy batch register path)
+                user.CreatedAtUtc, utcNow),
             cancellationToken);
 
         return new BatchRowResult

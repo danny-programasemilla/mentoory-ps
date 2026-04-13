@@ -32,14 +32,8 @@ public class AvailableProjectsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Enroll(Guid projectExternalId, CancellationToken ct)
     {
-        var userId = User.GetUserId();
-        if (userId is null)
-        {
-            return RedirectToAction("Login", "Login", new { area = "Access" });
-        }
-
         var result = await _executor.SendAndLogIfFailureAsync(
-            new RequestSelfEnrollmentCommand(projectExternalId, userId.Value), ct);
+            new RequestSelfEnrollmentCommand(projectExternalId, User.GetUserId()), ct);
 
         if (result.IsSuccess)
         {

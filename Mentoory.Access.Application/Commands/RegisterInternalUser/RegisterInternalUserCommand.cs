@@ -8,4 +8,5 @@ public sealed record RegisterInternalUserCommand(
     string Email,
     string Password,
     bool RequireEmailVerification,
-    Guid ProjectExternalId) : IBaseRequest<RegisterInternalUserResult>;
+    Guid ProjectExternalId,
+    long CreatedByUserId) : IBaseRequest<RegisterInternalUserResult>;

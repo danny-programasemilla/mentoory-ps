@@ -64,7 +64,7 @@ public partial class UserRegisteredEventHandler : INotificationHandler<UserRegis
                 new CreateInvitationCommand(
                     notification.UserId,
                     notification.ProjectExternalId.Value,
-                    notification.UserId, // CreatedByUserId — system-initiated
+                    notification.CreatedByUserId,
                     notification.InvitationExpiryHours,
                     requiresAcceptance),
                 cancellationToken);

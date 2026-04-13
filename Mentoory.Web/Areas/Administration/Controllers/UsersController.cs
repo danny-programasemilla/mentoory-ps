@@ -115,7 +115,6 @@ public class UsersController : Controller
             return await ReturnCreateViewWithCountries(model, ct);
         }
 
-        var userId = User.GetUserId();
         var command = new CreateUserCommand(
             model.Email,
             model.Country,
@@ -125,7 +124,7 @@ public class UsersController : Controller
             model.SkipEmailVerification,
             model.SkipInvitationAcceptance,
             contextInfo.Value!.ProjectExternalId,
-            userId ?? 0);
+            User.GetUserId());
 
         var result = await _executor.SendAndLogIfFailureAsync(command, ct);
 

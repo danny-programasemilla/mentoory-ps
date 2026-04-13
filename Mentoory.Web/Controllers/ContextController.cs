@@ -29,13 +29,7 @@ public class ContextController : Controller
     [HttpGet]
     public async Task<IActionResult> Select(string? returnUrl, CancellationToken ct)
     {
-        var userId = User.GetUserId();
-        if (userId is null)
-        {
-            return RedirectToAction("Login", "Login", new { area = "Access" });
-        }
-
-        var contexts = await _executor.SendOrThrowAsync(new GetUserContextsQuery(userId.Value), ct);
+        var contexts = await _executor.SendOrThrowAsync(new GetUserContextsQuery(User.GetUserId()), ct);
 
         if (contexts.Count == 0)
         {
@@ -94,14 +88,8 @@ public class ContextController : Controller
     [Route("api/context/roles")]
     public async Task<IActionResult> GetRoles(CancellationToken ct)
     {
-        var userId = User.GetUserId();
-        if (userId is null)
-        {
-            return Unauthorized(new { message = "Sesión inválida." });
-        }
-
         var roles = await _executor.SendOrThrowAsync(
-            new ListContextRolesQuery(userId.Value), ct);
+            new ListContextRolesQuery(User.GetUserId()), ct);
 
         return Ok(roles);
     }
@@ -110,18 +98,12 @@ public class ContextController : Controller
     [Route("api/context/incubators")]
     public async Task<IActionResult> GetIncubators([FromQuery] string role, CancellationToken ct)
     {
-        var userId = User.GetUserId();
-        if (userId is null)
-        {
-            return Unauthorized(new { message = "Sesión inválida." });
-        }
-
         if (string.IsNullOrWhiteSpace(role) || !Roles.All.Contains(role))
         {
             return BadRequest(new { message = "Rol inválido." });
         }
 
-        var (contexts, options) = await LoadCascadeDataAsync(userId.Value, ct);
+        var (contexts, options) = await LoadCascadeDataAsync(User.GetUserId(), ct);
         var incubatorNames = options.ToDictionary(o => o.IncubatorId, o => o.IncubatorName);
 
         if (role == Roles.GlobalAdmin)
@@ -157,18 +139,12 @@ public class ContextController : Controller
         [FromQuery] long incubatorId,
         CancellationToken ct)
     {
-        var userId = User.GetUserId();
-        if (userId is null)
-        {
-            return Unauthorized(new { message = "Sesión inválida." });
-        }
-
         if (string.IsNullOrWhiteSpace(role) || !Roles.All.Contains(role))
         {
             return BadRequest(new { message = "Rol inválido." });
         }
 
-        var (contexts, options) = await LoadCascadeDataAsync(userId.Value, ct);
+        var (contexts, options) = await LoadCascadeDataAsync(User.GetUserId(), ct);
         var incubatorOption = options.FirstOrDefault(o => o.IncubatorId == incubatorId);
 
         if (role == Roles.GlobalAdmin)
@@ -205,14 +181,8 @@ public class ContextController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Switch([FromBody] ContextSwitchRequest request, CancellationToken ct)
     {
-        var userId = User.GetUserId();
-        if (userId is null)
-        {
-            return Unauthorized(new { message = "Sesión inválida." });
-        }
-
         var result = await _executor.SendAndLogIfFailureAsync(
-            new SetActiveContextCommand(userId.Value, request.RoleAssignmentExternalId), ct);
+            new SetActiveContextCommand(User.GetUserId(), request.RoleAssignmentExternalId), ct);
 
         if (!result.IsSuccess)
         {
@@ -264,14 +234,8 @@ public class ContextController : Controller
 
     private async Task<IActionResult> SetContext(Guid roleAssignmentExternalId, string? returnUrl, CancellationToken ct)
     {
-        var userId = User.GetUserId();
-        if (userId is null)
-        {
-            return RedirectToAction("Login", "Login", new { area = "Access" });
-        }
-
         var context = await _executor.SendOrThrowAsync(
-            new SetActiveContextCommand(userId.Value, roleAssignmentExternalId), ct);
+            new SetActiveContextCommand(User.GetUserId(), roleAssignmentExternalId), ct);
 
         await UpdateAuthCookie(context);
 
@@ -292,14 +256,8 @@ public class ContextController : Controller
         string? returnUrl,
         CancellationToken ct)
     {
-        var userId = User.GetUserId();
-        if (userId is null)
-        {
-            return RedirectToAction("Login", "Login", new { area = "Access" });
-        }
-
         var baseContext = await _executor.SendOrThrowAsync(
-            new SetActiveContextCommand(userId.Value, roleAssignmentExternalId), ct);
+            new SetActiveContextCommand(User.GetUserId(), roleAssignmentExternalId), ct);
 
         if (baseContext.Role != Roles.GlobalAdmin)
         {

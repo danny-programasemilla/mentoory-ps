@@ -166,6 +166,7 @@ public partial class CreateUserCommandHandler
                 requiresVerification,
                 enrollmentVariant,
                 invitationExpiryHours,
+                request.CreatedByUserId,
                 user.CreatedAtUtc,
                 utcNow),
             cancellationToken);
@@ -214,6 +215,7 @@ public partial class CreateUserCommandHandler
                 requiresVerification,
                 enrollmentVariant,
                 invitationExpiryHours,
+                request.CreatedByUserId,
                 existingUser.CreatedAtUtc,
                 utcNow),
             cancellationToken);

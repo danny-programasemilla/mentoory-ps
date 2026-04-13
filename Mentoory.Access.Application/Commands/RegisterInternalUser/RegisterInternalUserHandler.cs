@@ -102,6 +102,7 @@ public partial class RegisterInternalUserHandler
                 request.RequireEmailVerification,
                 EnrollmentVariants.FullFlow, // Internal registration always uses project's variant, determined by handler
                 invitationExpiryHours,
+                request.CreatedByUserId,
                 user.CreatedAtUtc,
                 utcNow),
             cancellationToken);

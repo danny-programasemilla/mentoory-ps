@@ -89,13 +89,12 @@ public class BatchUploadController : Controller
             return ReturnBatchView(model);
         }
 
-        var userId = User.GetUserId();
         var command = new BatchCreateUsersCommand(
             rows,
             model.SkipEmailVerification,
             model.SkipInvitationAcceptance,
             contextInfo.Value!.ProjectExternalId,
-            userId ?? 0);
+            User.GetUserId());
 
         var result = await _executor.SendAndLogIfFailureAsync(command, ct);
 
