@@ -78,6 +78,8 @@ Feature artifacts live in `specs/{###-feature-name}/`. See [`.specify/templates/
 - N/A (no database changes) (007-csv-sample-download)
 - C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC + MediatR 14.1, FluentValidation 12.1, EF Core 10.x, Tabler Admin Template (built on Bootstrap 5) (008-context-selector-ux)
 - SQL Server (existing RoleAssignments table — no schema changes) (008-context-selector-ux)
+- C# / .NET 10.0, Razor Views, CSS, JavaScript + Tabler v1.4.0 (Bootstrap 5), jQuery, DataTables 2.3.4, MediatR 14.1 (010-design-system-ux-polish)
+- SQL Server (read-only count queries for dashboard metrics — no schema changes) (010-design-system-ux-polish)
 
 ## Code Review Standards
 After completing any implementation, review the code for:
@@ -93,6 +95,6 @@ After completing any implementation, review the code for:
 Run /simplify before presenting code to the user.
 
 ## Recent Changes
+- 010-design-system-ux-polish: Added C# / .NET 10.0, Razor Views, CSS, JavaScript + Tabler v1.4.0 (Bootstrap 5), jQuery, DataTables 2.3.4, MediatR 14.1
 - 009-tabler-template-migration: Added Tabler Admin Template (@tabler/core), Tabler Icons Webfont (@tabler/icons-webfont); removed standalone Bootstrap 5 CSS/JS and Font Awesome
 - 008-context-selector-ux: Added C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC + MediatR 14.1, FluentValidation 12.1, EF Core 10.x, Tabler Admin Template (built on Bootstrap 5)
-- 007-csv-sample-download: Added C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, CsvHelper
