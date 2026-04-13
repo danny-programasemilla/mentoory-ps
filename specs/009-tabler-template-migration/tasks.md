@@ -27,9 +27,9 @@
 
 **Purpose**: Install Tabler assets and remove standalone Bootstrap
 
-- [ ] T001 Download `@tabler/core` dist files and place CSS in `Mentoory.Web/wwwroot/lib/tabler/css/tabler.min.css` and JS in `Mentoory.Web/wwwroot/lib/tabler/js/tabler.min.js`
-- [ ] T002 Download `@tabler/icons-webfont` dist files and place CSS in `Mentoory.Web/wwwroot/lib/tabler-icons-webfont/tabler-icons.min.css` and font files in `Mentoory.Web/wwwroot/lib/tabler-icons-webfont/fonts/`
-- [ ] T003 Remove `Mentoory.Web/wwwroot/lib/bootstrap/` directory entirely
+- [X] T001 Download `@tabler/core` dist files and place CSS in `Mentoory.Web/wwwroot/lib/tabler/css/tabler.min.css` and JS in `Mentoory.Web/wwwroot/lib/tabler/js/tabler.min.js`
+- [X] T002 Download `@tabler/icons-webfont` dist files and place CSS in `Mentoory.Web/wwwroot/lib/tabler-icons-webfont/tabler-icons.min.css` and font files in `Mentoory.Web/wwwroot/lib/tabler-icons-webfont/fonts/`
+- [X] T003 Remove `Mentoory.Web/wwwroot/lib/bootstrap/` directory entirely
 
 ---
 
@@ -39,7 +39,7 @@
 
 **CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Rewrite `Mentoory.Web/Views/Shared/_Layout.cshtml` to Tabler's `.page` > `.navbar-vertical` + `.page-wrapper` structure. Update CSS references to load `tabler.min.css`, `tabler-icons.min.css`, `dataTables.bootstrap5.min.css`, `mentoory.css`. Update JS references to load `jquery.min.js`, `tabler.min.js`, `dataTables.min.js`, `dataTables.bootstrap5.min.js`, `site.js`. Preserve `@RenderSectionAsync("Styles")` and `@RenderSectionAsync("Scripts")` hooks. Preserve conditional rendering for authenticated vs unauthenticated users.
+- [X] T004 Rewrite `Mentoory.Web/Views/Shared/_Layout.cshtml` to Tabler's `.page` > `.navbar-vertical` + `.page-wrapper` structure. Update CSS references to load `tabler.min.css`, `tabler-icons.min.css`, `dataTables.bootstrap5.min.css`, `mentoory.css`. Update JS references to load `jquery.min.js`, `tabler.min.js`, `dataTables.min.js`, `dataTables.bootstrap5.min.js`, `site.js`. Preserve `@RenderSectionAsync("Styles")` and `@RenderSectionAsync("Scripts")` hooks. Preserve conditional rendering for authenticated vs unauthenticated users.
 
 **Checkpoint**: Layout compiles and renders — page shows Tabler structure skeleton (content may be unstyled until partials are updated)
 
@@ -53,10 +53,10 @@
 
 ### Implementation for User Story 1
 
-- [ ] T005 [US1] Rewrite `Mentoory.Web/Views/Shared/_Navigation.cshtml` to Tabler's `<aside class="navbar navbar-vertical navbar-expand-sm" data-bs-theme="dark">` pattern. Preserve `IMenuService.GetVisibleMenuItems()` integration. Keep section separators ("Gestion de Plataforma", "Administracion del Contexto"). Add `.active` class logic for current page using `ViewContext.RouteData`. Add hamburger toggle button (`navbar-toggler`) for mobile collapse.
-- [ ] T006 [US1] Update `Mentoory.Web/Infrastructure/Menu/MenuConfiguration.cs` — replace all Font Awesome icon strings with Tabler Icons webfont equivalents: `"fas fa-home"` to `"ti ti-home"`, `"fas fa-cog"` to `"ti ti-settings"`, `"fas fa-building"` to `"ti ti-building"`, `"fas fa-users"` to `"ti ti-users"`, `"fas fa-file-alt"` to `"ti ti-file-text"`, `"fas fa-users-cog"` to `"ti ti-users-group"`, `"fas fa-tachometer-alt"` to `"ti ti-dashboard"`, `"fas fa-project-diagram"` to `"ti ti-sitemap"`, `"fas fa-file-upload"` to `"ti ti-file-upload"`, `"fas fa-tasks"` to `"ti ti-list-check"`, `"fas fa-clipboard-check"` to `"ti ti-clipboard-check"`, `"fas fa-user-graduate"` to `"ti ti-school"`, `"fas fa-poll"` to `"ti ti-chart-bar"`. Verify icon names at https://tabler.io/icons.
-- [ ] T007 [P] [US1] Rewrite `Mentoory.Web/Views/Shared/_Footer.cshtml` to Tabler's `.footer.footer-transparent.d-print-none` pattern inside a `.container-xl` wrapper.
-- [ ] T008 [P] [US1] Update `Mentoory.Web/Views/Shared/_Breadcrumbs.cshtml` to render inside Tabler's `.page-header` structure. Keep the same route-based auto-generation logic.
+- [X] T005 [US1] Rewrite `Mentoory.Web/Views/Shared/_Navigation.cshtml` to Tabler's `<aside class="navbar navbar-vertical navbar-expand-sm" data-bs-theme="dark">` pattern. Preserve `IMenuService.GetVisibleMenuItems()` integration. Keep section separators ("Gestion de Plataforma", "Administracion del Contexto"). Add `.active` class logic for current page using `ViewContext.RouteData`. Add hamburger toggle button (`navbar-toggler`) for mobile collapse.
+- [X] T006 [US1] Update `Mentoory.Web/Infrastructure/Menu/MenuConfiguration.cs` — replace all Font Awesome icon strings with Tabler Icons webfont equivalents: `"fas fa-home"` to `"ti ti-home"`, `"fas fa-cog"` to `"ti ti-settings"`, `"fas fa-building"` to `"ti ti-building"`, `"fas fa-users"` to `"ti ti-users"`, `"fas fa-file-alt"` to `"ti ti-file-text"`, `"fas fa-users-cog"` to `"ti ti-users-group"`, `"fas fa-tachometer-alt"` to `"ti ti-dashboard"`, `"fas fa-project-diagram"` to `"ti ti-sitemap"`, `"fas fa-file-upload"` to `"ti ti-file-upload"`, `"fas fa-tasks"` to `"ti ti-list-check"`, `"fas fa-clipboard-check"` to `"ti ti-clipboard-check"`, `"fas fa-user-graduate"` to `"ti ti-school"`, `"fas fa-poll"` to `"ti ti-chart-bar"`. Verify icon names at https://tabler.io/icons.
+- [X] T007 [P] [US1] Rewrite `Mentoory.Web/Views/Shared/_Footer.cshtml` to Tabler's `.footer.footer-transparent.d-print-none` pattern inside a `.container-xl` wrapper.
+- [X] T008 [P] [US1] Update `Mentoory.Web/Views/Shared/_Breadcrumbs.cshtml` to render inside Tabler's `.page-header` structure. Keep the same route-based auto-generation logic.
 
 **Checkpoint**: Sidebar renders with Tabler Icons, section separators, active state highlighting, and hamburger collapse. Footer and breadcrumbs render in Tabler style. `dotnet build` passes with zero warnings.
 
@@ -70,8 +70,8 @@
 
 ### Implementation for User Story 2
 
-- [ ] T009 [US2] Rewrite `Mentoory.Web/Views/Shared/_TopBar.cshtml` to fit Tabler's page header area inside `.page-wrapper`. Preserve context display: active role badge (`<span class="badge">`), incubator name (with `ti ti-building` icon), project name (with `ti ti-sitemap` icon). Preserve "Cambiar contexto" button triggering `#contextSwitcherModal`. Preserve user name display and "Cerrar sesion" logout form. Keep the context-switcher modal markup (no changes to `_ContextSelector.cshtml` logic).
-- [ ] T010 [US2] Verify `Mentoory.Web/Views/Shared/_ContextSelector.cshtml` renders correctly within the Tabler modal. Check that `form-select`, `form-label`, `btn btn-primary`, `spinner-border` classes work with Tabler's CSS. Update classes only if visual issues are found.
+- [X] T009 [US2] Rewrite `Mentoory.Web/Views/Shared/_TopBar.cshtml` to fit Tabler's page header area inside `.page-wrapper`. Preserve context display: active role badge (`<span class="badge">`), incubator name (with `ti ti-building` icon), project name (with `ti ti-sitemap` icon). Preserve "Cambiar contexto" button triggering `#contextSwitcherModal`. Preserve user name display and "Cerrar sesion" logout form. Keep the context-switcher modal markup (no changes to `_ContextSelector.cshtml` logic).
+- [X] T010 [US2] Verify `Mentoory.Web/Views/Shared/_ContextSelector.cshtml` renders correctly within the Tabler modal. Check that `form-select`, `form-label`, `btn btn-primary`, `spinner-border` classes work with Tabler's CSS. Update classes only if visual issues are found.
 
 **Checkpoint**: Context display shows role/incubator/project correctly. Context-switcher modal opens and cascade dropdowns work. Context switches successfully.
 
@@ -85,15 +85,15 @@
 
 ### Implementation for User Story 3
 
-- [ ] T011 [US3] Create `Mentoory.Web/Views/Shared/_AuthLayout.cshtml` — split-panel layout. Left panel: `col-lg-6` with solid brand-color background (use `--tblr-primary` or custom Mentoory color), centered "Mentoory" text, `min-height: 100vh`, structured for easy background-image swap later. Right panel: `col-lg-6` with centered form area and padding. Load Tabler CSS/JS. Include `@RenderSectionAsync("Styles")` and `@RenderSectionAsync("Scripts")` hooks. No sidebar or topbar.
-- [ ] T012 [US3] Update `Mentoory.Web/Areas/Access/Views/_ViewStart.cshtml` to point to `_AuthLayout` instead of `_Layout`.
-- [ ] T013 [US3] Update `Mentoory.Web/Areas/Access/Views/Login/Index.cshtml` — remove `login-container`/`login-card` wrapper classes (now handled by _AuthLayout). Keep form content, validation, and scripts section.
-- [ ] T014 [P] [US3] Update `Mentoory.Web/Areas/Access/Views/Register/Index.cshtml` — remove wrapper classes, adapt to _AuthLayout right panel.
-- [ ] T015 [P] [US3] Update `Mentoory.Web/Areas/Access/Views/ForgotPassword/Index.cshtml` and `Mentoory.Web/Areas/Access/Views/ForgotPassword/Confirmation.cshtml` — remove wrapper classes, adapt to _AuthLayout.
-- [ ] T016 [P] [US3] Update `Mentoory.Web/Areas/Access/Views/ResetPassword/Index.cshtml` and `Mentoory.Web/Areas/Access/Views/ResetPassword/Success.cshtml` — remove wrapper classes, adapt to _AuthLayout.
-- [ ] T017 [P] [US3] Update `Mentoory.Web/Areas/Access/Views/VerifyEmail/Index.cshtml` — remove wrapper classes, adapt to _AuthLayout.
-- [ ] T018 [P] [US3] Update `Mentoory.Web/Areas/Access/Views/ChangePassword/Index.cshtml` — remove wrapper classes, adapt to _AuthLayout.
-- [ ] T019 [US3] Verify `Mentoory.Web/Views/Shared/Error.cshtml` renders correctly in both _Layout (authenticated) and _AuthLayout (unauthenticated) states.
+- [X] T011 [US3] Create `Mentoory.Web/Views/Shared/_AuthLayout.cshtml` — split-panel layout. Left panel: `col-lg-6` with solid brand-color background (use `--tblr-primary` or custom Mentoory color), centered "Mentoory" text, `min-height: 100vh`, structured for easy background-image swap later. Right panel: `col-lg-6` with centered form area and padding. Load Tabler CSS/JS. Include `@RenderSectionAsync("Styles")` and `@RenderSectionAsync("Scripts")` hooks. No sidebar or topbar.
+- [X] T012 [US3] Update `Mentoory.Web/Areas/Access/Views/_ViewStart.cshtml` to point to `_AuthLayout` instead of `_Layout`.
+- [X] T013 [US3] Update `Mentoory.Web/Areas/Access/Views/Login/Index.cshtml` — remove `login-container`/`login-card` wrapper classes (now handled by _AuthLayout). Keep form content, validation, and scripts section.
+- [X] T014 [P] [US3] Update `Mentoory.Web/Areas/Access/Views/Register/Index.cshtml` — remove wrapper classes, adapt to _AuthLayout right panel.
+- [X] T015 [P] [US3] Update `Mentoory.Web/Areas/Access/Views/ForgotPassword/Index.cshtml` and `Mentoory.Web/Areas/Access/Views/ForgotPassword/Confirmation.cshtml` — remove wrapper classes, adapt to _AuthLayout.
+- [X] T016 [P] [US3] Update `Mentoory.Web/Areas/Access/Views/ResetPassword/Index.cshtml` and `Mentoory.Web/Areas/Access/Views/ResetPassword/Success.cshtml` — remove wrapper classes, adapt to _AuthLayout.
+- [X] T017 [P] [US3] Update `Mentoory.Web/Areas/Access/Views/VerifyEmail/Index.cshtml` — remove wrapper classes, adapt to _AuthLayout.
+- [X] T018 [P] [US3] Update `Mentoory.Web/Areas/Access/Views/ChangePassword/Index.cshtml` — remove wrapper classes, adapt to _AuthLayout.
+- [X] T019 [US3] Verify `Mentoory.Web/Views/Shared/Error.cshtml` renders correctly in both _Layout (authenticated) and _AuthLayout (unauthenticated) states.
 
 **Checkpoint**: All auth pages render with split-panel layout. Forms submit correctly. Mobile stacks vertically. Error page works in both states.
 
@@ -107,15 +107,15 @@
 
 ### Implementation for User Story 4
 
-- [ ] T020 [P] [US4] Replace Font Awesome icons in `Mentoory.Web/Areas/Administration/Views/Dashboard/Index.cshtml` (4 occurrences)
-- [ ] T021 [P] [US4] Replace Font Awesome icons in `Mentoory.Web/Areas/Administration/Views/Projects/Index.cshtml` and `Mentoory.Web/Areas/Administration/Views/Projects/Create.cshtml` and `Mentoory.Web/Areas/Administration/Views/Projects/Details.cshtml`
-- [ ] T022 [P] [US4] Replace Font Awesome icons in `Mentoory.Web/Areas/Administration/Views/Users/Index.cshtml` and `Mentoory.Web/Areas/Administration/Views/Users/Enroll.cshtml`
-- [ ] T023 [P] [US4] Replace Font Awesome icons in `Mentoory.Web/Areas/Coordination/Views/Diagnostics/Index.cshtml`, `Mentoory.Web/Areas/Coordination/Views/Diagnostics/Details.cshtml`, `Mentoory.Web/Areas/Coordination/Views/Diagnostics/Clone.cshtml`, and `Mentoory.Web/Areas/Coordination/Views/AnswerCorrection/Index.cshtml`
-- [ ] T024 [P] [US4] Replace Font Awesome icons in `Mentoory.Web/Areas/Participant/Views/Diagnostic/Index.cshtml`, `Mentoory.Web/Areas/Participant/Views/Diagnostic/List.cshtml`, and `Mentoory.Web/Areas/Participant/Views/Diagnostic/Confirmation.cshtml`
-- [ ] T025 [P] [US4] Replace Font Awesome icons in `Mentoory.Web/Areas/Platform/Views/Incubators/Index.cshtml`, `Mentoory.Web/Areas/Platform/Views/Incubators/Create.cshtml`, `Mentoory.Web/Areas/Platform/Views/Incubators/Edit.cshtml`, `Mentoory.Web/Areas/Platform/Views/Incubators/Details.cshtml`
-- [ ] T026 [P] [US4] Replace Font Awesome icons in `Mentoory.Web/Areas/Platform/Views/Templates/Knowledge.cshtml`, `Mentoory.Web/Areas/Platform/Views/Configuration/Index.cshtml`, `Mentoory.Web/Areas/Platform/Views/Sponsor/Index.cshtml`, `Mentoory.Web/Areas/Platform/Views/Users/Index.cshtml`
-- [ ] T027 [P] [US4] Replace Font Awesome icons in `Mentoory.Web/Views/AvailableProjects/Index.cshtml`
-- [ ] T028 [US4] Run `grep -r "fas fa-\|far fa-\|fab fa-" Mentoory.Web/` to verify zero Font Awesome references remain
+- [X] T020 [P] [US4] Replace Font Awesome icons in `Mentoory.Web/Areas/Administration/Views/Dashboard/Index.cshtml` (4 occurrences)
+- [X] T021 [P] [US4] Replace Font Awesome icons in `Mentoory.Web/Areas/Administration/Views/Projects/Index.cshtml` and `Mentoory.Web/Areas/Administration/Views/Projects/Create.cshtml` and `Mentoory.Web/Areas/Administration/Views/Projects/Details.cshtml`
+- [X] T022 [P] [US4] Replace Font Awesome icons in `Mentoory.Web/Areas/Administration/Views/Users/Index.cshtml` and `Mentoory.Web/Areas/Administration/Views/Users/Enroll.cshtml`
+- [X] T023 [P] [US4] Replace Font Awesome icons in `Mentoory.Web/Areas/Coordination/Views/Diagnostics/Index.cshtml`, `Mentoory.Web/Areas/Coordination/Views/Diagnostics/Details.cshtml`, `Mentoory.Web/Areas/Coordination/Views/Diagnostics/Clone.cshtml`, and `Mentoory.Web/Areas/Coordination/Views/AnswerCorrection/Index.cshtml`
+- [X] T024 [P] [US4] Replace Font Awesome icons in `Mentoory.Web/Areas/Participant/Views/Diagnostic/Index.cshtml`, `Mentoory.Web/Areas/Participant/Views/Diagnostic/List.cshtml`, and `Mentoory.Web/Areas/Participant/Views/Diagnostic/Confirmation.cshtml`
+- [X] T025 [P] [US4] Replace Font Awesome icons in `Mentoory.Web/Areas/Platform/Views/Incubators/Index.cshtml`, `Mentoory.Web/Areas/Platform/Views/Incubators/Create.cshtml`, `Mentoory.Web/Areas/Platform/Views/Incubators/Edit.cshtml`, `Mentoory.Web/Areas/Platform/Views/Incubators/Details.cshtml`
+- [X] T026 [P] [US4] Replace Font Awesome icons in `Mentoory.Web/Areas/Platform/Views/Templates/Knowledge.cshtml`, `Mentoory.Web/Areas/Platform/Views/Configuration/Index.cshtml`, `Mentoory.Web/Areas/Platform/Views/Sponsor/Index.cshtml`, `Mentoory.Web/Areas/Platform/Views/Users/Index.cshtml`
+- [X] T027 [P] [US4] Replace Font Awesome icons in `Mentoory.Web/Views/AvailableProjects/Index.cshtml`
+- [X] T028 [US4] Run `grep -r "fas fa-\|far fa-\|fab fa-" Mentoory.Web/` to verify zero Font Awesome references remain
 
 **Checkpoint**: Zero Font Awesome references in codebase. All icons render as Tabler Icons across all areas.
 
@@ -129,10 +129,10 @@
 
 ### Implementation for User Story 5
 
-- [ ] T029 [P] [US5] Verify and update `Mentoory.Web/Views/Shared/Components/DataTable/Default.cshtml` — ensure table classes (`table`, `table-striped`, `table-hover`) work with Tabler. Wrap in Tabler card if needed.
-- [ ] T030 [P] [US5] Verify and update `Mentoory.Web/Views/Shared/Components/Toast/Default.cshtml` — ensure toast container positioning works with Tabler's page structure. Verify `showToast()` JS function renders correctly.
-- [ ] T031 [P] [US5] Verify and update `Mentoory.Web/Views/Shared/Components/ConfirmModal/Default.cshtml` — ensure modal classes work with Tabler. Verify confirm/cancel buttons function.
-- [ ] T032 [US5] Add DataTables-Tabler CSS compatibility overrides in `Mentoory.Web/wwwroot/css/mentoory.css` — fix `.dt-paging .pagination` spacing, `.dt-info` font styling, and any other chrome element misalignment using `--tblr-*` CSS variables (~20-40 lines per research.md findings).
+- [X] T029 [P] [US5] Verify and update `Mentoory.Web/Views/Shared/Components/DataTable/Default.cshtml` — ensure table classes (`table`, `table-striped`, `table-hover`) work with Tabler. Wrap in Tabler card if needed.
+- [X] T030 [P] [US5] Verify and update `Mentoory.Web/Views/Shared/Components/Toast/Default.cshtml` — ensure toast container positioning works with Tabler's page structure. Verify `showToast()` JS function renders correctly.
+- [X] T031 [P] [US5] Verify and update `Mentoory.Web/Views/Shared/Components/ConfirmModal/Default.cshtml` — ensure modal classes work with Tabler. Verify confirm/cancel buttons function.
+- [X] T032 [US5] Add DataTables-Tabler CSS compatibility overrides in `Mentoory.Web/wwwroot/css/mentoory.css` — fix `.dt-paging .pagination` spacing, `.dt-info` font styling, and any other chrome element misalignment using `--tblr-*` CSS variables (~20-40 lines per research.md findings).
 
 **Checkpoint**: DataTables load and paginate. Toasts appear correctly. Modals open and function.
 
@@ -146,12 +146,12 @@
 
 ### Implementation for User Story 6
 
-- [ ] T033 [US6] Update `Mentoory.Web/wwwroot/css/mentoory.css` — remove `#sidebar` rules (replaced by Tabler sidebar), remove `main` background rule, remove `.page-header` custom rules (conflicts with Tabler's `.page-header`), update `.login-container` and `.login-card` if still needed or remove if _AuthLayout handles it, use `--tblr-*` CSS variables for custom properties.
-- [ ] T034 [P] [US6] Verify `Mentoory.Web/wwwroot/css/site.css` for Bootstrap-specific rules that conflict with Tabler. Update or remove conflicting rules.
-- [ ] T035 [US6] Update `.specify/memory/constitution.md` — change "Bootstrap 5 with Phoenix Admin Template" to "Tabler Admin Template (built on Bootstrap 5)" in the UI Framework section.
-- [ ] T036 [P] [US6] Update `CLAUDE.md` Active Technologies section to reference Tabler instead of Phoenix Admin Template.
-- [ ] T037 [US6] Run `dotnet build` and verify zero warnings. Fix any warnings introduced by the migration.
-- [ ] T038 [US6] Final visual smoke test: navigate all major pages across all areas (Access, Administration, Coordination, Participant, Platform), verify DataTables, modals, toasts, context switching, breadcrumbs, sidebar navigation all work correctly.
+- [X] T033 [US6] Update `Mentoory.Web/wwwroot/css/mentoory.css` — remove `#sidebar` rules (replaced by Tabler sidebar), remove `main` background rule, remove `.page-header` custom rules (conflicts with Tabler's `.page-header`), update `.login-container` and `.login-card` if still needed or remove if _AuthLayout handles it, use `--tblr-*` CSS variables for custom properties.
+- [X] T034 [P] [US6] Verify `Mentoory.Web/wwwroot/css/site.css` for Bootstrap-specific rules that conflict with Tabler. Update or remove conflicting rules.
+- [X] T035 [US6] Update `.specify/memory/constitution.md` — change "Bootstrap 5 with Phoenix Admin Template" to "Tabler Admin Template (built on Bootstrap 5)" in the UI Framework section.
+- [X] T036 [P] [US6] Update `CLAUDE.md` Active Technologies section to reference Tabler instead of Phoenix Admin Template.
+- [X] T037 [US6] Run `dotnet build` and verify zero warnings. Fix any warnings introduced by the migration.
+- [X] T038 [US6] Final visual smoke test: navigate all major pages across all areas (Access, Administration, Coordination, Participant, Platform), verify DataTables, modals, toasts, context switching, breadcrumbs, sidebar navigation all work correctly.
 
 **Checkpoint**: Build passes with zero warnings. All pages render correctly. No Bootstrap or Font Awesome remnants. Constitution updated.
 

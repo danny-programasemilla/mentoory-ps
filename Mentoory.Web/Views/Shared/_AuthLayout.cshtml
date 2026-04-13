@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Mentoory</title>
+    <link rel="stylesheet" href="~/lib/tabler/css/tabler.min.css" />
+    <link rel="stylesheet" href="~/lib/tabler-icons-webfont/tabler-icons.min.css" />
+    <link rel="stylesheet" href="~/css/mentoory.css" />
+    <link rel="stylesheet" href="~/Mentoory.Web.styles.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="d-flex flex-column">
+    <div class="row g-0 flex-fill">
+        <div class="col-lg-6 d-none d-lg-flex align-items-center justify-content-center"
+             style="min-height: 100vh; background-color: var(--tblr-primary);">
+            <div class="text-center text-white px-4">
+                <h1 class="display-4 fw-bold">Mentoory</h1>
+            </div>
+        </div>
+        <div class="col-lg-6 d-flex align-items-center justify-content-center" style="min-height: 100vh;">
+            <div class="w-100 px-4" style="max-width: 480px;">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/tabler/js/tabler.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+    @await Component.InvokeAsync("Toast")
+</body>
+</html>

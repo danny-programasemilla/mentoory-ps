@@ -280,7 +280,7 @@ Database schema is managed via SQL Server Database Project
 
 #### UI Framework
 
-- Bootstrap 5 with Phoenix Admin Template
+- Tabler Admin Template (built on Bootstrap 5)
 - Toast notifications via `showToast(message, type)` JavaScript
   function
 - DataTables with server-side processing

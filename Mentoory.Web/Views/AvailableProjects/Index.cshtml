@@ -31,7 +31,7 @@
             @if (Model.Count == 0)
             {
                 <div class="text-center py-5">
-                    <i class="fas fa-folder-open fa-3x text-muted mb-3 d-block"></i>
+                    <i class="ti ti-folder text-muted mb-3 d-block" style="font-size: 3rem;"></i>
                     <h5 class="text-muted">No hay proyectos disponibles</h5>
                     <p class="text-muted">
                         Actualmente no hay proyectos abiertos para inscripción. Por favor, vuelva a intentarlo más tarde.
@@ -48,7 +48,7 @@
                                 <div class="card-body d-flex flex-column">
                                     <h5 class="card-title">@project.Name</h5>
                                     <p class="text-muted small mb-2">
-                                        <i class="fas fa-building me-1"></i>@project.IncubatorName
+                                        <i class="ti ti-building me-1"></i>@project.IncubatorName
                                     </p>
                                     @if (!string.IsNullOrWhiteSpace(project.Description))
                                     {
@@ -65,7 +65,7 @@
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="projectExternalId" value="@project.ExternalId" />
                                             <button type="submit" class="btn btn-primary w-100">
-                                                <i class="fas fa-user-plus me-1"></i>Solicitar inscripción
+                                                <i class="ti ti-user-plus me-1"></i>Solicitar inscripción
                                             </button>
                                         </form>
                                     </div>
