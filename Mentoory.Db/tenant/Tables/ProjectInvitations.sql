@@ -4,7 +4,6 @@ CREATE TABLE [tenant].[ProjectInvitations]
     [ExternalId] UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
     [ProjectId] BIGINT NOT NULL,
     [UserId] BIGINT NOT NULL,
-    [TokenHash] NVARCHAR(128) NOT NULL,
     [Status] TINYINT NOT NULL DEFAULT 0,
     [ExpiresAtUtc] DATETIME2 NOT NULL,
     [AcceptedAtUtc] DATETIME2 NULL,

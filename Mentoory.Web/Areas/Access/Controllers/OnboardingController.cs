@@ -1,7 +1,6 @@
 using Mentoory.Access.Application.Commands.SetInitialPassword;
 using Mentoory.Access.Application.Queries.GetUserOnboardingInfo;
 using Mentoory.Access.Application.Queries.ValidateVerificationToken;
-using Mentoory.Access.Domain.Enums;
 using Mentoory.Tenant.Application.Invitations.Commands.AcceptInvitation;
 using Mentoory.Tenant.Application.Invitations.Queries.GetInvitationDetails;
 using Mentoory.Web.Services;
@@ -47,7 +46,6 @@ public class OnboardingController(MediatRExecutor executor) : Controller
         var command = new SetInitialPasswordCommand(
             userExternalId,
             token,
-            TokenType.Verification,
             newPassword,
             confirmPassword);
 
@@ -113,11 +111,8 @@ public class OnboardingController(MediatRExecutor executor) : Controller
     public async Task<IActionResult> AcceptInvitation(
         Guid invitationExternalId,
         Guid userExternalId,
-        string? newPassword,
-        string? confirmPassword,
         CancellationToken ct)
     {
-        // Validate invitation server-side
         var detailsResult = await executor.SendAndLogIfFailureAsync(
             new GetInvitationDetailsQuery(invitationExternalId), ct);
 
@@ -127,34 +122,20 @@ public class OnboardingController(MediatRExecutor executor) : Controller
             return RedirectToAction(nameof(Expired));
         }
 
-        // Re-derive needsPassword server-side
         var userResult = await executor.SendAndLogIfFailureAsync(
             new GetUserOnboardingInfoByExternalIdQuery(userExternalId), ct);
 
         if (userResult.IsFailure || userResult.Value is null)
         {
-            return ReturnAcceptInvitationView(invitationExternalId, userExternalId, false, null);
+            return ReturnAcceptInvitationView(invitationExternalId, userExternalId, null);
         }
 
         var userInfo = userResult.Value;
 
-        // Set password if needed
-        if (userInfo.NeedsPassword && !string.IsNullOrWhiteSpace(newPassword))
+        if (userInfo.NeedsPassword)
         {
-            var passwordCommand = new SetInitialPasswordCommand(
-                userExternalId,
-                invitationExternalId.ToString(),
-                TokenType.Invitation,
-                newPassword,
-                confirmPassword ?? string.Empty);
-
-            var passwordResult = await executor.SendAndLogIfFailureAsync(passwordCommand, ct);
-
-            if (passwordResult.IsFailure)
-            {
-                return ReturnAcceptInvitationView(
-                    invitationExternalId, userExternalId, true, passwordResult.ErrorMessages);
-            }
+            TempData["InfoMessage"] = "Primero debe verificar su correo y configurar su contraseña.";
+            return RedirectToAction(nameof(Expired));
         }
 
         var acceptResult = await executor.SendAndLogIfFailureAsync(
@@ -167,7 +148,7 @@ public class OnboardingController(MediatRExecutor executor) : Controller
         }
 
         return ReturnAcceptInvitationView(
-            invitationExternalId, userExternalId, userInfo.NeedsPassword, acceptResult.ErrorMessages);
+            invitationExternalId, userExternalId, acceptResult.ErrorMessages);
     }
 
     [HttpGet]
@@ -179,12 +160,10 @@ public class OnboardingController(MediatRExecutor executor) : Controller
     private IActionResult ReturnAcceptInvitationView(
         Guid invitationExternalId,
         Guid userExternalId,
-        bool needsPassword,
         IReadOnlyList<(string Context, string Message)>? errors)
     {
         ViewBag.InvitationExternalId = invitationExternalId;
         ViewBag.UserExternalId = userExternalId;
-        ViewBag.NeedsPassword = needsPassword;
 
         if (errors is not null)
         {

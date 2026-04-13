@@ -45,22 +45,8 @@ public partial class SetInitialPasswordCommandHandler
             return Failure(ResultErrorCodes.GenericError, ("User", "Usuario no encontrado."));
         }
 
-        return request.TokenType switch
-        {
-            TokenType.Verification => await HandleVerificationTokenAsync(user, request, utcNow, cancellationToken),
-            TokenType.Invitation => await HandleInvitationTokenAsync(user, request, utcNow, cancellationToken),
-            _ => Failure(ResultErrorCodes.GenericError, ("TokenType", "Tipo de token inválido.")),
-        };
-    }
-
-    private async Task<Result> HandleVerificationTokenAsync(
-        Access.Domain.Aggregates.User.User user,
-        SetInitialPasswordCommand request,
-        DateTime utcNow,
-        CancellationToken cancellationToken)
-    {
         var token = user.EmailVerificationTokens.FirstOrDefault(
-            t => t.TokenHash == request.Token);
+            t => _passwordHasher.VerifyPassword(request.Token, t.TokenHash));
 
         if (token is null || !token.IsValid(utcNow))
         {
@@ -84,36 +70,10 @@ public partial class SetInitialPasswordCommandHandler
             new UserEmailVerifiedEvent(user.Id, user.ExternalId, user.Email.Value, utcNow),
             cancellationToken);
 
-        LogPasswordSetViaVerification(user.Email.Value);
-        return Success();
-    }
-
-    private async Task<Result> HandleInvitationTokenAsync(
-        Access.Domain.Aggregates.User.User user,
-        SetInitialPasswordCommand request,
-        DateTime utcNow,
-        CancellationToken cancellationToken)
-    {
-        // For invitation tokens, we only set the password
-        // The invitation acceptance is handled separately by the Tenant domain
-        var hasActiveCredential = user.GetActiveCredential() is not null;
-
-        if (!hasActiveCredential || user.AccountStatus == AccountStatus.PasswordResetRequired)
-        {
-            var passwordHash = _passwordHasher.HashPassword(request.NewPassword);
-            user.ChangePassword(passwordHash, utcNow);
-
-            _userRepository.Update(user);
-            await _userRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
-        }
-
-        LogPasswordSetViaInvitation(user.Email.Value);
+        LogPasswordSet(user.Email.Value);
         return Success();
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Password set via verification for user: {Email}")]
-    partial void LogPasswordSetViaVerification(string email);
-
-    [LoggerMessage(Level = LogLevel.Information, Message = "Password set via invitation for user: {Email}")]
-    partial void LogPasswordSetViaInvitation(string email);
+    partial void LogPasswordSet(string email);
 }

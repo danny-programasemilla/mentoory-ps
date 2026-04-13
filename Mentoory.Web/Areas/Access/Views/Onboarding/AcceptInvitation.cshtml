@@ -19,20 +19,6 @@
 
                         <p class="text-muted mb-3">Ha sido invitado a participar en un proyecto. Acepte la invitación para continuar.</p>
 
-                        @if ((bool)ViewBag.NeedsPassword)
-                        {
-                            <div class="mb-3">
-                                <label for="newPassword" class="form-label">Contraseña</label>
-                                <input type="password" class="form-control" id="newPassword" name="newPassword" required minlength="12" />
-                                <div class="form-text">Mínimo 12 caracteres, con mayúsculas, minúsculas, dígitos y caracteres especiales.</div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="confirmPassword" class="form-label">Confirmar contraseña</label>
-                                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required />
-                            </div>
-                        }
-
                         <button type="submit" class="btn btn-primary w-100">Aceptar Invitación</button>
                     </form>
                 </div>

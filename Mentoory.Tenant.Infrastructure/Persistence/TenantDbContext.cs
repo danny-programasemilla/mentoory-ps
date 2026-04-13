@@ -157,7 +157,6 @@ public class TenantDbContext : SharedAbstractDbContext
             entity.HasIndex(e => e.ExternalId).IsUnique();
             entity.Property(e => e.ProjectId).IsRequired();
             entity.Property(e => e.UserId).IsRequired();
-            entity.Property(e => e.TokenHash).IsRequired().HasMaxLength(128);
             entity.Property(e => e.Status).IsRequired().HasConversion<byte>().HasDefaultValue(InvitationStatus.Pending);
             entity.Property(e => e.ExpiresAtUtc).IsRequired();
             entity.Property(e => e.AcceptedAtUtc);

@@ -12,7 +12,6 @@ public class ProjectInvitation : Entity, IAggregateRoot
     public Guid ExternalId { get; private set; }
     public long ProjectId { get; private set; }
     public long UserId { get; private set; }
-    public string TokenHash { get; private set; } = null!;
     public InvitationStatus Status { get; private set; }
     public DateTime ExpiresAtUtc { get; private set; }
     public DateTime? AcceptedAtUtc { get; private set; }
@@ -24,7 +23,6 @@ public class ProjectInvitation : Entity, IAggregateRoot
     public static ProjectInvitation Create(
         long projectId,
         long userId,
-        string tokenHash,
         DateTime expiresAtUtc,
         long createdByUserId,
         DateTime utcNow,
@@ -35,7 +33,6 @@ public class ProjectInvitation : Entity, IAggregateRoot
             ExternalId = Guid.NewGuid(),
             ProjectId = projectId,
             UserId = userId,
-            TokenHash = tokenHash,
             Status = InvitationStatus.Pending,
             ExpiresAtUtc = expiresAtUtc,
             CreatedAtUtc = utcNow,

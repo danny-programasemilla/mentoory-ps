@@ -1,4 +1,5 @@
 using Mentoory.Access.Domain.Repositories;
+using Mentoory.Access.Domain.Services;
 using Mentoory.Shared.Application;
 using Mentoory.Shared.Application.MediatR;
 using Mentoory.Shared.Application.TimeProvider;
@@ -7,6 +8,7 @@ namespace Mentoory.Access.Application.Queries.ValidateVerificationToken;
 
 public class ValidateVerificationTokenHandler(
     IUserRepository userRepository,
+    IPasswordHasher passwordHasher,
     ITimeProvider timeProvider)
     : BaseCommandHandler<ValidateVerificationTokenQuery, VerificationTokenValidationDto?>
 {
@@ -21,7 +23,7 @@ public class ValidateVerificationTokenHandler(
         }
 
         var token = user.EmailVerificationTokens
-            .FirstOrDefault(t => t.TokenHash == request.Token);
+            .FirstOrDefault(t => passwordHasher.VerifyPassword(request.Token, t.TokenHash));
 
         if (token is null || !token.IsValid(timeProvider.UtcNow))
         {
