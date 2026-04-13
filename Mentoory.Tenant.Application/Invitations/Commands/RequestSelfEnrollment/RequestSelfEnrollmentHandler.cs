@@ -1,6 +1,5 @@
 using MediatR;
-using Mentoory.Access.Application.Configuration;
-using Mentoory.Access.Domain.Enums;
+using Mentoory.Tenant.Application.Configuration;
 using Mentoory.Shared.Application;
 using Mentoory.Shared.Application.MediatR;
 using Mentoory.Shared.Application.TimeProvider;
@@ -82,7 +81,7 @@ public partial class RequestSelfEnrollmentHandler : BaseCommandHandler<RequestSe
         else
         {
             var expiryHours = await _configReader.GetIntAsync(
-                ConfigurationKey.InvitationTokenExpiryHours.ToString(), cancellationToken);
+                nameof(TenantConfigurationKey.InvitationTokenExpiryHours), cancellationToken);
 
             await _mediator.Send(
                 new CreateInvitationCommand(

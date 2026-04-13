@@ -4,6 +4,7 @@ using Mentoory.Shared.Infrastructure.Persistence;
 using Mentoory.Tenant.Domain.Aggregates.Incubator;
 using Mentoory.Tenant.Domain.Aggregates.Project;
 using Mentoory.Tenant.Domain.Aggregates.ProjectInvitation;
+using Mentoory.Tenant.Domain.Aggregates.SystemConfiguration;
 using Mentoory.Tenant.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,6 +32,8 @@ public class TenantDbContext : SharedAbstractDbContext
 
     public virtual DbSet<ProjectInvitation> ProjectInvitations { get; set; } = null!;
 
+    public virtual DbSet<SystemConfiguration> SystemConfigurations { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureIncubator(modelBuilder);
@@ -39,6 +42,7 @@ public class TenantDbContext : SharedAbstractDbContext
         ConfigureProjectParticipant(modelBuilder);
         ConfigureMentorAssignment(modelBuilder);
         ConfigureProjectInvitation(modelBuilder);
+        ConfigureSystemConfiguration(modelBuilder);
     }
 
     private static void ConfigureIncubator(ModelBuilder modelBuilder)
@@ -171,6 +175,24 @@ public class TenantDbContext : SharedAbstractDbContext
 
             entity.HasIndex(e => e.UserId)
                 .HasFilter("[IsActive] = 1");
+        });
+    }
+
+    private static void ConfigureSystemConfiguration(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<SystemConfiguration>(entity =>
+        {
+            entity.ToTable("SystemConfigurations", "tenant");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ExternalId).IsRequired();
+            entity.HasIndex(e => e.ExternalId).IsUnique();
+            entity.Property(e => e.Key).IsRequired().HasMaxLength(100);
+            entity.HasIndex(e => e.Key).IsUnique();
+            entity.Property(e => e.Value).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.DataType).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.CreatedAtUtc).IsRequired();
+            entity.Property(e => e.UpdatedAtUtc).IsRequired();
         });
     }
 }

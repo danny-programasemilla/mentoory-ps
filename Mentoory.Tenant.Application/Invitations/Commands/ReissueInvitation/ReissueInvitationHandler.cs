@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
-using Mentoory.Access.Application.Configuration;
-using Mentoory.Access.Domain.Enums;
+using Mentoory.Tenant.Application.Configuration;
+using Mentoory.Tenant.Domain.Enums;
 using Mentoory.Shared.Application;
 using Mentoory.Shared.Application.MediatR;
 using Mentoory.Shared.Application.TimeProvider;
@@ -40,7 +40,7 @@ public partial class ReissueInvitationHandler : BaseCommandHandler<ReissueInvita
         }
 
         var expiryHours = await _configReader.GetIntAsync(
-            nameof(ConfigurationKey.InvitationTokenExpiryHours), cancellationToken);
+            nameof(TenantConfigurationKey.InvitationTokenExpiryHours), cancellationToken);
 
         // Deactivate old invitation
         oldInvitation.Deactivate();
