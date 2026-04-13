@@ -93,6 +93,6 @@ After completing any implementation, review the code for:
 Run /simplify before presenting code to the user.
 
 ## Recent Changes
+- 009-tabler-template-migration: Added Tabler Admin Template (@tabler/core), Tabler Icons Webfont (@tabler/icons-webfont); removed standalone Bootstrap 5 CSS/JS and Font Awesome
 - 008-context-selector-ux: Added C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC + MediatR 14.1, FluentValidation 12.1, EF Core 10.x, Bootstrap 5 (Phoenix Admin Template)
 - 007-csv-sample-download: Added C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, CsvHelper
-- 006-fix-batch-upload-scope: Added C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, MediatR 14.1, FluentValidation 12.1, Mapperly 4.x, EF Core 10.x, CsvHelper
