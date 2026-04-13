@@ -27,6 +27,7 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/tabler/js/tabler.min.js"></script>
+    <script>window.bootstrap = window.tabler;</script>
     @await RenderSectionAsync("Scripts", required: false)
     @await Component.InvokeAsync("Toast")
 </body>
