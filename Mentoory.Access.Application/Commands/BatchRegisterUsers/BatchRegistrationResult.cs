@@ -5,4 +5,4 @@ public sealed record BatchRegistrationResult(
     int SuccessCount,
     int SkippedCount,
     int ErrorCount,
-    List<BatchRowResult> Rows);
+    IReadOnlyList<BatchRowResult> Rows);

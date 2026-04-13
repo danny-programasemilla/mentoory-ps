@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using Mentoory.Shared.Application;
 using Mentoory.Shared.Application.MediatR;
 using Mentoory.Shared.Application.TimeProvider;
@@ -46,16 +45,13 @@ public partial class CreateInvitationHandler
             return Failure(ResultErrorCodes.GenericError, ("Invitation", "Ya existe una invitación activa para este usuario en este proyecto."));
         }
 
-        var tokenBytes = RandomNumberGenerator.GetBytes(32);
-        var tokenHash = Convert.ToBase64String(tokenBytes);
-
         var invitation = ProjectInvitation.Create(
             project.Id,
             request.UserId,
-            tokenHash,
             utcNow.AddHours(request.ExpiryHours),
             request.CreatedByUserId,
-            utcNow);
+            utcNow,
+            request.RequiresAcceptance);
 
         _invitationRepository.Add(invitation);
         await _invitationRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);

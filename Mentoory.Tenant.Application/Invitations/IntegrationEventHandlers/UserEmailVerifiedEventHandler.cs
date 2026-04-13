@@ -42,10 +42,15 @@ public partial class UserEmailVerifiedEventHandler : INotificationHandler<UserEm
                 continue;
             }
 
-            // Check if project uses Bypass variant — auto-accept
-            var project = await _projectRepository.GetByIdAsync(invitation.ProjectId, cancellationToken);
-            if (project?.EnrollmentVariant == EnrollmentVariant.Bypass)
+            // Auto-accept invitations that don't require manual acceptance
+            if (!invitation.RequiresAcceptance)
             {
+                var project = await _projectRepository.GetByIdAsync(invitation.ProjectId, cancellationToken);
+                if (project is null)
+                {
+                    continue;
+                }
+
                 invitation.Accept(utcNow);
                 _invitationRepository.Update(invitation);
 

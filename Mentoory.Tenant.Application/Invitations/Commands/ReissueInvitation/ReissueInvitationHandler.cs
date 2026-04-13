@@ -1,5 +1,7 @@
-using System.Security.Cryptography;
+using Mentoory.Tenant.Application.Configuration;
+using Mentoory.Tenant.Domain.Enums;
 using Mentoory.Shared.Application;
+using Mentoory.Shared.Application.IntegrationEvents;
 using Mentoory.Shared.Application.MediatR;
 using Mentoory.Shared.Application.TimeProvider;
 using Mentoory.Tenant.Domain.Aggregates.ProjectInvitation;
@@ -11,16 +13,22 @@ namespace Mentoory.Tenant.Application.Invitations.Commands.ReissueInvitation;
 public partial class ReissueInvitationHandler : BaseCommandHandler<ReissueInvitationCommand, Guid>
 {
     private readonly IProjectInvitationRepository _invitationRepository;
+    private readonly ISystemConfigurationReader _configReader;
     private readonly ITimeProvider _timeProvider;
+    private readonly IIntegrationEventService _eventService;
     private readonly ILogger<ReissueInvitationHandler> _logger;
 
     public ReissueInvitationHandler(
         IProjectInvitationRepository invitationRepository,
+        ISystemConfigurationReader configReader,
         ITimeProvider timeProvider,
+        IIntegrationEventService eventService,
         ILogger<ReissueInvitationHandler> logger)
     {
         _invitationRepository = invitationRepository;
+        _configReader = configReader;
         _timeProvider = timeProvider;
+        _eventService = eventService;
         _logger = logger;
     }
 
@@ -34,24 +42,28 @@ public partial class ReissueInvitationHandler : BaseCommandHandler<ReissueInvita
             return Failure(ResultErrorCodes.GenericError, ("Invitation", "Invitación no encontrada."));
         }
 
+        var expiryHours = await _configReader.GetIntAsync(
+            nameof(TenantConfigurationKey.InvitationTokenExpiryHours), cancellationToken);
+
         // Deactivate old invitation
         oldInvitation.Deactivate();
         _invitationRepository.Update(oldInvitation);
 
         // Create new invitation
-        var tokenBytes = RandomNumberGenerator.GetBytes(32);
-        var tokenHash = Convert.ToBase64String(tokenBytes);
-
         var newInvitation = ProjectInvitation.Create(
             oldInvitation.ProjectId,
             oldInvitation.UserId,
-            tokenHash,
-            utcNow.AddHours(request.ExpiryHours),
+            utcNow.AddHours(expiryHours),
             oldInvitation.CreatedByUserId,
-            utcNow);
+            utcNow,
+            oldInvitation.RequiresAcceptance);
 
         _invitationRepository.Add(newInvitation);
         await _invitationRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
+
+        await _eventService.PublishAsync(
+            new InvitationReissuedEvent(oldInvitation.UserId, expiryHours, utcNow),
+            cancellationToken);
 
         LogInvitationReissued(request.InvitationExternalId, newInvitation.ExternalId);
 

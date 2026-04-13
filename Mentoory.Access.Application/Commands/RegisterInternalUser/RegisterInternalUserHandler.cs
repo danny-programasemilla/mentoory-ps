@@ -9,6 +9,7 @@ using Mentoory.Shared.Application;
 using Mentoory.Shared.Application.IntegrationEvents;
 using Mentoory.Shared.Application.MediatR;
 using Mentoory.Shared.Application.TimeProvider;
+using Mentoory.Shared.Domain.Constants;
 using Microsoft.Extensions.Logging;
 
 namespace Mentoory.Access.Application.Commands.RegisterInternalUser;
@@ -99,8 +100,9 @@ public partial class RegisterInternalUserHandler
                 user.AccountStatus.ToString(),
                 request.ProjectExternalId,
                 request.RequireEmailVerification,
-                "FullFlow", // Internal registration always uses project's variant, determined by handler
+                EnrollmentVariants.FullFlow, // Internal registration always uses project's variant, determined by handler
                 invitationExpiryHours,
+                request.CreatedByUserId,
                 user.CreatedAtUtc,
                 utcNow),
             cancellationToken);

@@ -25,9 +25,11 @@ public static class ClaimsPrincipalExtensions
         return user.FindFirst("ActiveRole")?.Value;
     }
 
-    public static long? GetUserId(this ClaimsPrincipal user)
+    public static long GetUserId(this ClaimsPrincipal user)
     {
-        return long.TryParse(user.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : null;
+        return long.TryParse(user.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id)
+            ? id
+            : throw new InvalidOperationException("User is not authenticated. The NameIdentifier claim is missing.");
     }
 
     public static long? GetActiveIncubatorIdOrNull(this ClaimsPrincipal user)

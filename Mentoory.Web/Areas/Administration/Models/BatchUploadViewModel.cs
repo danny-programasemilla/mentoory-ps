@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using Mentoory.Tenant.Application.Queries.ListRegistrationProjects;
 
 namespace Mentoory.Web.Areas.Administration.Models;
 
@@ -9,9 +8,13 @@ public class BatchUploadViewModel
     [Display(Name = "Archivo CSV")]
     public IFormFile? CsvFile { get; set; }
 
-    [Required(ErrorMessage = "El proyecto es requerido.")]
-    [Display(Name = "Proyecto")]
-    public Guid ProjectExternalId { get; set; }
+    [Display(Name = "Omitir verificación de correo")]
+    public bool SkipEmailVerification { get; set; }
 
-    public List<RegistrationProjectDto> Projects { get; set; } = [];
+    [Display(Name = "Omitir aceptación de invitación")]
+    public bool SkipInvitationAcceptance { get; set; }
+
+    public bool HasActiveProject { get; set; }
+
+    public string? ActiveProjectName { get; set; }
 }

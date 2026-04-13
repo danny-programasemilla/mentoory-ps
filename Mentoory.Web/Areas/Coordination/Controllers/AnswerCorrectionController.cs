@@ -46,12 +46,6 @@ public class AnswerCorrectionController : Controller
         string? reason,
         CancellationToken ct)
     {
-        var userId = User.GetUserId();
-        if (!userId.HasValue)
-        {
-            return BadRequest("No se pudo determinar el usuario.");
-        }
-
         var correctProjectId = User.GetActiveProjectId();
 
         var result = await _executor.SendAndLogIfFailureAsync(
@@ -61,7 +55,7 @@ public class AnswerCorrectionController : Controller
                 newTextValue,
                 newNumericValue,
                 newSelectedOptionIds,
-                userId.Value,
+                User.GetUserId(),
                 reason,
                 correctProjectId),
             ct);

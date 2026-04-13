@@ -39,4 +39,8 @@ PRINT '[018.SeedProjectPublicFlag.sql] Starting';
 :r ./018.SeedProjectPublicFlag.sql
 PRINT '[018.SeedProjectPublicFlag.sql] Finished';
 
+PRINT '[019.SeedTenantSystemConfiguration.sql] Starting';
+:r ./019.SeedTenantSystemConfiguration.sql
+PRINT '[019.SeedTenantSystemConfiguration.sql] Finished';
+
 PRINT '[Script.PostDeployment.sql] Finished';

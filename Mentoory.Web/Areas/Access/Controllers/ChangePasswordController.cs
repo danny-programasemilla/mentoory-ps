@@ -33,13 +33,7 @@ public class ChangePasswordController : Controller
             return View(model);
         }
 
-        var userId = User.GetUserId();
-        if (userId is null)
-        {
-            return RedirectToAction("Index", "Login", new { area = "Access" });
-        }
-
-        var command = new ForcedPasswordChangeCommand(userId.Value, model.CurrentPassword, model.NewPassword);
+        var command = new ForcedPasswordChangeCommand(User.GetUserId(), model.CurrentPassword, model.NewPassword);
         var result = await _executor.SendAndLogIfFailureAsync(command, ct);
 
         if (result.IsFailure)

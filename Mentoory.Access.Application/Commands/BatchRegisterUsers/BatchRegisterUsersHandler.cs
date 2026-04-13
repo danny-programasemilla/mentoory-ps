@@ -9,6 +9,7 @@ using Mentoory.Shared.Application;
 using Mentoory.Shared.Application.IntegrationEvents;
 using Mentoory.Shared.Application.MediatR;
 using Mentoory.Shared.Application.TimeProvider;
+using Mentoory.Shared.Domain.Constants;
 using Microsoft.Extensions.Logging;
 
 namespace Mentoory.Access.Application.Commands.BatchRegisterUsers;
@@ -62,7 +63,7 @@ public partial class BatchRegisterUsersHandler
             try
             {
                 var rowResult = await ProcessRowAsync(
-                    record, rowNumber, request.ProjectExternalId, invitationExpiryHours, utcNow, cancellationToken);
+                    record, rowNumber, request.ProjectExternalId, invitationExpiryHours, request.CreatedByUserId, utcNow, cancellationToken);
 
                 rows.Add(rowResult);
 
@@ -132,6 +133,7 @@ public partial class BatchRegisterUsersHandler
         int rowNumber,
         Guid projectExternalId,
         int invitationExpiryHours,
+        long createdByUserId,
         DateTime utcNow,
         CancellationToken cancellationToken)
     {
@@ -161,8 +163,9 @@ public partial class BatchRegisterUsersHandler
                     existingUser.AccountStatus.ToString(),
                     projectExternalId,
                     false,
-                    "FullFlow",
+                    EnrollmentVariants.FullFlow,
                     invitationExpiryHours,
+                    createdByUserId,
                     existingUser.CreatedAtUtc,
                     utcNow),
                 cancellationToken);
@@ -219,8 +222,9 @@ public partial class BatchRegisterUsersHandler
                 user.Id, user.ExternalId, user.Email.Value,
                 user.FirstName, user.LastName,
                 user.AccountStatus.ToString(),
-                projectExternalId, false, "FullFlow",
-                invitationExpiryHours, user.CreatedAtUtc, utcNow),
+                projectExternalId, false, EnrollmentVariants.FullFlow,
+                invitationExpiryHours, 0, // System-initiated (legacy batch register path)
+                user.CreatedAtUtc, utcNow),
             cancellationToken);
 
         return new BatchRowResult

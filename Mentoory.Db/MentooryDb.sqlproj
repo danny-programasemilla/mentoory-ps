@@ -38,5 +38,8 @@
       <None Include="..\Mentoory.Db.PostDeployment\018.SeedProjectPublicFlag.sql">
           <Link>PostDeploymentReferences\018.SeedProjectPublicFlag.sql</Link>
       </None>
+      <None Include="..\Mentoory.Db.PostDeployment\019.SeedTenantSystemConfiguration.sql">
+          <Link>PostDeploymentReferences\019.SeedTenantSystemConfiguration.sql</Link>
+      </None>
   </ItemGroup>
 </Project>

@@ -14,5 +14,5 @@ public sealed record BatchRowResult
     public string? TemporaryPassword { get; init; }
     public string Status { get; init; } = string.Empty;
     public string? ErrorMessage { get; init; }
-    public List<string> Warnings { get; init; } = [];
+    public IReadOnlyList<string> Warnings { get; init; } = [];
 }

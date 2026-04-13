@@ -298,7 +298,7 @@ All JS files live in `/wwwroot/js/` (never inside Views folders).
 
 ### Session Context
 Use extension methods from `Mentoory.Web.Infrastructure.ClaimsPrincipalExtensions`:
-- `User.GetUserId()` → `long?` — internal user ID
+- `User.GetUserId()` → `long` — internal user ID (throws if unauthenticated)
 - `User.GetActiveIncubatorId()` → `long` — current incubator context (0 if unset)
 - `User.HasValidIncubatorContext()` → `bool` — true if incubator ID is set and > 0
 - `User.GetActiveProjectId()` → `long?` — current project context

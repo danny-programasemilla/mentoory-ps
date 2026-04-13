@@ -13,5 +13,6 @@ public sealed record UserRegisteredEvent(
     bool RequiresVerification,
     string EnrollmentVariant,
     int InvitationExpiryHours,
+    long CreatedByUserId,
     DateTime CreatedAtUtc,
     DateTime OccurredOnUtc) : IntegrationEvent(OccurredOnUtc);

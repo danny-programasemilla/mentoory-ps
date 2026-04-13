@@ -1,9 +1,8 @@
 using System.Globalization;
 using CsvHelper;
+using Mentoory.Access.Application.Commands.BatchCreateUsers;
 using Mentoory.Access.Application.Commands.BatchRegisterUsers;
-using Mentoory.Access.Application.Queries.GetUserContexts;
-using Mentoory.Shared.Domain.Constants;
-using Mentoory.Tenant.Application.Queries.ListRegistrationProjects;
+using Mentoory.Tenant.Application.Queries.GetProjectContextInfo;
 using Mentoory.Web.Areas.Administration.Infrastructure;
 using Mentoory.Web.Areas.Administration.Models;
 using Mentoory.Web.Infrastructure;
@@ -25,7 +24,7 @@ public class BatchUploadController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index(CancellationToken ct)
+    public IActionResult Index()
     {
         if (!User.HasValidIncubatorContext())
         {
@@ -33,15 +32,13 @@ public class BatchUploadController : Controller
             return RedirectToAction("Select", "Context", new { area = string.Empty, returnUrl = Request.Path.Value });
         }
 
-        var authorizedProjectIds = await GetAuthorizedProjectIdsAsync(ct);
-        if (User.GetActiveRole() == Roles.ProjectCoordinator && authorizedProjectIds is { Count: 0 })
+        var projectId = User.GetActiveProjectId();
+        var model = new BatchUploadViewModel
         {
-            TempData["WarningMessage"] = "No tiene proyectos asignados para carga masiva.";
-            return RedirectToAction("Index", "Home", new { area = "Administration" });
-        }
+            HasActiveProject = projectId.HasValue,
+            ActiveProjectName = User.FindFirst("ActiveProjectName")?.Value,
+        };
 
-        var model = new BatchUploadViewModel();
-        await PopulateProjectsAsync(model, authorizedProjectIds, ct);
         return View(model);
     }
 
@@ -55,29 +52,26 @@ public class BatchUploadController : Controller
             return RedirectToAction("Select", "Context", new { area = string.Empty, returnUrl = Request.Path.Value });
         }
 
-        var authorizedProjectIds = await GetAuthorizedProjectIdsAsync(ct);
-        var incubatorId = User.GetActiveIncubatorId();
-        var callerIncubatorId = User.GetActiveIncubatorIdOrNull();
-        var projectsResult = await _executor.SendAndLogIfFailureAsync(
-            new ListRegistrationProjectsQuery(incubatorId, authorizedProjectIds, callerIncubatorId), ct);
+        var projectId = User.GetActiveProjectId();
+        if (!projectId.HasValue)
+        {
+            TempData["ErrorMessage"] = "Seleccione un proyecto desde el selector de contexto para continuar.";
+            return ReturnBatchView(model);
+        }
 
         if (!ModelState.IsValid || model.CsvFile is null)
         {
-            return ViewWithProjects(model, projectsResult);
+            return ReturnBatchView(model);
         }
 
-        if (User.GetActiveRole() == Roles.ProjectCoordinator && projectsResult.IsSuccess)
+        var contextInfo = await _executor.SendAndLogIfFailureAsync(
+            new GetProjectContextInfoQuery(projectId.Value), ct);
+
+        if (contextInfo.IsFailure)
         {
-            var authorizedExternalIds = projectsResult.Value!.Projects.Select(p => p.ExternalId).ToHashSet();
-            if (!authorizedExternalIds.Contains(model.ProjectExternalId))
-            {
-                return Forbid();
-            }
+            TempData["ErrorMessage"] = "Error al resolver el contexto del proyecto.";
+            return ReturnBatchView(model);
         }
-
-        var incubatorExternalId = projectsResult.IsSuccess
-            ? projectsResult.Value!.IncubatorExternalId
-            : Guid.Empty;
 
         List<BatchUserRow> rows;
         try
@@ -87,21 +81,27 @@ public class BatchUploadController : Controller
         catch (HeaderValidationException)
         {
             ModelState.AddModelError(string.Empty, "El archivo CSV no contiene las columnas esperadas.");
-            return ViewWithProjects(model, projectsResult);
+            return ReturnBatchView(model);
         }
         catch (Exception)
         {
             ModelState.AddModelError(string.Empty, "Error al leer el archivo CSV.");
-            return ViewWithProjects(model, projectsResult);
+            return ReturnBatchView(model);
         }
 
-        var command = new BatchRegisterUsersCommand(rows, model.ProjectExternalId, incubatorExternalId);
+        var command = new BatchCreateUsersCommand(
+            rows,
+            model.SkipEmailVerification,
+            model.SkipInvitationAcceptance,
+            contextInfo.Value!.ProjectExternalId,
+            User.GetUserId());
+
         var result = await _executor.SendAndLogIfFailureAsync(command, ct);
 
         if (result.IsFailure)
         {
             ModelState.AddModelError(string.Empty, result.ErrorMessages?.FirstOrDefault().Message ?? "Error al procesar el archivo.");
-            return ViewWithProjects(model, projectsResult);
+            return ReturnBatchView(model);
         }
 
         return View("Results", result.Value);
@@ -154,60 +154,10 @@ public class BatchUploadController : Controller
             .ToList();
     }
 
-    private ViewResult ViewWithProjects(
-        BatchUploadViewModel model,
-        Shared.Application.Result<RegistrationProjectsResult> projectsResult)
+    private ViewResult ReturnBatchView(BatchUploadViewModel model)
     {
-        if (projectsResult.IsSuccess)
-        {
-            model.Projects = projectsResult.Value!.Projects;
-        }
-
+        model.HasActiveProject = User.GetActiveProjectId().HasValue;
+        model.ActiveProjectName = User.FindFirst("ActiveProjectName")?.Value;
         return View(model);
-    }
-
-    private async Task PopulateProjectsAsync(
-        BatchUploadViewModel model,
-        IReadOnlyList<long>? authorizedProjectIds,
-        CancellationToken ct)
-    {
-        var incubatorId = User.GetActiveIncubatorId();
-        var result = await _executor.SendAndLogIfFailureAsync(
-            new ListRegistrationProjectsQuery(incubatorId, authorizedProjectIds, User.GetActiveIncubatorIdOrNull()), ct);
-
-        if (result.IsSuccess)
-        {
-            model.Projects = result.Value!.Projects;
-        }
-    }
-
-    private async Task<IReadOnlyList<long>?> GetAuthorizedProjectIdsAsync(CancellationToken ct)
-    {
-        if (User.GetActiveRole() != Roles.ProjectCoordinator)
-        {
-            return null;
-        }
-
-        var userId = User.GetUserId();
-        if (userId is null)
-        {
-            return [];
-        }
-
-        var incubatorId = User.GetActiveIncubatorId();
-        var contextsResult = await _executor.SendAndLogIfFailureAsync(
-            new GetUserContextsQuery(userId.Value), ct);
-
-        if (contextsResult.IsFailure)
-        {
-            return [];
-        }
-
-        return contextsResult.Value!
-            .Where(c => c.IncubatorId == incubatorId
-                        && c.Role == Roles.ProjectCoordinator
-                        && c.ProjectId.HasValue)
-            .Select(c => c.ProjectId!.Value)
-            .ToList();
     }
 }

@@ -17,7 +17,7 @@ public static class MenuConfiguration
             new("Plantillas", "/Platform/Templates/Diagnostics", "fas fa-file-alt"),
         }),
 
-        new MenuGroup("Administración", "fas fa-users-cog", new[] { "IncubatorAdmin", "GlobalAdmin" }, new MenuItem[]
+        new MenuGroup("Administración", "fas fa-users-cog", new[] { "ProjectCoordinator", "IncubatorAdmin", "GlobalAdmin" }, new MenuItem[]
         {
             new("Panel", "/Administration/Dashboard", "fas fa-tachometer-alt"),
             new("Proyectos", "/Administration/Projects", "fas fa-project-diagram"),

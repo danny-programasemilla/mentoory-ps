@@ -115,9 +115,8 @@ public class DiagnosticController : Controller
 
         var incubatorId = User.GetActiveIncubatorId();
         var submitProjectId = User.GetActiveProjectId();
-        var userId = User.GetUserId();
 
-        if (incubatorId == 0 || !submitProjectId.HasValue || !userId.HasValue)
+        if (incubatorId == 0 || !submitProjectId.HasValue)
         {
             TempData["ErrorMessage"] = "No se pudo determinar el contexto activo.";
             return RedirectToAction(nameof(Index), new { formExternalId = model.FormExternalId });
@@ -131,7 +130,7 @@ public class DiagnosticController : Controller
                 model.FormExternalId,
                 submitProjectId.Value,
                 incubatorId,
-                userId.Value,
+                User.GetUserId(),
                 (Mentoory.Diagnostic.Domain.Enums.EvaluationStage)model.EvaluationStage,
                 responses),
             ct);

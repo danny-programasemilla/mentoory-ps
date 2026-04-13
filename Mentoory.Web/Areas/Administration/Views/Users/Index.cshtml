@@ -4,8 +4,8 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Usuarios</h2>
-    <a asp-action="Enroll" class="btn btn-primary">
-        <i class="fas fa-user-plus me-1"></i>Inscribir Usuario
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fas fa-user-plus me-1"></i>Crear Usuario
     </a>
 </div>
 
@@ -13,6 +13,25 @@
 {
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         @successMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+}
+
+@if (TempData["WarningMessage"] is string warningMsg)
+{
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        @warningMsg
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+}
+
+@if (TempData["TemporaryPassword"] is string tempPassword)
+{
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <h6 class="alert-heading">Contraseña temporal</h6>
+        <p class="mb-0"><code class="fs-5 user-select-all">@tempPassword</code></p>
+        <hr>
+        <p class="mb-0 small text-muted">Copie esta contraseña y entréguele al usuario. No se mostrará de nuevo.</p>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
     </div>
 }
@@ -27,6 +46,7 @@
                         <th>Nombre</th>
                         <th>Apellido</th>
                         <th>Estado</th>
+                        <th>Incorporación</th>
                         <th>Fecha de Registro</th>
                     </tr>
                 </thead>
@@ -56,6 +76,17 @@
                             if (data === 'Active') badgeClass = 'bg-success';
                             else if (data === 'Locked') badgeClass = 'bg-danger';
                             else if (data === 'PendingVerification') badgeClass = 'bg-warning text-dark';
+                            else if (data === 'PasswordResetRequired') badgeClass = 'bg-info';
+                            return '<span class="badge ' + badgeClass + '">' + data + '</span>';
+                        }
+                    },
+                    {
+                        data: 'onboardingStatus',
+                        render: function (data) {
+                            if (!data) return '<span class="badge bg-secondary">—</span>';
+                            var badgeClass = 'bg-secondary';
+                            if (data === 'Activo') badgeClass = 'bg-success';
+                            else if (data.indexOf('Pendiente') === 0) badgeClass = 'bg-warning text-dark';
                             return '<span class="badge ' + badgeClass + '">' + data + '</span>';
                         }
                     },
@@ -66,7 +97,7 @@
                         }
                     }
                 ],
-                defaultOrder: [[4, 'desc']]
+                defaultOrder: [[5, 'desc']]
             });
         });
     </script>

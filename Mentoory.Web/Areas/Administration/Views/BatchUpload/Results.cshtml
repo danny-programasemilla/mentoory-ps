@@ -1,4 +1,5 @@
-@model Mentoory.Access.Application.Commands.BatchRegisterUsers.BatchRegistrationResult
+@using Mentoory.Access.Application.Commands.CreateUser
+@model Mentoory.Access.Application.Commands.BatchCreateUsers.BatchCreateUsersResult
 @{
     ViewData["Title"] = "Resultados de Carga Masiva";
 }
@@ -14,23 +15,23 @@
                     <div class="card bg-light">
                         <div class="card-body text-center">
                             <h6>Total</h6>
-                            <h3>@Model.TotalRows</h3>
+                            <h3>@Model.TotalCount</h3>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="card bg-success text-white">
                         <div class="card-body text-center">
-                            <h6>Exitosos</h6>
-                            <h3>@Model.SuccessCount</h3>
+                            <h6>Creados</h6>
+                            <h3>@Model.CreatedCount</h3>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card bg-warning">
+                    <div class="card bg-info text-white">
                         <div class="card-body text-center">
-                            <h6>Omitidos</h6>
-                            <h3>@Model.SkippedCount</h3>
+                            <h6>Inscritos</h6>
+                            <h3>@Model.EnrolledCount</h3>
                         </div>
                     </div>
                 </div>
@@ -60,24 +61,31 @@
                     <tbody>
                         @foreach (var row in Model.Rows)
                         {
-                            var rowClass = row.Status switch
+                            var rowClass = row.Outcome switch
                             {
-                                "Success" => "table-success",
-                                "Skipped" => "table-warning",
-                                "Error" => "table-danger",
-                                _ => string.Empty
+                                CreateUserOutcome.Created => "table-success",
+                                CreateUserOutcome.Enrolled => "table-info",
+                                CreateUserOutcome.AlreadyEnrolled => "table-warning",
+                                _ => row.Errors.Count > 0 ? "table-danger" : string.Empty
+                            };
+                            var statusLabel = row.Outcome switch
+                            {
+                                CreateUserOutcome.Created => "Creado",
+                                CreateUserOutcome.Enrolled => "Inscrito",
+                                CreateUserOutcome.AlreadyEnrolled => "Ya inscrito",
+                                _ => "Error"
                             };
                             <tr class="@rowClass">
                                 <td>@row.RowNumber</td>
                                 <td>@row.Country</td>
                                 <td>@row.Identification</td>
                                 <td>@row.Email</td>
-                                <td>@row.Status</td>
+                                <td>@statusLabel</td>
                                 <td>@(row.TemporaryPassword ?? "—")</td>
                                 <td>
-                                    @if (!string.IsNullOrEmpty(row.ErrorMessage))
+                                    @foreach (var error in row.Errors)
                                     {
-                                        <span class="text-danger">@row.ErrorMessage</span>
+                                        <span class="text-danger d-block">@error</span>
                                     }
                                     @foreach (var warning in row.Warnings)
                                     {

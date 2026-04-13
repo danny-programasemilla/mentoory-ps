@@ -1,6 +1,7 @@
 using MediatR;
 using Mentoory.Access.Application.IntegrationEvents;
 using Mentoory.Shared.Application.TimeProvider;
+using Mentoory.Shared.Domain.Constants;
 using Mentoory.Tenant.Application.Commands.EnrollParticipant;
 using Mentoory.Tenant.Application.Invitations.Commands.CreateInvitation;
 using Mentoory.Tenant.Domain.Repositories;
@@ -41,11 +42,11 @@ public partial class UserRegisteredEventHandler : INotificationHandler<UserRegis
             return;
         }
 
-        var enrollmentVariant = project.EnrollmentVariant.ToString();
+        var isBypass = notification.EnrollmentVariant == EnrollmentVariants.Bypass;
 
-        if (enrollmentVariant == "Bypass" && !notification.RequiresVerification)
+        if (isBypass && !notification.RequiresVerification)
         {
-            // Direct enrollment — user is verified and project uses bypass
+            // Direct enrollment — user is verified and bypass requested
             await _mediator.Send(
                 new EnrollParticipantCommand(notification.ProjectExternalId.Value, notification.UserId, "Entrepreneur"),
                 cancellationToken);
@@ -54,13 +55,18 @@ public partial class UserRegisteredEventHandler : INotificationHandler<UserRegis
         }
         else
         {
-            // Create pending invitation
+            // Compute RequiresAcceptance from event fields:
+            // FullFlow → user must manually accept (RequiresAcceptance = true)
+            // Bypass → auto-accept after verification (RequiresAcceptance = false)
+            var requiresAcceptance = !isBypass;
+
             await _mediator.Send(
                 new CreateInvitationCommand(
                     notification.UserId,
                     notification.ProjectExternalId.Value,
-                    notification.UserId, // CreatedByUserId — system-initiated
-                    notification.InvitationExpiryHours),
+                    notification.CreatedByUserId,
+                    notification.InvitationExpiryHours,
+                    requiresAcceptance),
                 cancellationToken);
 
             LogInvitationCreated(notification.UserId, notification.ProjectExternalId.Value);

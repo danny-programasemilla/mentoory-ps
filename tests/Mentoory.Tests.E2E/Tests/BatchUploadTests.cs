@@ -7,8 +7,9 @@ using Xunit;
 namespace Mentoory.Tests.E2E.Tests;
 
 /// <summary>
-/// E2E-T006 - Validates CSV batch upload, per-row result reporting,
-/// and temporary password generation.
+/// E2E-T006 - Validates CSV batch upload form elements, per-row result reporting,
+/// toggle-controlled temporary password generation, validation errors,
+/// and session-context enforcement (no project dropdown).
 /// </summary>
 [Collection(E2ETestCollection.Name)]
 public class BatchUploadTests
@@ -26,11 +27,11 @@ public class BatchUploadTests
         var page = await _fixture.CreatePageAsync();
         try
         {
-            await LoginAndSelectContextAsync(page, "incadmin1@test.mentoory.com", "Test123!@#");
+            await LoginAndSelectContextAsync(page, "coord1@test.mentoory.com", "Test123!@#");
             await page.GotoAsync($"{_fixture.BaseUrl}/Administration/BatchUpload");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // Assert heading (admin pages use h5.card-title)
+            // Assert heading
             var pageContent = await page.ContentAsync();
             pageContent.Should().Contain("Carga Masiva de Usuarios",
                 "page should show 'Carga Masiva de Usuarios' heading");
@@ -40,10 +41,14 @@ public class BatchUploadTests
             (await fileInput.CountAsync()).Should().Be(1,
                 "page should have a file input that accepts .csv files");
 
-            // Assert ProjectExternalId field
-            (await page.Locator("input[name='ProjectExternalId'], select[name='ProjectExternalId']").CountAsync())
-                .Should().BeGreaterThanOrEqualTo(1,
-                    "page should have a ProjectExternalId field");
+            // Assert toggle switches exist
+            var skipEmailToggle = page.Locator("input[type='checkbox'][name='SkipEmailVerification']");
+            (await skipEmailToggle.CountAsync()).Should().Be(1,
+                "page should have a SkipEmailVerification toggle switch");
+
+            var skipInvitationToggle = page.Locator("input[type='checkbox'][name='SkipInvitationAcceptance']");
+            (await skipInvitationToggle.CountAsync()).Should().Be(1,
+                "page should have a SkipInvitationAcceptance toggle switch");
 
             // Assert submit button
             var submitButton = page.Locator("button[type='submit']").Filter(new LocatorFilterOptions
@@ -52,6 +57,11 @@ public class BatchUploadTests
             });
             (await submitButton.CountAsync()).Should().Be(1,
                 "page should have a 'Procesar Archivo' submit button");
+
+            // Assert NO project dropdown (project comes from session context)
+            var projectDropdown = page.Locator("select[name='ProjectExternalId']");
+            (await projectDropdown.CountAsync()).Should().Be(0,
+                "project dropdown should NOT exist; project comes from session context");
         }
         finally
         {
@@ -66,12 +76,13 @@ public class BatchUploadTests
         var page = await _fixture.CreatePageAsync();
         try
         {
-            await LoginAndSelectContextAsync(page, "incadmin1@test.mentoory.com", "Test123!@#");
+            await LoginAndSelectContextAsync(page, "coord1@test.mentoory.com", "Test123!@#");
             await page.GotoAsync($"{_fixture.BaseUrl}/Administration/BatchUpload");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             // Create CSV content with a unique user
-            var uniqueEmail = $"e2e-batch-{Guid.NewGuid():N}@test.mentoory.com";
+            var uniqueId = Guid.NewGuid().ToString("N")[..8];
+            var uniqueEmail = $"e2e-batch-{uniqueId}@test.mentoory.com";
             var csvContent = $"Country,Identification,Email,FirstName,LastName\nCRI,3-4567-8901,{uniqueEmail},Batch,UserOne";
             var csvBytes = Encoding.UTF8.GetBytes(csvContent);
 
@@ -84,9 +95,7 @@ public class BatchUploadTests
                 Buffer = csvBytes
             });
 
-            // Select the first available project from the dropdown
-            await SelectFirstProjectOptionAsync(page);
-
+            // Both toggles OFF by default — just submit
             await page.Locator("button[type='submit']").Filter(new LocatorFilterOptions
             {
                 HasText = "Procesar Archivo"
@@ -98,10 +107,10 @@ public class BatchUploadTests
             pageContent.Should().Contain("Resultados de Carga Masiva",
                 "results page should display 'Resultados de Carga Masiva'");
 
-            // Assert success row exists
+            // Assert at least one Creado row (table-success)
             var successRows = page.Locator("table tbody tr.table-success");
             (await successRows.CountAsync()).Should().BeGreaterThan(0,
-                "at least one row should have the table-success class");
+                "at least one row should have the table-success class (Creado)");
         }
         finally
         {
@@ -111,17 +120,18 @@ public class BatchUploadTests
     }
 
     [Fact]
-    public async Task BatchUpload_ResultsPage_ShowsTemporaryPassword()
+    public async Task BatchUpload_WithBothTogglesOn_ShowsTemporaryPassword()
     {
         var page = await _fixture.CreatePageAsync();
         try
         {
-            await LoginAndSelectContextAsync(page, "incadmin1@test.mentoory.com", "Test123!@#");
+            await LoginAndSelectContextAsync(page, "coord1@test.mentoory.com", "Test123!@#");
             await page.GotoAsync($"{_fixture.BaseUrl}/Administration/BatchUpload");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             // Create CSV with unique user
-            var uniqueEmail = $"e2e-batch-{Guid.NewGuid():N}@test.mentoory.com";
+            var uniqueId = Guid.NewGuid().ToString("N")[..8];
+            var uniqueEmail = $"e2e-batch-{uniqueId}@test.mentoory.com";
             var csvContent = $"Country,Identification,Email,FirstName,LastName\nCRI,4-5678-9012,{uniqueEmail},Batch,UserTwo";
             var csvBytes = Encoding.UTF8.GetBytes(csvContent);
 
@@ -133,8 +143,9 @@ public class BatchUploadTests
                 Buffer = csvBytes
             });
 
-            // Select the first available project from the dropdown
-            await SelectFirstProjectOptionAsync(page);
+            // Turn BOTH toggles ON
+            await page.Locator("input[type='checkbox'][name='SkipEmailVerification']").CheckAsync();
+            await page.Locator("input[type='checkbox'][name='SkipInvitationAcceptance']").CheckAsync();
 
             await page.Locator("button[type='submit']").Filter(new LocatorFilterOptions
             {
@@ -142,18 +153,23 @@ public class BatchUploadTests
             }).ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // Assert temporary password column in success row is non-empty
+            // Assert results page loads
+            var pageContent = await page.ContentAsync();
+            pageContent.Should().Contain("Resultados de Carga Masiva",
+                "results page should display 'Resultados de Carga Masiva'");
+
+            // Assert temporary password column (6th column) in success row is non-empty
             var tempPasswordCell = page.Locator("table tbody tr.table-success td:nth-child(6)");
             var tempPassword = await tempPasswordCell.TextContentAsync();
 
             tempPassword.Should().NotBeNullOrWhiteSpace(
-                "temporary password column should contain a value");
+                "temporary password column should contain a value when both toggles are ON");
             tempPassword!.Trim().Should().NotBe("\u2014",
                 "temporary password should not be a dash placeholder");
         }
         finally
         {
-            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(BatchUpload_ResultsPage_ShowsTemporaryPassword));
+            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(BatchUpload_WithBothTogglesOn_ShowsTemporaryPassword));
             await page.Context.DisposeAsync();
         }
     }
@@ -164,7 +180,7 @@ public class BatchUploadTests
         var page = await _fixture.CreatePageAsync();
         try
         {
-            await LoginAndSelectContextAsync(page, "incadmin1@test.mentoory.com", "Test123!@#");
+            await LoginAndSelectContextAsync(page, "coord1@test.mentoory.com", "Test123!@#");
             await page.GotoAsync($"{_fixture.BaseUrl}/Administration/BatchUpload");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
@@ -184,14 +200,32 @@ public class BatchUploadTests
         }
     }
 
-    private static async Task SelectFirstProjectOptionAsync(IPage page)
+    [Fact]
+    public async Task BatchUpload_NoProjectContext_FormDisabled()
     {
-        var projectSelect = page.Locator("select[name='ProjectExternalId']");
-        // Select the first non-empty option (skip the "Seleccione un proyecto" placeholder)
-        var firstOption = projectSelect.Locator("option:not([value=''])").First;
-        var value = await firstOption.GetAttributeAsync("value");
-        value.Should().NotBeNullOrWhiteSpace("there should be at least one project in Registration stage");
-        await projectSelect.SelectOptionAsync(value!);
+        var page = await _fixture.CreatePageAsync();
+        try
+        {
+            // incadmin1 auto-skips context selection but has NO project in context
+            await LoginAndSelectContextAsync(page, "incadmin1@test.mentoory.com", "Test123!@#");
+            await page.GotoAsync($"{_fixture.BaseUrl}/Administration/BatchUpload");
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            // Assert warning about needing to select a project
+            var pageContent = await page.ContentAsync();
+            pageContent.Should().Contain("Seleccione un proyecto",
+                "page should show a warning when no project is in context");
+
+            // Assert form fieldset is disabled
+            var disabledFieldset = page.Locator("fieldset[disabled]");
+            (await disabledFieldset.CountAsync()).Should().BeGreaterThan(0,
+                "form fieldset should be disabled when no project is in context");
+        }
+        finally
+        {
+            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(BatchUpload_NoProjectContext_FormDisabled));
+            await page.Context.DisposeAsync();
+        }
     }
 
     private async Task LoginAndSelectContextAsync(IPage page, string email, string password)
@@ -202,35 +236,14 @@ public class BatchUploadTests
         await page.ClickAsync("button[type='submit']");
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-        // Wait for login redirect chain to complete (login -> context -> home)
-        await page.WaitForURLAsync(url => !url.Contains("/Access/Login"), new PageWaitForURLOptions { Timeout = 10000 });
+        await page.WaitForURLAsync(url => !url.Contains("/Access/Login"),
+            new PageWaitForURLOptions { Timeout = 10000 });
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-        // If redirected to context selection, pick the first available context
         if (page.Url.Contains("/Context/Select"))
         {
-            var roleDropdown = page.Locator("[data-mode='page'] [data-cs='role']");
-            await page.WaitForFunctionAsync(
-                "sel => sel.options.length > 1",
-                await roleDropdown.ElementHandleAsync(),
-                new() { Timeout = 10000 });
-            if (await roleDropdown.IsEnabledAsync())
-            {
-                await roleDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
-            }
-
-            var incubatorDropdown = page.Locator("[data-mode='page'] [data-cs='incubator']");
-            await page.WaitForFunctionAsync(
-                "sel => sel.options.length > 1",
-                await incubatorDropdown.ElementHandleAsync(),
-                new() { Timeout = 10000 });
-            if (await incubatorDropdown.IsEnabledAsync())
-            {
-                await incubatorDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
-            }
-
             var confirmBtn = page.Locator("[data-mode='page'] [data-cs='confirm']");
-            await Assertions.Expect(confirmBtn).ToBeEnabledAsync(new() { Timeout = 15000 });
+            await Assertions.Expect(confirmBtn).ToBeEnabledAsync(new() { Timeout = 20000 });
             await confirmBtn.ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         }

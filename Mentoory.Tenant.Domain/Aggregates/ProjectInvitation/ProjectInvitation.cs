@@ -12,33 +12,33 @@ public class ProjectInvitation : Entity, IAggregateRoot
     public Guid ExternalId { get; private set; }
     public long ProjectId { get; private set; }
     public long UserId { get; private set; }
-    public string TokenHash { get; private set; } = null!;
     public InvitationStatus Status { get; private set; }
     public DateTime ExpiresAtUtc { get; private set; }
     public DateTime? AcceptedAtUtc { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
     public long CreatedByUserId { get; private set; }
     public bool IsActive { get; private set; }
+    public bool RequiresAcceptance { get; private set; }
 
     public static ProjectInvitation Create(
         long projectId,
         long userId,
-        string tokenHash,
         DateTime expiresAtUtc,
         long createdByUserId,
-        DateTime utcNow)
+        DateTime utcNow,
+        bool requiresAcceptance = true)
     {
         return new ProjectInvitation
         {
             ExternalId = Guid.NewGuid(),
             ProjectId = projectId,
             UserId = userId,
-            TokenHash = tokenHash,
             Status = InvitationStatus.Pending,
             ExpiresAtUtc = expiresAtUtc,
             CreatedAtUtc = utcNow,
             CreatedByUserId = createdByUserId,
             IsActive = true,
+            RequiresAcceptance = requiresAcceptance,
         };
     }
 
