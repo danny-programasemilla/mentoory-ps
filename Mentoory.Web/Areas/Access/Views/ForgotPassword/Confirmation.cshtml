@@ -3,18 +3,19 @@
 }
 
 <div class="text-center">
-    <h3 class="mb-2">Mentoory</h3>
-    <h5 class="text-secondary mb-4">Enlace Enviado</h5>
-
-    <div class="alert alert-info" role="alert">
-        <p class="mb-0">Si existe una cuenta con ese correo electrónico, recibirá un enlace para restablecer su contraseña.</p>
+    <div class="mb-4">
+        <span class="avatar avatar-xl bg-info-lt">
+            <i class="ti ti-mail-forward" style="font-size: 2rem;"></i>
+        </span>
     </div>
-
+    <h3>Enlace Enviado</h3>
     <p class="text-secondary">
+        Si existe una cuenta con ese correo electrónico, recibirá un enlace para restablecer su contraseña.
         Revise su bandeja de entrada y la carpeta de correo no deseado.
     </p>
-
     <div class="mt-4">
-        <a asp-area="Access" asp-controller="Login" asp-action="Index" class="btn btn-primary">Volver a Iniciar Sesión</a>
+        <a asp-area="Access" asp-controller="Login" asp-action="Index" class="btn btn-primary">
+            Volver a Iniciar Sesión
+        </a>
     </div>
 </div>

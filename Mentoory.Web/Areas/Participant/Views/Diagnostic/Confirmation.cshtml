@@ -2,16 +2,26 @@
     ViewData["Title"] = "Diagnóstico Enviado";
 }
 
-<div class="text-center mt-5">
-    <div class="mb-4">
-        <i class="ti ti-circle-check text-success" style="font-size: 4rem;"></i>
+<div class="row justify-content-center mt-5">
+    <div class="col-lg-6">
+        <div class="card card-status-top border-top border-success border-3">
+            <div class="card-body">
+                <div class="empty">
+                    <div class="empty-icon">
+                        <i class="ti ti-circle-check text-success" style="font-size: 4rem;"></i>
+                    </div>
+                    <p class="empty-title">¡Diagnóstico enviado exitosamente!</p>
+                    <p class="empty-subtitle text-secondary">
+                        Sus respuestas han sido registradas correctamente. Los resultados estarán disponibles
+                        una vez que se complete el proceso de evaluación.
+                    </p>
+                    <div class="empty-action">
+                        <a asp-area="Participant" asp-controller="Dashboard" asp-action="Index" class="btn btn-primary">
+                            <i class="ti ti-home me-1"></i>Volver al Inicio
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <h2>¡Diagnóstico enviado exitosamente!</h2>
-    <p class="text-muted mt-3">
-        Sus respuestas han sido registradas correctamente. Los resultados estarán disponibles
-        una vez que se complete el proceso de evaluación.
-    </p>
-    <a asp-area="Participant" asp-controller="Dashboard" asp-action="Index" class="btn btn-primary mt-3">
-        <i class="ti ti-home me-1"></i>Volver al Inicio
-    </a>
 </div>

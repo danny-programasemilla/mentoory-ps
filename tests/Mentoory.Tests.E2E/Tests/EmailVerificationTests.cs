@@ -28,10 +28,10 @@ public class EmailVerificationTests
             await page.GotoAsync($"{_fixture.BaseUrl}/Access/VerifyEmail?token=invalid-token-abc123");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // Assert error message in alert-danger element
-            var alertDanger = page.Locator(".alert-danger");
-            (await alertDanger.CountAsync()).Should().BeGreaterThan(0,
-                "an invalid verification token should display an error message in an alert-danger element");
+            // Assert error message in text-danger element
+            var errorText = page.Locator(".text-danger");
+            (await errorText.CountAsync()).Should().BeGreaterThan(0,
+                "an invalid verification token should display an error message in a text-danger element");
         }
         finally
         {

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <defs>
+    <linearGradient id="brand" x1="32" y1="0" x2="168" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F5B731"/>
+      <stop offset="50%" stop-color="#E07850"/>
+      <stop offset="100%" stop-color="#D946A8"/>
+    </linearGradient>
+  </defs>
+  <g stroke="url(#brand)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M32 190V22L58 56"/>
+    <path d="M168 190V22L142 56"/>
+    <circle cx="100" cy="106" r="42"/>
+    <polyline points="64,96 90,142 144,48"/>
+  </g>
+</svg>

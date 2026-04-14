@@ -30,7 +30,7 @@ public class ContextSelectionTests
             page.Url.Should().Contain("/Context/Select",
                 "multi-role users must land on the context selection page");
 
-            var heading = page.Locator("h2").Filter(new LocatorFilterOptions
+            var heading = page.Locator("h3.card-title").Filter(new LocatorFilterOptions
             {
                 HasText = "Seleccionar Contexto de Trabajo"
             });

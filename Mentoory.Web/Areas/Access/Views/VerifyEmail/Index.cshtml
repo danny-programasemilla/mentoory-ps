@@ -5,27 +5,38 @@
 }
 
 <div class="text-center">
-    <h3 class="mb-2">Mentoory</h3>
-    <h5 class="text-secondary mb-4">Verificación de Correo Electrónico</h5>
+    <div class="mb-4">
+        @if (success)
+        {
+            <span class="avatar avatar-xl bg-success-lt">
+                <i class="ti ti-mail-check" style="font-size: 2rem;"></i>
+            </span>
+        }
+        else
+        {
+            <span class="avatar avatar-xl bg-danger-lt">
+                <i class="ti ti-mail-off" style="font-size: 2rem;"></i>
+            </span>
+        }
+    </div>
+    <h3>Verificación de Correo Electrónico</h3>
 
     @if (success)
     {
-        <div class="alert alert-success" role="alert">
-            <p class="mb-0">@message</p>
-        </div>
-
+        <p class="text-success">@message</p>
         <div class="mt-4">
-            <a asp-area="Access" asp-controller="Login" asp-action="Index" class="btn btn-primary">Iniciar Sesión</a>
+            <a asp-area="Access" asp-controller="Login" asp-action="Index" class="btn btn-primary">
+                Iniciar Sesión
+            </a>
         </div>
     }
     else
     {
-        <div class="alert alert-danger" role="alert">
-            <p class="mb-0">@message</p>
-        </div>
-
+        <p class="text-danger">@message</p>
         <div class="mt-4">
-            <a asp-area="Access" asp-controller="Login" asp-action="Index" class="btn btn-outline-primary">Volver al Inicio</a>
+            <a asp-area="Access" asp-controller="Login" asp-action="Index" class="btn btn-ghost-primary">
+                Volver al Inicio
+            </a>
         </div>
     }
 </div>

@@ -1,4 +1,4 @@
-// Mentoory - Reusable DataTable initialization
+// Mentoory - Reusable DataTable initialization and render helpers
 
 /**
  * Initialize a DataTable with server-side processing
@@ -8,9 +8,45 @@
  * @param {Array} config.columns - Column definitions
  * @param {Array} [config.defaultOrder] - Default sort order
  * @param {string} [config.filterId] - Filter form element ID
+ * @param {object} [config.emptyState] - Empty state configuration
+ * @param {string} [config.emptyState.icon] - Tabler icon class
+ * @param {string} [config.emptyState.title] - Empty state title
+ * @param {string} [config.emptyState.message] - Empty state message
+ * @param {string} [config.emptyState.actionUrl] - Primary action URL
+ * @param {string} [config.emptyState.actionText] - Primary action text
  * @returns {DataTable} The initialized DataTable instance
  */
 function initDataTable(tableId, config) {
+    var emptyTableHtml = 'No se encontraron resultados';
+    if (config.emptyState) {
+        var es = config.emptyState;
+        emptyTableHtml = '<div class="empty">';
+        if (es.icon) {
+            emptyTableHtml += '<div class="empty-icon"><i class="' + es.icon + '" style="font-size:3rem;"></i></div>';
+        }
+        if (es.title) {
+            emptyTableHtml += '<p class="empty-title">' + es.title + '</p>';
+        }
+        if (es.message) {
+            emptyTableHtml += '<p class="empty-subtitle text-secondary">' + es.message + '</p>';
+        }
+        if (es.actionUrl && es.actionText) {
+            emptyTableHtml += '<div class="empty-action"><a href="' + es.actionUrl + '" class="btn btn-primary">' + es.actionText + '</a></div>';
+        }
+        emptyTableHtml += '</div>';
+    }
+
+    var skeletonRows = '';
+    var colCount = config.columns ? config.columns.length : 3;
+    for (var r = 0; r < 5; r++) {
+        skeletonRows += '<tr>';
+        for (var c = 0; c < colCount; c++) {
+            skeletonRows += '<td><span class="placeholder placeholder-glow col-' + (6 + (c % 4)) + '"></span></td>';
+        }
+        skeletonRows += '</tr>';
+    }
+    var processingHtml = '<div class="card-body"><table class="table table-vcenter placeholder-glow"><tbody>' + skeletonRows + '</tbody></table></div>';
+
     return new DataTable('#' + tableId, {
         processing: true,
         serverSide: true,
@@ -29,16 +65,17 @@ function initDataTable(tableId, config) {
         columns: config.columns,
         order: config.defaultOrder || [[0, 'asc']],
         language: {
-            processing: 'Procesando...',
+            processing: processingHtml,
             lengthMenu: 'Mostrar _MENU_ registros',
-            zeroRecords: 'No se encontraron resultados',
+            zeroRecords: emptyTableHtml,
+            emptyTable: emptyTableHtml,
             info: 'Mostrando _START_ a _END_ de _TOTAL_ registros',
             infoEmpty: 'Mostrando 0 a 0 de 0 registros',
             infoFiltered: '(filtrado de _MAX_ registros totales)',
             search: 'Buscar:',
             paginate: {
                 first: 'Primero',
-                last: 'Último',
+                last: 'Ultimo',
                 next: 'Siguiente',
                 previous: 'Anterior'
             }
@@ -46,6 +83,105 @@ function initDataTable(tableId, config) {
         responsive: true,
         dom: '<"row"<"col-sm-12"tr>><"row"<"col-sm-5"i><"col-sm-7"p>>'
     });
+}
+
+/**
+ * Format an ISO date string as Spanish relative time
+ * @param {string} isoString - ISO 8601 date string
+ * @returns {string} HTML with relative time and tooltip with exact date
+ */
+function formatRelativeDate(isoString) {
+    if (!isoString) return '';
+    var date = new Date(isoString);
+    if (isNaN(date.getTime())) return isoString;
+
+    var now = new Date();
+    var diffMs = now - date;
+    var diffSec = Math.floor(diffMs / 1000);
+    var diffMin = Math.floor(diffSec / 60);
+    var diffHrs = Math.floor(diffMin / 60);
+    var diffDays = Math.floor(diffHrs / 24);
+    var diffWeeks = Math.floor(diffDays / 7);
+
+    var relative;
+    if (diffSec < 60) {
+        relative = 'hace un momento';
+    } else if (diffMin < 60) {
+        relative = 'hace ' + diffMin + (diffMin === 1 ? ' minuto' : ' minutos');
+    } else if (diffHrs < 24) {
+        relative = 'hace ' + diffHrs + (diffHrs === 1 ? ' hora' : ' horas');
+    } else if (diffDays < 7) {
+        relative = 'hace ' + diffDays + (diffDays === 1 ? ' dia' : ' dias');
+    } else if (diffDays < 30) {
+        relative = 'hace ' + diffWeeks + (diffWeeks === 1 ? ' semana' : ' semanas');
+    } else {
+        relative = date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+
+    var exact = date.toLocaleString('es-ES', {
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+    });
+    return '<span title="' + exact + '">' + relative + '</span>';
+}
+
+/**
+ * Render an initials-based avatar with compound name+email cell
+ * @param {string} firstName - First name
+ * @param {string} lastName - Last name
+ * @param {string} email - Email address
+ * @returns {string} HTML for the compound avatar cell
+ */
+function renderAvatar(firstName, lastName, email) {
+    var first = (firstName || '').trim();
+    var last = (lastName || '').trim();
+    var fullName = (first + ' ' + last).trim();
+    var initials = '';
+    if (first && last) {
+        initials = (first[0] + last[0]).toUpperCase();
+    } else if (first) {
+        initials = first[0].toUpperCase();
+    } else {
+        initials = '<i class="ti ti-user"></i>';
+    }
+
+    return '<div class="d-flex align-items-center">' +
+        '<span class="avatar avatar-sm me-2">' + initials + '</span>' +
+        '<div class="flex-fill text-truncate">' +
+        '<div class="text-truncate">' + escapeHtml(fullName || email || '') + '</div>' +
+        (email ? '<div class="text-secondary text-truncate small">' + escapeHtml(email) + '</div>' : '') +
+        '</div></div>';
+}
+
+/**
+ * Render a Tabler status dot indicator
+ * @param {string} statusText - Display text
+ * @param {string} statusColor - Tabler color name (primary, success, danger, warning, info)
+ * @param {boolean} [animated=false] - Whether to animate the status dot
+ * @returns {string} HTML for the status indicator
+ */
+function renderStatus(statusText, statusColor, animated) {
+    var dotClass = 'status-dot' + (animated ? ' status-dot-animated' : '');
+    return '<span class="status status-' + (statusColor || 'primary') + '">' +
+        '<span class="' + dotClass + '"></span> ' + escapeHtml(statusText || '') +
+        '</span>';
+}
+
+/**
+ * Render action buttons for a table row
+ * @param {Array} actions - Array of {url, icon, title} objects
+ * @returns {string} HTML for the action buttons
+ */
+function renderActions(actions) {
+    if (!actions || actions.length === 0) return '';
+    var html = '<div class="btn-list flex-nowrap">';
+    for (var i = 0; i < actions.length; i++) {
+        var a = actions[i];
+        html += '<a href="' + a.url + '" class="btn btn-icon btn-ghost-primary btn-sm" title="' + escapeHtml(a.title || '') + '">' +
+            '<i class="' + a.icon + '"></i></a>';
+    }
+    html += '</div>';
+    return html;
 }
 
 /**
@@ -65,4 +201,16 @@ function getActiveFilters(filterId) {
         }
     });
     return filters;
+}
+
+/**
+ * Escape HTML entities to prevent XSS
+ * @param {string} str - Input string
+ * @returns {string} Escaped string
+ */
+function escapeHtml(str) {
+    if (!str) return '';
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
 }

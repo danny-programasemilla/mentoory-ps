@@ -1,51 +1,111 @@
 @{
     ViewBag.ContextSelectorMode = "modal";
+
+    var area = ViewContext.RouteData.Values["area"]?.ToString();
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+
+    var pageTitle = ViewData["Title"]?.ToString() ?? controller ?? "";
 }
 <div class="page-header d-print-none">
     <div class="container-xl">
         <div class="row align-items-center">
+            @* Left zone: breadcrumb as page-pretitle + page-title *@
+            <div class="col">
+                <div class="page-pretitle">
+                    <ol class="breadcrumb" aria-label="breadcrumbs">
+                        <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                        @if (!string.IsNullOrEmpty(area))
+                        {
+                            <li class="breadcrumb-item">@area</li>
+                        }
+                        @if (!string.IsNullOrEmpty(controller) && controller != "Home")
+                        {
+                            <li class="breadcrumb-item">@controller</li>
+                        }
+                        @if (!string.IsNullOrEmpty(action) && action != "Index")
+                        {
+                            <li class="breadcrumb-item active" aria-current="page">@action</li>
+                        }
+                    </ol>
+                </div>
+                <h2 class="page-title">@pageTitle</h2>
+            </div>
+
             @if (User.Identity?.IsAuthenticated == true)
             {
                 var activeRole = User.GetActiveRole();
                 var activeIncubatorName = User.FindFirst("ActiveIncubatorName")?.Value;
                 var activeProjectName = User.FindFirst("ActiveProjectName")?.Value;
 
-                if (!string.IsNullOrEmpty(activeRole))
+                @* Center zone: context with status indicators *@
+                @if (!string.IsNullOrEmpty(activeRole))
                 {
-                    <div class="col-auto d-flex align-items-center" id="context-display" data-testid="current-context">
-                        <span class="badge bg-primary me-2">@activeRole</span>
+                    <div class="col-auto d-none d-md-flex align-items-center gap-2" id="context-display" data-testid="current-context">
+                        <span class="status status-primary">
+                            <span class="status-dot"></span>
+                            @activeRole
+                        </span>
                         @if (!string.IsNullOrEmpty(activeIncubatorName))
                         {
-                            <span class="text-secondary small me-2">
-                                <i class="ti ti-building me-1"></i>@activeIncubatorName
+                            <span class="status status-info">
+                                <span class="status-dot"></span>
+                                @activeIncubatorName
                             </span>
                         }
                         @if (!string.IsNullOrEmpty(activeProjectName))
                         {
-                            <span class="text-secondary small me-2">
-                                <i class="ti ti-sitemap me-1"></i>@activeProjectName
+                            <span class="status status-success">
+                                <span class="status-dot"></span>
+                                @activeProjectName
                             </span>
                         }
-                        <button type="button"
-                                class="btn btn-outline-primary btn-sm ms-2"
-                                data-bs-toggle="modal"
-                                data-bs-target="#contextSwitcherModal"
-                                title="Cambiar contexto">
-                            <i class="ti ti-switch-horizontal me-1"></i>Cambiar contexto
-                        </button>
                     </div>
                 }
+
+                @* Right zone: bell + avatar dropdown *@
+                <div class="col-auto ms-auto d-flex align-items-center">
+                    <a class="nav-link px-2" href="#" title="Notificaciones">
+                        <i class="ti ti-bell fs-2"></i>
+                    </a>
+                    <div class="nav-item dropdown ms-2">
+                        @{
+                            var displayName = User.Identity?.Name ?? "";
+                            var parts = displayName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                            var initials = parts.Length >= 2
+                                ? $"{parts[0][0]}{parts[1][0]}".ToUpperInvariant()
+                                : (parts.Length == 1 ? $"{parts[0][0]}".ToUpperInvariant() : "?");
+                        }
+                        <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown" aria-label="Menu de usuario">
+                            <span class="avatar avatar-sm rounded-circle">@initials</span>
+                            <div class="d-none d-xl-block ps-2">
+                                <div>@displayName</div>
+                                @if (!string.IsNullOrEmpty(activeRole))
+                                {
+                                    <div class="mt-1 small text-secondary">@activeRole</div>
+                                }
+                            </div>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a class="dropdown-item disabled" href="#">
+                                <i class="ti ti-user me-2"></i>Perfil
+                            </a>
+                            <button type="button" class="dropdown-item"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#contextSwitcherModal">
+                                <i class="ti ti-switch-horizontal me-2"></i>Cambiar contexto
+                            </button>
+                            <div class="dropdown-divider"></div>
+                            <form asp-area="Access" asp-controller="Logout" asp-action="Index" method="post">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="dropdown-item">
+                                    <i class="ti ti-logout me-2"></i>Cerrar sesión
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             }
-            <div class="col-auto ms-auto d-flex align-items-center">
-                @if (User.Identity?.IsAuthenticated == true)
-                {
-                    <span class="text-secondary me-3">@User.Identity.Name</span>
-                    <form asp-area="Access" asp-controller="Logout" asp-action="Index" method="post" class="d-inline">
-                        @Html.AntiForgeryToken()
-                        <button type="submit" class="btn btn-outline-secondary btn-sm">Cerrar sesión</button>
-                    </form>
-                }
-            </div>
         </div>
     </div>
 </div>

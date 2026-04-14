@@ -25,7 +25,9 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <h1 class="navbar-brand navbar-brand-autodark">
-            <a href="/" class="text-decoration-none">Mentoory</a>
+            <a href="/">
+                <img src="~/img/logo-white.svg" class="navbar-brand-image" height="32" alt="Mentoory" />
+            </a>
         </h1>
         <div class="collapse navbar-collapse" id="sidebar-menu">
             <ul class="navbar-nav pt-lg-3">
@@ -87,8 +89,12 @@
                                         && string.Equals(childSegments[0], currentArea, StringComparison.OrdinalIgnoreCase)
                                         && string.Equals(childSegments[1], currentController, StringComparison.OrdinalIgnoreCase);
 
-                                    <a class="dropdown-item @(isActive ? "active" : "")" href="@child.Url">
+                                    <a class="dropdown-item @(isActive ? "active" : "") d-flex align-items-center" href="@child.Url">
                                         @child.Title
+                                        @if (child.BadgeCount.HasValue)
+                                        {
+                                            <span class="badge bg-primary ms-auto">@child.BadgeCount</span>
+                                        }
                                     </a>
                                 }
                             </div>

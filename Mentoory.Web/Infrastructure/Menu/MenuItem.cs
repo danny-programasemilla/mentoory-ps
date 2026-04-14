@@ -17,4 +17,6 @@ public class MenuItem
     public string Icon { get; }
 
     public string[] Roles { get; }
+
+    public int? BadgeCount { get; set; }
 }

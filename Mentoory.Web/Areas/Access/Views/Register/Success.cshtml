@@ -3,23 +3,25 @@
     Layout = "_Layout";
 }
 
-<div class="login-container">
-    <div class="card login-card shadow">
-        <div class="card-body text-center">
-            <h3 class="card-title mb-4">Mentoory</h3>
-            <h5 class="text-muted mb-4">Registro Exitoso</h5>
-
-            <div class="alert alert-success" role="alert">
-                <p class="mb-0">Revise su correo electrónico para verificar su cuenta.</p>
-            </div>
-
-            <p class="text-muted">
-                Le hemos enviado un enlace de verificación a su correo electrónico.
-                Por favor, haga clic en el enlace para activar su cuenta.
-            </p>
-
-            <div class="mt-4">
-                <a asp-area="Access" asp-controller="Login" asp-action="Index" class="btn btn-primary">Ir a Iniciar Sesión</a>
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <div class="mb-4">
+                    <span class="avatar avatar-xl bg-success-lt">
+                        <i class="ti ti-check" style="font-size: 2rem;"></i>
+                    </span>
+                </div>
+                <h3>Registro Exitoso</h3>
+                <p class="text-secondary">
+                    Revise su correo electrónico para verificar su cuenta.
+                    Le hemos enviado un enlace de verificación. Por favor, haga clic en el enlace para activar su cuenta.
+                </p>
+                <div class="mt-4">
+                    <a asp-area="Access" asp-controller="Login" asp-action="Index" class="btn btn-primary">
+                        Ir a Iniciar Sesión
+                    </a>
+                </div>
             </div>
         </div>
     </div>

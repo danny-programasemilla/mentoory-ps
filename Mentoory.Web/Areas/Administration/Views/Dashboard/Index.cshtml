@@ -1,53 +1,134 @@
+@model Mentoory.Tenant.Application.Queries.GetDashboardMetrics.DashboardMetricsDto
+
 @{
     ViewData["Title"] = "Panel de Administración";
 }
 
-<h2 class="mb-4">Panel de Administración</h2>
-
-<div class="row g-4">
-    <div class="col-md-6 col-xl-4">
-        <div class="card shadow-sm h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="bg-primary bg-opacity-10 rounded-3 p-3">
-                            <i class="ti ti-sitemap text-primary" style="font-size: 2rem;"></i>
+@if (Model.UserCount == 0 && Model.ProjectCount == 0)
+{
+    <div class="empty">
+        <div class="empty-icon">
+            <i class="ti ti-rocket" style="font-size: 3rem;"></i>
+        </div>
+        <p class="empty-title">Bienvenido a tu incubadora</p>
+        <p class="empty-subtitle text-secondary">
+            Comienza creando proyectos e inscribiendo usuarios para empezar a trabajar.
+        </p>
+        <div class="empty-action">
+            <a asp-controller="Projects" asp-action="Create" class="btn btn-primary">
+                <i class="ti ti-plus me-1"></i>Crear Proyecto
+            </a>
+            <a asp-controller="Users" asp-action="Enroll" class="btn btn-ghost-primary ms-2">
+                <i class="ti ti-user-plus me-1"></i>Inscribir Usuario
+            </a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row row-deck row-cards mb-4">
+        <div class="col-sm-6 col-xl-4">
+            <div class="card card-sm">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <span class="avatar bg-primary-lt">
+                                <i class="ti ti-users"></i>
+                            </span>
                         </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h6 class="text-muted mb-1">Proyectos</h6>
-                        <p class="mb-0 text-muted small">Gestionar proyectos de la incubadora</p>
+                        <div class="col">
+                            <div class="font-weight-medium">@Model.UserCount Usuarios</div>
+                            <div class="text-secondary">Usuarios activos en esta incubadora</div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="card-footer bg-transparent">
-                <a asp-controller="Projects" asp-action="Index" class="text-decoration-none">
-                    Ver proyectos <i class="ti ti-arrow-right ms-1"></i>
-                </a>
+        </div>
+        <div class="col-sm-6 col-xl-4">
+            <div class="card card-sm">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <span class="avatar bg-success-lt">
+                                <i class="ti ti-sitemap"></i>
+                            </span>
+                        </div>
+                        <div class="col">
+                            <div class="font-weight-medium">@Model.ProjectCount Proyectos</div>
+                            <div class="text-secondary">Proyectos en esta incubadora</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="col-md-6 col-xl-4">
-        <div class="card shadow-sm h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="bg-success bg-opacity-10 rounded-3 p-3">
-                            <i class="ti ti-users text-success" style="font-size: 2rem;"></i>
+    <div class="row row-deck row-cards">
+        <div class="col-md-6 col-xl-4">
+            <div class="card card-status-start border-start border-primary border-3">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <span class="avatar bg-primary-lt">
+                                <i class="ti ti-sitemap"></i>
+                            </span>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-1">Proyectos</h6>
+                            <p class="mb-0 text-secondary small">Gestionar proyectos de la incubadora</p>
                         </div>
                     </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h6 class="text-muted mb-1">Usuarios</h6>
-                        <p class="mb-0 text-muted small">Gestionar usuarios e inscripciones</p>
-                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a asp-controller="Projects" asp-action="Index" class="text-decoration-none">
+                        Ver proyectos <i class="ti ti-arrow-right ms-1"></i>
+                    </a>
                 </div>
             </div>
-            <div class="card-footer bg-transparent">
-                <a asp-controller="Users" asp-action="Index" class="text-decoration-none">
-                    Ver usuarios <i class="ti ti-arrow-right ms-1"></i>
-                </a>
+        </div>
+        <div class="col-md-6 col-xl-4">
+            <div class="card card-status-start border-start border-success border-3">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <span class="avatar bg-success-lt">
+                                <i class="ti ti-users"></i>
+                            </span>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-1">Usuarios</h6>
+                            <p class="mb-0 text-secondary small">Gestionar usuarios e inscripciones</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a asp-controller="Users" asp-action="Index" class="text-decoration-none">
+                        Ver usuarios <i class="ti ti-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-4">
+            <div class="card card-status-start border-start border-info border-3">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <span class="avatar bg-info-lt">
+                                <i class="ti ti-file-upload"></i>
+                            </span>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-1">Carga Masiva</h6>
+                            <p class="mb-0 text-secondary small">Cargar usuarios via archivo CSV</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a asp-controller="BatchUpload" asp-action="Index" class="text-decoration-none">
+                        Ir a carga masiva <i class="ti ti-arrow-right ms-1"></i>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
-</div>
+}

@@ -29,10 +29,10 @@ public class ConfigurationManagementTests
             await page.GotoAsync($"{_fixture.BaseUrl}/Platform/Configuration");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // Assert table is visible
-            var table = page.Locator("table");
-            (await table.CountAsync()).Should().BeGreaterThan(0,
-                "configuration page should contain a table");
+            // Assert datagrid is visible (configuration uses Tabler datagrid layout)
+            var datagrid = page.Locator(".datagrid");
+            (await datagrid.CountAsync()).Should().BeGreaterThan(0,
+                "configuration page should contain a datagrid");
 
             // Assert all 7 seeded configuration keys are present
             var expectedKeys = new[]
@@ -70,18 +70,18 @@ public class ConfigurationManagementTests
             await page.GotoAsync($"{_fixture.BaseUrl}/Platform/Configuration");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // Find the row for MaxFailedLoginAttempts and update its value
-            var targetRow = page.Locator("tr").Filter(new LocatorFilterOptions
+            // Find the datagrid item for MaxFailedLoginAttempts and update its value
+            var targetItem = page.Locator(".datagrid-item").Filter(new LocatorFilterOptions
             {
                 HasText = "MaxFailedLoginAttempts"
             });
 
-            var valueInput = targetRow.Locator("input[type='text'], input[type='number']").First;
+            var valueInput = targetItem.Locator("input[type='text'], input[type='number']").First;
             await valueInput.ClearAsync();
             await valueInput.FillAsync("10");
 
-            // Click the save button in that row
-            var saveButton = targetRow.Locator("button[type='submit']").First;
+            // Click the save button in that item
+            var saveButton = targetItem.Locator("button[type='submit']").First;
             await saveButton.ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
@@ -93,16 +93,16 @@ public class ConfigurationManagementTests
             await page.GotoAsync($"{_fixture.BaseUrl}/Platform/Configuration");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            var resetRow = page.Locator("tr").Filter(new LocatorFilterOptions
+            var resetItem = page.Locator(".datagrid-item").Filter(new LocatorFilterOptions
             {
                 HasText = "MaxFailedLoginAttempts"
             });
 
-            var resetInput = resetRow.Locator("input[type='text'], input[type='number']").First;
+            var resetInput = resetItem.Locator("input[type='text'], input[type='number']").First;
             await resetInput.ClearAsync();
             await resetInput.FillAsync("5");
 
-            var resetButton = resetRow.Locator("button[type='submit']").First;
+            var resetButton = resetItem.Locator("button[type='submit']").First;
             await resetButton.ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         }

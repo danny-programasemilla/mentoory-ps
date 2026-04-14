@@ -29,7 +29,7 @@ public class RegistrationTests
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             // Assert page title
-            var heading = await page.Locator("h5").TextContentAsync();
+            var heading = await page.Locator("h2").TextContentAsync();
             heading.Should().Contain("Crear Cuenta");
 
             // Assert Country dropdown has CRI option (options are hidden in closed <select>; check count only)

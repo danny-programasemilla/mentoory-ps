@@ -31,9 +31,11 @@ public class LogoutTests
             page.Url.Should().NotContain("/Access/Login",
                 "user should be authenticated and past the login page");
 
-            // Find and submit the logout mechanism in the navigation
-            var logoutButton = page.Locator("form[action*='Logout'] button[type='submit'], a[href*='Logout']").First;
-            await logoutButton.WaitForAsync(new LocatorWaitForOptions { Timeout = 5000 });
+            // Open the avatar dropdown in the TopBar, then click logout
+            var avatarDropdownToggle = page.Locator("[data-bs-toggle='dropdown'][aria-label='Menu de usuario']");
+            await avatarDropdownToggle.ClickAsync();
+            var logoutButton = page.Locator("form[action*='Logout'] button[type='submit']");
+            await logoutButton.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible, Timeout = 5000 });
             await logoutButton.ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
@@ -55,9 +57,11 @@ public class LogoutTests
         {
             await LoginAsync(page, "entrepreneur1@test.mentoory.com", "Test123!@#");
 
-            // Logout
-            var logoutButton = page.Locator("form[action*='Logout'] button[type='submit'], a[href*='Logout']").First;
-            await logoutButton.WaitForAsync(new LocatorWaitForOptions { Timeout = 5000 });
+            // Open the avatar dropdown in the TopBar, then click logout
+            var avatarDropdownToggle = page.Locator("[data-bs-toggle='dropdown'][aria-label='Menu de usuario']");
+            await avatarDropdownToggle.ClickAsync();
+            var logoutButton = page.Locator("form[action*='Logout'] button[type='submit']");
+            await logoutButton.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible, Timeout = 5000 });
             await logoutButton.ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 

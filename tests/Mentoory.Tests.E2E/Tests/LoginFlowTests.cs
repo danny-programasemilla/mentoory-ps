@@ -28,7 +28,7 @@ public class LoginFlowTests
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             // Assert heading
-            var heading = await page.Locator("h5").TextContentAsync();
+            var heading = await page.Locator("h2").TextContentAsync();
             heading.Should().Contain("Iniciar Sesión");
 
             // Assert form fields present

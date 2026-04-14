@@ -35,10 +35,9 @@ public class DashboardRenderingTests
                 "GlobalAdmin dashboard should render an incubator listing");
 
             // Page title or heading should be meaningful
-            var heading = page.Locator("h1, h2").First;
-            var headingText = await heading.TextContentAsync();
-            headingText.Should().NotBeNullOrWhiteSpace(
-                "the page should have a descriptive heading");
+            var title = await page.TitleAsync();
+            title.Should().NotBeNullOrWhiteSpace(
+                "the page should have a descriptive title");
         }
         finally
         {

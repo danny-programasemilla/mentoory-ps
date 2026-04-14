@@ -129,8 +129,11 @@ public class AdminInternalRegistrationTests
             await page.GotoAsync($"{_fixture.BaseUrl}/Administration/Users/RegisterInternal");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // Submit empty form
-            await page.ClickAsync("button[type='submit']");
+            // Submit empty form (use filtered locator to avoid TopBar's hidden logout submit)
+            await page.Locator("button[type='submit']").Filter(new LocatorFilterOptions
+            {
+                HasText = "Registrar Usuario"
+            }).ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             // Assert validation errors appear

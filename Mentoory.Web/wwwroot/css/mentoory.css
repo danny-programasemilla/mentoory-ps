@@ -1,10 +1,111 @@
-/* Mentoory - Custom styles (Tabler overrides) */
+/* Mentoory Design System — single source of truth for brand overrides */
 
+/* ── Design Tokens ── */
 :root {
-    --mentoory-primary: #0d6efd;
+    /* Primary scale (coral) */
+    --mentory-primary-50: #FEF3EF;
+    --mentory-primary-100: #FDDDD2;
+    --mentory-primary-200: #F9B9A4;
+    --mentory-primary-300: #F39577;
+    --mentory-primary-400: #EC8463;
+    --mentory-primary: #E07850;
+    --mentory-primary-600: #C9663F;
+    --mentory-primary-700: #A85234;
+    --mentory-primary-800: #7D3D27;
+    --mentory-primary-900: #52281A;
+
+    /* Accent colors */
+    --mentory-accent-gold: #F5B731;
+    --mentory-accent-magenta: #D946A8;
+    --mentory-gradient: linear-gradient(135deg, #F5B731, #E07850, #D946A8);
+
+    /* Semantic colors */
+    --mentory-success: #2FB344;
+    --mentory-danger: #D63939;
+    --mentory-warning: #F5B731;
+    --mentory-info: #4299E1;
+
+    /* Surface colors */
+    --mentory-body-bg: #F9FAFB;
+    --mentory-border-color: #E5E7EB;
+    --mentory-surface-card: #FFFFFF;
+
+    /* Sidebar colors */
+    --mentory-sidebar-bg: #1B2434;
+    --mentory-sidebar-hover: #243047;
+    --mentory-sidebar-active: #2E3B55;
+
+    /* ── Tabler overrides ── */
+    --tblr-primary: #E07850;
+    --tblr-primary-rgb: 224, 120, 80;
+    --tblr-success: #2FB344;
+    --tblr-success-rgb: 47, 179, 68;
+    --tblr-danger: #D63939;
+    --tblr-danger-rgb: 214, 57, 57;
+    --tblr-warning: #F5B731;
+    --tblr-warning-rgb: 245, 183, 49;
+    --tblr-info: #4299E1;
+    --tblr-info-rgb: 66, 153, 225;
+    --tblr-body-bg: #F9FAFB;
+    --tblr-border-color: #E5E7EB;
+    --tblr-font-sans-serif: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* DataTables + Tabler compatibility */
+/* ── Links ── */
+a {
+    color: var(--tblr-primary);
+}
+
+a:hover {
+    color: var(--mentory-primary-700);
+}
+
+/* ── Sidebar ── */
+.navbar-vertical .nav-link-header {
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.navbar-vertical .nav-link:hover {
+    background: var(--mentory-sidebar-hover);
+}
+
+.navbar-vertical .nav-link.active {
+    border-left: 3px solid var(--mentory-primary);
+    background: var(--mentory-sidebar-active);
+}
+
+/* ── Avatar ── */
+.avatar {
+    background-color: var(--mentory-primary);
+    color: #fff;
+}
+
+/* ── Form focus ring ── */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--mentory-primary-300);
+    box-shadow: 0 0 0 0.25rem rgba(224, 120, 80, 0.25);
+}
+
+/* ── Table compound cells ── */
+.table .d-flex .text-truncate {
+    max-width: 200px;
+}
+
+.table td.w-1 {
+    white-space: nowrap;
+}
+
+/* ── Skeleton placeholder in tables ── */
+.dataTables_wrapper .dataTables_processing .placeholder {
+    height: 0.85rem;
+    border-radius: var(--tblr-border-radius);
+}
+
+/* ── DataTables + Tabler compatibility ── */
 .dt-paging .pagination {
     gap: 0.25rem;
 }
@@ -36,18 +137,81 @@
     background: rgba(255, 255, 255, 0.9);
 }
 
-/* Toast positioning */
+/* ── Toast positioning ── */
 #toastContainer {
     z-index: 1100;
 }
 
-/* Form validation */
+/* ── Form validation ── */
 .field-validation-error {
     color: var(--tblr-danger);
     font-size: 0.875em;
 }
 
-/* Breadcrumb compact */
+/* ── Auth pages ── */
+.auth-panel-left {
+    min-height: 100vh;
+    background: var(--mentory-gradient);
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-decorations {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.auth-circle {
+    position: absolute;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+.auth-circle-1 {
+    width: 300px;
+    height: 300px;
+    top: -60px;
+    left: -80px;
+}
+
+.auth-circle-2 {
+    width: 200px;
+    height: 200px;
+    bottom: 10%;
+    right: -40px;
+}
+
+.auth-circle-3 {
+    width: 120px;
+    height: 120px;
+    bottom: 30%;
+    left: 10%;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.auth-line {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.auth-line-1 {
+    width: 2px;
+    height: 160px;
+    top: 20%;
+    right: 25%;
+    transform: rotate(25deg);
+}
+
+.auth-line-2 {
+    width: 2px;
+    height: 100px;
+    bottom: 15%;
+    left: 30%;
+    transform: rotate(-15deg);
+}
+
+/* ── Breadcrumb compact ── */
 .breadcrumb {
     margin-bottom: 0;
     font-size: 0.875rem;
