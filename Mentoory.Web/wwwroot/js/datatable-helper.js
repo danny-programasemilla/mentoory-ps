@@ -1,6 +1,28 @@
 // Mentoory - Reusable DataTable initialization and render helpers
 
 /**
+ * Filter type registry: maps render function signature substrings to filter descriptors.
+ * When building the filter panel, each column's render.toString() is checked against these keys.
+ */
+var FILTER_TYPE_REGISTRY = {
+    'renderAccountStatus': {
+        type: 'select',
+        options: [
+            { value: '', label: 'Todos' },
+            { value: 'Active', label: 'Activo' },
+            { value: 'Locked', label: 'Bloqueado' },
+            { value: 'PendingVerification', label: 'Verificación Pendiente' }
+        ]
+    }
+};
+
+/**
+ * Column header keywords to exclude from filter panel generation.
+ * Matched as lowercase substrings against accent-stripped header text.
+ */
+var FILTER_EXCLUDE_LIST = ['acciones'];
+
+/**
  * Keyword-to-icon map for automatic header icon injection.
  * Keys are lowercase substrings matched against column header text.
  */
@@ -52,6 +74,265 @@ function applyHeaderIcons(tableId) {
 }
 
 /**
+ * Build a filter panel above the table card with auto-detected filter fields.
+ * @param {string} tableId - The table element ID
+ * @param {Array} columns - DataTable column definitions
+ * @param {Array} [overrides] - Per-view filter overrides
+ * @returns {string|null} Generated filter form ID, or null if no fields
+ */
+function buildFilterPanel(tableId, columns, overrides) {
+    var formId = tableId + '-filter-form';
+    var panelId = tableId + '-filter-panel';
+    var toggleId = tableId + '-filter-toggle';
+
+    var headers = document.querySelectorAll('#' + tableId + ' thead th');
+    var fields = [];
+
+    for (var i = 0; i < columns.length; i++) {
+        var col = columns[i];
+
+        if (col.orderable === false) continue;
+        if (!col.data) continue;
+
+        // Check header text against exclude list
+        if (headers[i]) {
+            var target = headers[i].querySelector('.dt-column-title') || headers[i];
+            var headerText = stripAccents(target.textContent.trim().toLowerCase());
+            var excluded = false;
+            for (var e = 0; e < FILTER_EXCLUDE_LIST.length; e++) {
+                if (headerText.indexOf(FILTER_EXCLUDE_LIST[e]) !== -1) {
+                    excluded = true;
+                    break;
+                }
+            }
+            if (excluded) continue;
+        }
+
+        // Check for per-view override
+        var override = null;
+        if (overrides) {
+            for (var o = 0; o < overrides.length; o++) {
+                if (overrides[o].column === col.data) {
+                    override = overrides[o];
+                    break;
+                }
+            }
+        }
+        if (override && override.filterable === false) continue;
+
+        // Detect filter type from render function
+        var filterType = 'text';
+        var filterOptions = null;
+        var renderStr = col.render ? col.render.toString() : '';
+
+        // Skip date-formatted columns (not useful for text/select filtering)
+        if (renderStr.indexOf('formatDate') !== -1 || renderStr.indexOf('formatRelativeDate') !== -1) continue;
+
+        // Match against filter type registry
+        var registryKeys = Object.keys(FILTER_TYPE_REGISTRY);
+        for (var r = 0; r < registryKeys.length; r++) {
+            if (renderStr.indexOf(registryKeys[r]) !== -1) {
+                var entry = FILTER_TYPE_REGISTRY[registryKeys[r]];
+                filterType = entry.type;
+                filterOptions = entry.options;
+                break;
+            }
+        }
+
+        // Apply override type/options
+        if (override) {
+            if (override.type) filterType = override.type;
+            if (override.options) filterOptions = override.options;
+        }
+
+        // Get label from header
+        var label = col.data;
+        if (headers[i]) {
+            var labelTarget = headers[i].querySelector('.dt-column-title') || headers[i];
+            label = labelTarget.textContent.trim();
+            // Strip any icon text that may have been prepended
+            label = label.replace(/^\s+/, '');
+        }
+
+        fields.push({
+            name: col.data,
+            type: filterType,
+            options: filterOptions,
+            label: label,
+            placeholder: (override && override.placeholder) ? override.placeholder : ''
+        });
+    }
+
+    if (fields.length === 0) return null;
+
+    // Generate toggle link
+    var html = '<div class="d-flex justify-content-end mb-2">' +
+        '<a href="#" id="' + toggleId + '" class="filter-toggle-link">' +
+        '<i class="ti ti-filter"></i> Filtros' +
+        '<span class="badge bg-primary ms-1 d-none" id="' + toggleId + '-badge">0</span>' +
+        '</a></div>';
+
+    // Generate filter panel
+    html += '<div id="' + panelId + '" class="card card-body filter-panel mb-3" style="display:none;">' +
+        '<form id="' + formId + '">' +
+        '<div class="row g-3">';
+
+    for (var f = 0; f < fields.length; f++) {
+        var field = fields[f];
+        html += '<div class="col-md-3">';
+        html += '<label class="form-label">' + escapeHtml(field.label) + '</label>';
+
+        if (field.type === 'select' && field.options) {
+            html += '<select name="' + field.name + '" class="form-select form-select-sm">';
+            for (var opt = 0; opt < field.options.length; opt++) {
+                html += '<option value="' + escapeHtml(field.options[opt].value) + '">' +
+                    escapeHtml(field.options[opt].label) + '</option>';
+            }
+            html += '</select>';
+        } else {
+            html += '<input type="text" name="' + field.name + '" class="form-control form-control-sm"' +
+                ' placeholder="' + escapeHtml(field.placeholder || field.label) + '">';
+        }
+
+        html += '</div>';
+    }
+
+    html += '</div>' +
+        '<div class="mt-3">' +
+        '<button type="submit" class="btn btn-primary btn-sm">' +
+        '<i class="ti ti-filter-check me-1"></i>Filtrar</button>' +
+        '<button type="button" class="btn btn-ghost-secondary btn-sm ms-2 filter-clear-btn">' +
+        '<i class="ti ti-filter-x me-1"></i>Limpiar</button>' +
+        '</div></form></div>';
+
+    // Insert before the table's card parent
+    var table = document.getElementById(tableId);
+    var card = table ? table.closest('.card') : null;
+    if (card) {
+        card.insertAdjacentHTML('beforebegin', html);
+    }
+
+    // Wire toggle link
+    var toggleLink = document.getElementById(toggleId);
+    var panel = document.getElementById(panelId);
+    if (toggleLink && panel) {
+        toggleLink.addEventListener('click', function (e) {
+            e.preventDefault();
+            panel.style.display = panel.style.display === 'none' ? '' : 'none';
+        });
+    }
+
+    return formId;
+}
+
+/**
+ * Update the filter badge count on the toggle link.
+ * @param {string} tableId - The table element ID
+ */
+function updateFilterBadge(tableId) {
+    var formId = tableId + '-filter-form';
+    var badgeId = tableId + '-filter-toggle-badge';
+    var form = document.getElementById(formId);
+    var badge = document.getElementById(badgeId);
+    if (!form || !badge) return;
+
+    var count = 0;
+    var inputs = form.querySelectorAll('input, select');
+    inputs.forEach(function (input) {
+        if (input.name && input.value) count++;
+    });
+
+    if (count > 0) {
+        badge.textContent = count;
+        badge.classList.remove('d-none');
+    } else {
+        badge.classList.add('d-none');
+    }
+}
+
+/**
+ * Sync active filter values to URL query params with f_ prefix.
+ * @param {string} tableId - The table element ID
+ */
+function syncFiltersToUrl(tableId) {
+    var formId = tableId + '-filter-form';
+    var form = document.getElementById(formId);
+    if (!form) return;
+
+    var params = new URLSearchParams(window.location.search);
+
+    // Remove existing f_ params
+    var toRemove = [];
+    params.forEach(function (_v, key) {
+        if (key.indexOf('f_') === 0) toRemove.push(key);
+    });
+    for (var i = 0; i < toRemove.length; i++) params.delete(toRemove[i]);
+
+    // Add active filter values
+    var inputs = form.querySelectorAll('input, select');
+    inputs.forEach(function (input) {
+        if (input.name && input.value) {
+            params.set('f_' + input.name, input.value);
+        }
+    });
+
+    var qs = params.toString();
+    var url = window.location.pathname + (qs ? '?' + qs : '');
+    history.replaceState(null, '', url);
+}
+
+/**
+ * Remove all f_ filter params from the URL.
+ */
+function clearFiltersFromUrl() {
+    var params = new URLSearchParams(window.location.search);
+    var toRemove = [];
+    params.forEach(function (_v, key) {
+        if (key.indexOf('f_') === 0) toRemove.push(key);
+    });
+    if (toRemove.length === 0) return;
+
+    for (var i = 0; i < toRemove.length; i++) params.delete(toRemove[i]);
+
+    var qs = params.toString();
+    var url = window.location.pathname + (qs ? '?' + qs : '');
+    history.replaceState(null, '', url);
+}
+
+/**
+ * Load filter values from URL query params and apply them.
+ * @param {string} tableId - The table element ID
+ * @param {object} dtApi - DataTable API instance
+ */
+function loadFiltersFromUrl(tableId, dtApi) {
+    var formId = tableId + '-filter-form';
+    var panelId = tableId + '-filter-panel';
+    var form = document.getElementById(formId);
+    var panel = document.getElementById(panelId);
+    if (!form) return;
+
+    var params = new URLSearchParams(window.location.search);
+    var hasFilters = false;
+
+    params.forEach(function (value, key) {
+        if (key.indexOf('f_') === 0) {
+            var fieldName = key.substring(2);
+            var field = form.querySelector('[name="' + fieldName + '"]');
+            if (field) {
+                field.value = value;
+                hasFilters = true;
+            }
+        }
+    });
+
+    if (hasFilters) {
+        if (panel) panel.style.display = '';
+        updateFilterBadge(tableId);
+        dtApi.ajax.reload();
+    }
+}
+
+/**
  * Initialize a DataTable with server-side processing
  * @param {string} tableId - The table element ID
  * @param {object} config - Configuration object
@@ -59,6 +340,7 @@ function applyHeaderIcons(tableId) {
  * @param {Array} config.columns - Column definitions
  * @param {Array} [config.defaultOrder] - Default sort order
  * @param {string} [config.filterId] - Filter form element ID
+ * @param {Array} [config.filters] - Per-view filter overrides
  * @param {object} [config.emptyState] - Empty state configuration
  * @param {string} [config.emptyState.icon] - Tabler icon class
  * @param {string} [config.emptyState.title] - Empty state title
@@ -135,6 +417,37 @@ function initDataTable(tableId, config) {
         dom: '<"row"<"col-sm-12"tr>><"row"<"col-sm-5"i><"col-sm-7"p>>',
         initComplete: function () {
             applyHeaderIcons(tableId);
+
+            var dtApi = this.api();
+            var generatedFormId = buildFilterPanel(tableId, config.columns, config.filters);
+            if (generatedFormId) {
+                config.filterId = generatedFormId;
+
+                var form = document.getElementById(generatedFormId);
+                if (form) {
+                    // "Filtrar" button
+                    form.addEventListener('submit', function (e) {
+                        e.preventDefault();
+                        updateFilterBadge(tableId);
+                        syncFiltersToUrl(tableId);
+                        dtApi.ajax.reload();
+                    });
+
+                    // "Limpiar" button
+                    var clearBtn = form.querySelector('.filter-clear-btn');
+                    if (clearBtn) {
+                        clearBtn.addEventListener('click', function () {
+                            form.reset();
+                            updateFilterBadge(tableId);
+                            clearFiltersFromUrl();
+                            dtApi.ajax.reload();
+                        });
+                    }
+                }
+
+                // Restore filters from URL on page load
+                loadFiltersFromUrl(tableId, dtApi);
+            }
         }
     });
 }

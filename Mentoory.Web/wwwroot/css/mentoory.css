@@ -235,6 +235,39 @@ a:hover {
     transform: rotate(-15deg);
 }
 
+/* ── Filter panel ── */
+.filter-toggle-link {
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--tblr-secondary-color);
+    transition: color 0.15s ease;
+}
+
+.filter-toggle-link:hover {
+    color: var(--tblr-primary);
+}
+
+.filter-toggle-link .ti {
+    margin-right: 0.25rem;
+}
+
+.filter-toggle-link .badge {
+    font-size: 0.7rem;
+    vertical-align: middle;
+}
+
+.filter-panel {
+    background: var(--mentory-primary-50);
+    border: 1px solid var(--mentory-border-color);
+}
+
+.filter-panel .form-label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
 /* ── Breadcrumb compact ── */
 .breadcrumb {
     margin-bottom: 0;

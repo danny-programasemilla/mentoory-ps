@@ -41,6 +41,25 @@ public partial class ListIncubatorsHandler(
             query = query.Where(i => i.Name.ToLower().Contains(search));
         }
 
+        if (dt.Filters is { Count: > 0 })
+        {
+            if (dt.Filters.TryGetValue("name", out var nameFilter) && !string.IsNullOrEmpty(nameFilter))
+            {
+                query = query.Where(i => i.Name.ToLower().Contains(nameFilter.ToLowerInvariant()));
+            }
+
+            if (dt.Filters.TryGetValue("description", out var descFilter) && !string.IsNullOrEmpty(descFilter))
+            {
+                query = query.Where(i => i.Description != null && i.Description.ToLower().Contains(descFilter.ToLowerInvariant()));
+            }
+
+            if (dt.Filters.TryGetValue("isActive", out var activeFilter) && !string.IsNullOrEmpty(activeFilter)
+                && bool.TryParse(activeFilter, out var isActive))
+            {
+                query = query.Where(i => i.IsActive == isActive);
+            }
+        }
+
         var totalCount = await repository.CountAsync(cancellationToken);
         var filteredCount = await repository.CountAsync(query, cancellationToken);
 

@@ -48,6 +48,30 @@ public partial class ListProjectsHandler(
             query = query.Where(p => p.Name.ToLower().Contains(search));
         }
 
+        if (dt.Filters is { Count: > 0 })
+        {
+            if (dt.Filters.TryGetValue("name", out var nameFilter) && !string.IsNullOrEmpty(nameFilter))
+            {
+                query = query.Where(p => p.Name.ToLower().Contains(nameFilter.ToLowerInvariant()));
+            }
+
+            if (dt.Filters.TryGetValue("description", out var descFilter) && !string.IsNullOrEmpty(descFilter))
+            {
+                query = query.Where(p => p.Description != null && p.Description.ToLower().Contains(descFilter.ToLowerInvariant()));
+            }
+
+            if (dt.Filters.TryGetValue("currentStageType", out var stageFilter) && !string.IsNullOrEmpty(stageFilter))
+            {
+                query = query.Where(p => p.CurrentStageType.ToString().ToLower().Contains(stageFilter.ToLowerInvariant()));
+            }
+
+            if (dt.Filters.TryGetValue("isActive", out var activeFilter) && !string.IsNullOrEmpty(activeFilter)
+                && bool.TryParse(activeFilter, out var isActive))
+            {
+                query = query.Where(p => p.IsActive == isActive);
+            }
+        }
+
         var totalCount = await repository.CountAsync(cancellationToken);
         var filteredCount = await repository.CountAsync(query, cancellationToken);
 

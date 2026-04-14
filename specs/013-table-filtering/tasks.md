@@ -27,8 +27,8 @@
 
 **CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T001 Add FILTER_TYPE_REGISTRY object and FILTER_EXCLUDE_LIST array to Mentoory.Web/wwwroot/js/datatable-helper.js
-- [ ] T002 [P] Add filter panel CSS styles (panel container, toggle link, badge, slide animation, responsive grid) to Mentoory.Web/wwwroot/css/mentoory.css
+- [x] T001 Add FILTER_TYPE_REGISTRY object and FILTER_EXCLUDE_LIST array to Mentoory.Web/wwwroot/js/datatable-helper.js
+- [x] T002 [P] Add filter panel CSS styles (panel container, toggle link, badge, slide animation, responsive grid) to Mentoory.Web/wwwroot/css/mentoory.css
 
 **Checkpoint**: Registry and styling ready — user story implementation can begin.
 
@@ -42,15 +42,15 @@
 
 ### Implementation
 
-- [ ] T003 [US1] Add buildFilterPanel(tableId, columns, overrides) function that generates filter form HTML and inserts it before the table card in Mentoory.Web/wwwroot/js/datatable-helper.js
-- [ ] T004 [US1] Add updateFilterBadge(tableId) function that counts non-empty fields and updates toggle link badge in Mentoory.Web/wwwroot/js/datatable-helper.js
-- [ ] T005 [US1] [US2] Modify initDataTable() to call buildFilterPanel() in initComplete, auto-set filterId to generated form, and wire "Filtrar" submit + "Limpiar" reset handlers in Mentoory.Web/wwwroot/js/datatable-helper.js
-- [ ] T006 [US1] Add Filters consumption (email, firstName, lastName, accountStatus) to ListIncubatorMembersHandler in Mentoory.Access.Application/Queries/ListIncubatorMembers/ListIncubatorMembersHandler.cs
-- [ ] T007 [P] [US1] Add Filters consumption (name, description, stage, status) to ListProjectsHandler in Mentoory.Tenant.Application/Queries/ListProjects/ListProjectsHandler.cs
-- [ ] T008 [P] [US1] Add Filters consumption (email, firstName, lastName, accountStatus) to ListUsersHandler in Mentoory.Access.Application/Queries/ListUsers/ListUsersHandler.cs
-- [ ] T009 [P] [US1] Add Filters consumption (name, description, status) to ListIncubatorsHandler in Mentoory.Tenant.Application/Queries/ListIncubators/ListIncubatorsHandler.cs
-- [ ] T010 [P] [US1] Add Filters consumption (name, description, subscriptionLevel, status) to ListFormTemplatesHandler in Mentoory.Diagnostic.Application/Queries/ListFormTemplates/ListFormTemplatesHandler.cs
-- [ ] T011 [P] [US1] Add Filters consumption (name, syncMode) to ListProjectFormsHandler in Mentoory.Diagnostic.Application/Queries/ListProjectForms/ListProjectFormsHandler.cs
+- [x] T003 [US1] Add buildFilterPanel(tableId, columns, overrides) function that generates filter form HTML and inserts it before the table card in Mentoory.Web/wwwroot/js/datatable-helper.js
+- [x] T004 [US1] Add updateFilterBadge(tableId) function that counts non-empty fields and updates toggle link badge in Mentoory.Web/wwwroot/js/datatable-helper.js
+- [x] T005 [US1] [US2] Modify initDataTable() to call buildFilterPanel() in initComplete, auto-set filterId to generated form, and wire "Filtrar" submit + "Limpiar" reset handlers in Mentoory.Web/wwwroot/js/datatable-helper.js
+- [x] T006 [US1] Add Filters consumption (email, firstName, lastName, accountStatus) to ListIncubatorMembersHandler in Mentoory.Access.Application/Queries/ListIncubatorMembers/ListIncubatorMembersHandler.cs
+- [x] T007 [P] [US1] Add Filters consumption (name, description, stage, status) to ListProjectsHandler in Mentoory.Tenant.Application/Queries/ListProjects/ListProjectsHandler.cs
+- [x] T008 [P] [US1] Add Filters consumption (email, firstName, lastName, accountStatus) to ListUsersHandler in Mentoory.Access.Application/Queries/ListUsers/ListUsersHandler.cs
+- [x] T009 [P] [US1] Add Filters consumption (name, description, status) to ListIncubatorsHandler in Mentoory.Tenant.Application/Queries/ListIncubators/ListIncubatorsHandler.cs
+- [x] T010 [P] [US1] Add Filters consumption (name, description, subscriptionLevel, status) to ListFormTemplatesHandler in Mentoory.Diagnostic.Application/Queries/ListFormTemplates/ListFormTemplatesHandler.cs
+- [x] T011 [P] [US1] Add Filters consumption (name, syncMode) to ListProjectFormsHandler in Mentoory.Diagnostic.Application/Queries/ListProjectForms/ListProjectFormsHandler.cs
 
 **Checkpoint**: All 7 DataTable views show filter panel, filters work end-to-end, "Limpiar" resets everything.
 
@@ -64,9 +64,9 @@
 
 ### Implementation
 
-- [ ] T012 [US3] Add syncFiltersToUrl(tableId) function that writes active filter values as f_{key} URL query params via history.replaceState in Mentoory.Web/wwwroot/js/datatable-helper.js
-- [ ] T013 [US3] Add loadFiltersFromUrl(tableId) function that parses f_* query params, populates form fields, opens panel, and triggers table reload in Mentoory.Web/wwwroot/js/datatable-helper.js
-- [ ] T014 [US3] Wire syncFiltersToUrl into "Filtrar" handler, clearFiltersFromUrl into "Limpiar" handler, and loadFiltersFromUrl into initDataTable page-load flow in Mentoory.Web/wwwroot/js/datatable-helper.js
+- [x] T012 [US3] Add syncFiltersToUrl(tableId) function that writes active filter values as f_{key} URL query params via history.replaceState in Mentoory.Web/wwwroot/js/datatable-helper.js
+- [x] T013 [US3] Add loadFiltersFromUrl(tableId) function that parses f_* query params, populates form fields, opens panel, and triggers table reload in Mentoory.Web/wwwroot/js/datatable-helper.js
+- [x] T014 [US3] Wire syncFiltersToUrl into "Filtrar" handler, clearFiltersFromUrl into "Limpiar" handler, and loadFiltersFromUrl into initDataTable page-load flow in Mentoory.Web/wwwroot/js/datatable-helper.js
 
 **Checkpoint**: Filtered URLs are bookmarkable and shareable. "Limpiar" cleans URL.
 
@@ -80,7 +80,7 @@
 
 ### Implementation
 
-- [ ] T015 [US4] Add override merge logic to buildFilterPanel() — process config.filters array, apply filterable:false exclusions and custom type/options overrides in Mentoory.Web/wwwroot/js/datatable-helper.js
+- [x] T015 [US4] Add override merge logic to buildFilterPanel() — process config.filters array, apply filterable:false exclusions and custom type/options overrides in Mentoory.Web/wwwroot/js/datatable-helper.js
 
 **Checkpoint**: Per-view overrides work without breaking auto-detection on other columns.
 
@@ -90,8 +90,8 @@
 
 **Purpose**: Verification across all views and build validation.
 
-- [ ] T016 Verify all 7 DataTable views display filter panel and produce correct filtered results
-- [ ] T017 Verify build passes with zero warnings (TreatWarningsAsErrors)
+- [x] T016 Verify all 7 DataTable views display filter panel and produce correct filtered results
+- [x] T017 Verify build passes with zero warnings (TreatWarningsAsErrors)
 - [ ] T018 Run quickstart.md validation scenarios on Administration/Users
 
 ---

@@ -48,6 +48,29 @@ public class ListUsersHandler(IUserRepository userRepository)
                 u.LastName.ToUpper().Contains(search));
         }
 
+        if (dataTableRequest.Filters is { Count: > 0 })
+        {
+            if (dataTableRequest.Filters.TryGetValue("email", out var emailFilter) && !string.IsNullOrEmpty(emailFilter))
+            {
+                query = query.Where(u => u.Email.ToUpper().Contains(emailFilter.ToUpperInvariant()));
+            }
+
+            if (dataTableRequest.Filters.TryGetValue("firstName", out var firstNameFilter) && !string.IsNullOrEmpty(firstNameFilter))
+            {
+                query = query.Where(u => u.FirstName.ToUpper().Contains(firstNameFilter.ToUpperInvariant()));
+            }
+
+            if (dataTableRequest.Filters.TryGetValue("lastName", out var lastNameFilter) && !string.IsNullOrEmpty(lastNameFilter))
+            {
+                query = query.Where(u => u.LastName.ToUpper().Contains(lastNameFilter.ToUpperInvariant()));
+            }
+
+            if (dataTableRequest.Filters.TryGetValue("accountStatus", out var statusFilter) && !string.IsNullOrEmpty(statusFilter))
+            {
+                query = query.Where(u => u.AccountStatus == statusFilter);
+            }
+        }
+
         var filteredRecords = await query.CountAsync(cancellationToken);
 
         query = query
