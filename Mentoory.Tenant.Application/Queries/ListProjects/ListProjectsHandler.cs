@@ -4,6 +4,7 @@ using Mentoory.Shared.Application;
 using Mentoory.Shared.Application.DataTables;
 using Mentoory.Shared.Application.MediatR;
 using Mentoory.Tenant.Domain.Aggregates.Project;
+using Mentoory.Tenant.Domain.Enums;
 using Mentoory.Tenant.Domain.Repositories;
 using Microsoft.Extensions.Logging;
 
@@ -44,8 +45,33 @@ public partial class ListProjectsHandler(
         // Apply search filter
         if (!string.IsNullOrWhiteSpace(dt.SearchValue))
         {
-            var search = dt.SearchValue.ToLowerInvariant();
-            query = query.Where(p => p.Name.ToLower().Contains(search));
+            var search = dt.SearchValue.ToUpperInvariant();
+            query = query.Where(p => p.Name.ToUpper().Contains(search));
+        }
+
+        if (dt.Filters is { Count: > 0 })
+        {
+            if (dt.Filters.TryGetValue("name", out var nameFilter) && !string.IsNullOrEmpty(nameFilter))
+            {
+                query = query.Where(p => p.Name.ToUpper().Contains(nameFilter.ToUpperInvariant()));
+            }
+
+            if (dt.Filters.TryGetValue("description", out var descFilter) && !string.IsNullOrEmpty(descFilter))
+            {
+                query = query.Where(p => p.Description != null && p.Description.ToUpper().Contains(descFilter.ToUpperInvariant()));
+            }
+
+            if (dt.Filters.TryGetValue("currentStageType", out var stageFilter) && !string.IsNullOrEmpty(stageFilter)
+                && Enum.TryParse<StageType>(stageFilter, true, out var stage))
+            {
+                query = query.Where(p => p.CurrentStageType == stage);
+            }
+
+            if (dt.Filters.TryGetValue("isActive", out var activeFilter) && !string.IsNullOrEmpty(activeFilter)
+                && bool.TryParse(activeFilter, out var isActive))
+            {
+                query = query.Where(p => p.IsActive == isActive);
+            }
         }
 
         var totalCount = await repository.CountAsync(cancellationToken);

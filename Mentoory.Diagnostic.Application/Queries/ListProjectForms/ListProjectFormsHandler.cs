@@ -41,6 +41,20 @@ public class ListProjectFormsHandler : BaseCommandHandler<ListProjectFormsQuery,
             query = query.Where(f => f.Name.ToUpper().Contains(search));
         }
 
+        if (dt.Filters is { Count: > 0 })
+        {
+            if (dt.Filters.TryGetValue("name", out var nameFilter) && !string.IsNullOrEmpty(nameFilter))
+            {
+                query = query.Where(f => f.Name.ToUpper().Contains(nameFilter.ToUpperInvariant()));
+            }
+
+            if (dt.Filters.TryGetValue("syncMode", out var syncFilter) && !string.IsNullOrEmpty(syncFilter)
+                && int.TryParse(syncFilter, out var syncMode))
+            {
+                query = query.Where(f => (int)f.SyncMode == syncMode);
+            }
+        }
+
         var filteredCount = await _projectFormRepository.CountAsync(query, cancellationToken);
 
         query = query

@@ -53,15 +53,17 @@ public class BatchUserJourneyTests
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             // (b) Extract temporary password from results table
-            var tempPasswordCell = page.Locator("table tbody tr.table-success td:nth-child(6)");
+            var tempPasswordCell = page.Locator("table tbody tr:has(.status-success) td:nth-child(6)");
             var tempPassword = await tempPasswordCell.TextContentAsync();
             tempPassword.Should().NotBeNullOrWhiteSpace(
                 "temporary password should be present in the results table");
             tempPassword = tempPassword!.Trim();
 
-            // (c) Logout admin
-            var logoutButton = page.Locator("form[action*='Logout'] button[type='submit'], a[href*='Logout']").First;
-            await logoutButton.WaitForAsync(new LocatorWaitForOptions { Timeout = 5000 });
+            // (c) Logout admin — open the avatar dropdown first, then click logout
+            var avatarDropdownToggle = page.Locator("[data-bs-toggle='dropdown'][aria-label='Menu de usuario']");
+            await avatarDropdownToggle.ClickAsync();
+            var logoutButton = page.Locator("form[action*='Logout'] button[type='submit']");
+            await logoutButton.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible, Timeout = 5000 });
             await logoutButton.ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
@@ -135,13 +137,15 @@ public class BatchUserJourneyTests
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             // Extract temporary password
-            var tempPasswordCell = page.Locator("table tbody tr.table-success td:nth-child(6)");
+            var tempPasswordCell = page.Locator("table tbody tr:has(.status-success) td:nth-child(6)");
             var tempPassword = await tempPasswordCell.TextContentAsync();
             tempPassword = tempPassword!.Trim();
 
-            // Logout admin
-            var logoutButton = page.Locator("form[action*='Logout'] button[type='submit'], a[href*='Logout']").First;
-            await logoutButton.WaitForAsync(new LocatorWaitForOptions { Timeout = 5000 });
+            // Logout admin — open the avatar dropdown first, then click logout
+            var avatarDropdownToggle = page.Locator("[data-bs-toggle='dropdown'][aria-label='Menu de usuario']");
+            await avatarDropdownToggle.ClickAsync();
+            var logoutButton = page.Locator("form[action*='Logout'] button[type='submit']");
+            await logoutButton.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible, Timeout = 5000 });
             await logoutButton.ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 

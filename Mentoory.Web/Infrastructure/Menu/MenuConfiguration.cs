@@ -7,32 +7,32 @@ public static class MenuConfiguration
         new(
             "Inicio",
             "/",
-            "fas fa-home",
+            "ti ti-home",
             new[] { "GlobalAdmin", "IncubatorAdmin", "ProjectCoordinator", "Mentor", "Entrepreneur", "Sponsor" }),
 
-        new MenuGroup("Plataforma", "fas fa-cog", new[] { "GlobalAdmin" }, new MenuItem[]
+        new MenuGroup("Plataforma", "ti ti-settings", new[] { "GlobalAdmin" }, new MenuItem[]
         {
-            new("Incubadoras", "/Platform/Incubators", "fas fa-building"),
-            new("Usuarios", "/Platform/Users", "fas fa-users"),
-            new("Plantillas", "/Platform/Templates/Diagnostics", "fas fa-file-alt"),
+            new("Incubadoras", "/Platform/Incubators", "ti ti-building"),
+            new("Usuarios", "/Platform/Users", "ti ti-users"),
+            new("Plantillas", "/Platform/Templates/Diagnostics", "ti ti-file-text"),
         }),
 
-        new MenuGroup("Administración", "fas fa-users-cog", new[] { "IncubatorAdmin", "GlobalAdmin" }, new MenuItem[]
+        new MenuGroup("Administración", "ti ti-users-group", new[] { "IncubatorAdmin", "GlobalAdmin" }, new MenuItem[]
         {
-            new("Panel", "/Administration/Dashboard", "fas fa-tachometer-alt"),
-            new("Proyectos", "/Administration/Projects", "fas fa-project-diagram"),
-            new("Usuarios", "/Administration/Users", "fas fa-users"),
-            new("Carga Masiva", "/Administration/BatchUpload", "fas fa-file-upload"),
+            new("Panel", "/Administration/Dashboard", "ti ti-dashboard"),
+            new("Proyectos", "/Administration/Projects", "ti ti-sitemap"),
+            new("Usuarios", "/Administration/Users", "ti ti-users"),
+            new("Carga Masiva", "/Administration/BatchUpload", "ti ti-file-upload"),
         }),
 
-        new MenuGroup("Coordinación", "fas fa-tasks", new[] { "ProjectCoordinator", "Mentor", "IncubatorAdmin", "GlobalAdmin" }, new MenuItem[]
+        new MenuGroup("Coordinación", "ti ti-list-check", new[] { "ProjectCoordinator", "Mentor", "IncubatorAdmin", "GlobalAdmin" }, new MenuItem[]
         {
-            new("Diagnósticos", "/Coordination/Diagnostics", "fas fa-clipboard-check"),
+            new("Diagnósticos", "/Coordination/Diagnostics", "ti ti-clipboard-check"),
         }),
 
-        new MenuGroup("Participante", "fas fa-user-graduate", new[] { "Entrepreneur", "Mentor", "ProjectCoordinator", "IncubatorAdmin", "GlobalAdmin" }, new MenuItem[]
+        new MenuGroup("Participante", "ti ti-school", new[] { "Entrepreneur", "Mentor", "ProjectCoordinator", "IncubatorAdmin", "GlobalAdmin" }, new MenuItem[]
         {
-            new("Diagnóstico", "/Participant/Diagnostic", "fas fa-poll"),
+            new("Diagnóstico", "/Participant/Diagnostic", "ti ti-chart-bar"),
         }),
     };
 }

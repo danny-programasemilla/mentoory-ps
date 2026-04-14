@@ -3,94 +3,110 @@
     ViewData["Title"] = "Resultados de Carga Masiva";
 }
 
-<div class="container-fluid">
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="card-title mb-0">Resultados de Carga Masiva</h5>
+<div class="row row-deck row-cards mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="subheader">Total</div>
+                </div>
+                <div class="h1 mb-0">@Model.TotalRows</div>
+            </div>
         </div>
-        <div class="card-body">
-            <div class="row mb-3">
-                <div class="col-md-3">
-                    <div class="card bg-light">
-                        <div class="card-body text-center">
-                            <h6>Total</h6>
-                            <h3>@Model.TotalRows</h3>
-                        </div>
-                    </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="subheader text-success">Exitosos</div>
                 </div>
-                <div class="col-md-3">
-                    <div class="card bg-success text-white">
-                        <div class="card-body text-center">
-                            <h6>Exitosos</h6>
-                            <h3>@Model.SuccessCount</h3>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card bg-warning">
-                        <div class="card-body text-center">
-                            <h6>Omitidos</h6>
-                            <h3>@Model.SkippedCount</h3>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card bg-danger text-white">
-                        <div class="card-body text-center">
-                            <h6>Errores</h6>
-                            <h3>@Model.ErrorCount</h3>
-                        </div>
-                    </div>
-                </div>
+                <div class="h1 mb-0 text-success">@Model.SuccessCount</div>
             </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="subheader text-warning">Omitidos</div>
+                </div>
+                <div class="h1 mb-0 text-warning">@Model.SkippedCount</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="subheader text-danger">Errores</div>
+                </div>
+                <div class="h1 mb-0 text-danger">@Model.ErrorCount</div>
+            </div>
+        </div>
+    </div>
+</div>
 
-            <div class="table-responsive">
-                <table class="table table-striped table-sm">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>País</th>
-                            <th>Identificación</th>
-                            <th>Correo</th>
-                            <th>Estado</th>
-                            <th>Contraseña temporal</th>
-                            <th>Observaciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var row in Model.Rows)
-                        {
-                            var rowClass = row.Status switch
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Detalle de Resultados</h3>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-vcenter table-striped table-hover card-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>País</th>
+                    <th>Identificación</th>
+                    <th>Correo</th>
+                    <th>Estado</th>
+                    <th>Contraseña temporal</th>
+                    <th>Observaciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Model.Rows)
+                {
+                    var statusClass = row.Status switch
+                    {
+                        "Success" => "status-success",
+                        "Skipped" => "status-warning",
+                        "Error" => "status-danger",
+                        _ => string.Empty
+                    };
+                    var statusText = row.Status switch
+                    {
+                        "Success" => "Exitoso",
+                        "Skipped" => "Omitido",
+                        "Error" => "Error",
+                        _ => row.Status
+                    };
+                    <tr>
+                        <td>@row.RowNumber</td>
+                        <td>@row.Country</td>
+                        <td>@row.Identification</td>
+                        <td>@row.Email</td>
+                        <td><span class="status @statusClass"><span class="status-dot"></span> @statusText</span></td>
+                        <td>@(row.TemporaryPassword ?? "—")</td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(row.ErrorMessage))
                             {
-                                "Success" => "table-success",
-                                "Skipped" => "table-warning",
-                                "Error" => "table-danger",
-                                _ => string.Empty
-                            };
-                            <tr class="@rowClass">
-                                <td>@row.RowNumber</td>
-                                <td>@row.Country</td>
-                                <td>@row.Identification</td>
-                                <td>@row.Email</td>
-                                <td>@row.Status</td>
-                                <td>@(row.TemporaryPassword ?? "—")</td>
-                                <td>
-                                    @if (!string.IsNullOrEmpty(row.ErrorMessage))
-                                    {
-                                        <span class="text-danger">@row.ErrorMessage</span>
-                                    }
-                                    @foreach (var warning in row.Warnings)
-                                    {
-                                        <span class="text-warning d-block">@warning</span>
-                                    }
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-
-            <a asp-action="Index" class="btn btn-primary mt-3">Nueva Carga</a>
+                                <span class="text-danger">@row.ErrorMessage</span>
+                            }
+                            @foreach (var warning in row.Warnings)
+                            {
+                                <span class="text-warning d-block">@warning</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer">
+        <div class="btn-list">
+            <a asp-action="Index" class="btn btn-primary">
+                <i class="ti ti-upload me-1"></i>Nueva Carga
+            </a>
         </div>
     </div>
 </div>

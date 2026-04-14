@@ -13,67 +13,107 @@
         .Any(g => contextGroups.Contains(g.Title));
     var platformSectionRendered = false;
     var contextSectionRendered = false;
+
+    var currentArea = ViewContext.RouteData.Values["area"]?.ToString() ?? "";
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
 }
 
-<nav id="sidebar" class="bg-dark text-white" style="min-width: 250px; min-height: 100vh;">
-    <div class="p-3">
-        <a class="text-white text-decoration-none fs-5 fw-bold" href="/">Mentoory</a>
-    </div>
-    <hr class="text-secondary mx-3" />
-    <ul class="nav flex-column px-2">
-        @foreach (var item in menuItems)
-        {
-            if (item is Mentoory.Web.Infrastructure.Menu.MenuGroup group)
-            {
-                @if (hasPlatformSection && platformGroups.Contains(group.Title) && !platformSectionRendered)
+<aside id="sidebar" class="navbar navbar-vertical navbar-expand-sm" data-bs-theme="dark">
+    <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar-menu"
+                aria-controls="sidebar-menu" aria-expanded="false" aria-label="Navegación">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <h1 class="navbar-brand navbar-brand-autodark">
+            <a href="/">
+                <img src="~/img/logo-white.svg" class="navbar-brand-image" height="32" alt="Mentoory" />
+            </a>
+        </h1>
+        <div class="collapse navbar-collapse" id="sidebar-menu">
+            <ul class="navbar-nav pt-lg-3">
+                @foreach (var item in menuItems)
                 {
-                    platformSectionRendered = true;
-                    <li class="nav-item mt-3 mb-1 px-3">
-                        <span class="text-uppercase text-secondary small fw-bold" style="font-size: 0.65rem; letter-spacing: 0.1em;">
-                            Gestión de Plataforma
-                        </span>
-                    </li>
-                }
-                @if (hasContextSection && contextGroups.Contains(group.Title) && !contextSectionRendered)
-                {
-                    contextSectionRendered = true;
-                    @if (platformSectionRendered)
+                    if (item is Mentoory.Web.Infrastructure.Menu.MenuGroup group)
                     {
-                        <li class="nav-item">
-                            <hr class="text-secondary mx-3 my-2" />
-                        </li>
-                    }
-                    <li class="nav-item mt-1 mb-1 px-3">
-                        <span class="text-uppercase text-secondary small fw-bold" style="font-size: 0.65rem; letter-spacing: 0.1em;">
-                            Administración del Contexto
-                        </span>
-                    </li>
-                }
-
-                <li class="nav-item mt-2">
-                    <span class="nav-link text-secondary small text-uppercase">
-                        <i class="@group.Icon me-2"></i>@group.Title
-                    </span>
-                    <ul class="nav flex-column ms-3">
-                        @foreach (var child in group.Items)
+                        @if (hasPlatformSection && platformGroups.Contains(group.Title) && !platformSectionRendered)
                         {
-                            <li class="nav-item">
-                                <a class="nav-link text-white-50" href="@child.Url">
-                                    <i class="@child.Icon me-2"></i>@child.Title
-                                </a>
+                            platformSectionRendered = true;
+                            <li class="nav-item pt-3">
+                                <span class="nav-link nav-link-header">
+                                    Gestión de Plataforma
+                                </span>
                             </li>
                         }
-                    </ul>
-                </li>
-            }
-            else
-            {
-                <li class="nav-item">
-                    <a class="nav-link text-white-50" href="@item.Url">
-                        <i class="@item.Icon me-2"></i>@item.Title
-                    </a>
-                </li>
-            }
-        }
-    </ul>
-</nav>
+                        @if (hasContextSection && contextGroups.Contains(group.Title) && !contextSectionRendered)
+                        {
+                            contextSectionRendered = true;
+                            @if (platformSectionRendered)
+                            {
+                                <li><hr class="dropdown-divider" /></li>
+                            }
+                            <li class="nav-item">
+                                <span class="nav-link nav-link-header">
+                                    Administración del Contexto
+                                </span>
+                            </li>
+                        }
+
+                        var groupExpanded = group.Items.Any(child =>
+                        {
+                            var uri = new Uri(child.Url ?? "/", UriKind.RelativeOrAbsolute);
+                            var path = uri.IsAbsoluteUri ? uri.AbsolutePath : child.Url ?? "";
+                            var segments = path.Trim('/').Split('/');
+                            if (segments.Length >= 2)
+                            {
+                                return string.Equals(segments[0], currentArea, StringComparison.OrdinalIgnoreCase)
+                                    && string.Equals(segments[1], currentController, StringComparison.OrdinalIgnoreCase);
+                            }
+                            return false;
+                        });
+
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle @(groupExpanded ? "show" : "")"
+                               href="#navbar-@group.Title.ToLowerInvariant().Replace("ó","o").Replace("á","a")"
+                               data-bs-toggle="dropdown" data-bs-auto-close="false"
+                               role="button" aria-expanded="@(groupExpanded ? "true" : "false")">
+                                <span class="nav-link-icon"><i class="@group.Icon"></i></span>
+                                <span class="nav-link-title">@group.Title</span>
+                            </a>
+                            <div class="dropdown-menu @(groupExpanded ? "show" : "")">
+                                @foreach (var child in group.Items)
+                                {
+                                    var childUri = new Uri(child.Url ?? "/", UriKind.RelativeOrAbsolute);
+                                    var childPath = childUri.IsAbsoluteUri ? childUri.AbsolutePath : child.Url ?? "";
+                                    var childSegments = childPath.Trim('/').Split('/');
+                                    var isActive = childSegments.Length >= 2
+                                        && string.Equals(childSegments[0], currentArea, StringComparison.OrdinalIgnoreCase)
+                                        && string.Equals(childSegments[1], currentController, StringComparison.OrdinalIgnoreCase);
+
+                                    <a class="dropdown-item @(isActive ? "active" : "") d-flex align-items-center" href="@child.Url">
+                                        @child.Title
+                                        @if (child.BadgeCount.HasValue)
+                                        {
+                                            <span class="badge bg-primary ms-auto">@child.BadgeCount</span>
+                                        }
+                                    </a>
+                                }
+                            </div>
+                        </li>
+                    }
+                    else
+                    {
+                        var itemPath = item.Url ?? "/";
+                        var isHomeActive = itemPath == "/" && string.IsNullOrEmpty(currentArea) && (currentController == "Home" || currentController == "");
+
+                        <li class="nav-item">
+                            <a class="nav-link @(isHomeActive ? "active" : "")" href="@item.Url">
+                                <span class="nav-link-icon"><i class="@item.Icon"></i></span>
+                                <span class="nav-link-title">@item.Title</span>
+                            </a>
+                        </li>
+                    }
+                }
+            </ul>
+        </div>
+    </div>
+</aside>

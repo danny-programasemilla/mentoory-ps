@@ -1,39 +1,30 @@
 @model Mentoory.Web.Areas.Access.Models.ForgotPasswordViewModel
 @{
     ViewData["Title"] = "Recuperar Contraseña";
-    Layout = "_Layout";
 }
 
-<div class="login-container">
-    <div class="card login-card shadow">
-        <div class="card-body">
-            <h3 class="card-title text-center mb-4">Mentoory</h3>
-            <h5 class="text-center text-muted mb-4">Recuperar Contraseña</h5>
-
-            <p class="text-muted text-center mb-4">
-                Ingrese su correo electrónico y le enviaremos un enlace para restablecer su contraseña.
-            </p>
-
-            <form asp-action="Index" method="post">
-                <div asp-validation-summary="All" class="text-danger mb-3"></div>
-
-                <div class="mb-3">
-                    <label asp-for="Email" class="form-label"></label>
-                    <input asp-for="Email" class="form-control" autocomplete="email" autofocus />
-                    <span asp-validation-for="Email" class="text-danger"></span>
-                </div>
-
-                <div class="d-grid mb-3">
-                    <button type="submit" class="btn btn-primary">Enviar Enlace</button>
-                </div>
-
-                <div class="text-center">
-                    <a asp-area="Access" asp-controller="Login" asp-action="Index">Volver a Iniciar Sesión</a>
-                </div>
-            </form>
-        </div>
-    </div>
+<div class="text-center mb-4">
+    <h2>Recuperar Contraseña</h2>
+    <p class="text-secondary">Ingrese su correo electrónico y le enviaremos un enlace para restablecer su contraseña.</p>
 </div>
+
+<form asp-action="Index" method="post">
+    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+    <div class="mb-3">
+        <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" class="form-control" autocomplete="email" autofocus />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+
+    <div class="d-grid mb-3">
+        <button type="submit" class="btn btn-primary">Enviar Enlace</button>
+    </div>
+
+    <div class="text-center">
+        <a asp-area="Access" asp-controller="Login" asp-action="Index">Volver a Iniciar Sesión</a>
+    </div>
+</form>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

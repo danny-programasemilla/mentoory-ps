@@ -106,8 +106,11 @@ public class ProjectCreationTests
             await page.GotoAsync($"{_fixture.BaseUrl}/Administration/Projects/Create");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // Leave Name field empty and submit
-            await page.ClickAsync("button[type='submit']");
+            // Leave Name field empty and submit (use filtered locator to avoid TopBar's hidden logout submit)
+            await page.Locator("button[type='submit']").Filter(new LocatorFilterOptions
+            {
+                HasText = "Crear Proyecto"
+            }).ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             // Assert validation error appears

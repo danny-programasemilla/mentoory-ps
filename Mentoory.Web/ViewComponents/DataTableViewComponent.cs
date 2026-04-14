@@ -4,12 +4,14 @@ namespace Mentoory.Web.ViewComponents;
 
 public class DataTableViewComponent : ViewComponent
 {
-    public IViewComponentResult Invoke(string tableId, string apiUrl, object[] columns, string? filterId = null)
+    public IViewComponentResult Invoke(
+        string tableId,
+        string[] columns,
+        string? title = null)
     {
         ViewBag.TableId = tableId;
-        ViewBag.ApiUrl = apiUrl;
         ViewBag.Columns = columns;
-        ViewBag.FilterId = filterId;
+        ViewBag.Title = title;
         return View();
     }
 }

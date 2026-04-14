@@ -30,7 +30,7 @@ public class ContextSelectionTests
             page.Url.Should().Contain("/Context/Select",
                 "multi-role users must land on the context selection page");
 
-            var heading = page.Locator("h2").Filter(new LocatorFilterOptions
+            var heading = page.Locator("h3.card-title").Filter(new LocatorFilterOptions
             {
                 HasText = "Seleccionar Contexto de Trabajo"
             });
@@ -149,7 +149,11 @@ public class ContextSelectionTests
             await roleDropdown.SelectOptionAsync(new SelectOptionValue { Label = "Administrador de Incubadora" });
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // Wait for full cascade to complete (role → incubator auto-select → project fetch)
+            // Multirole user has IncubatorAdmin at 2 incubators → must manually select one
+            var incubatorDropdown = container.Locator("[data-cs='incubator']");
+            await incubatorDropdown.SelectOptionAsync(new SelectOptionValue { Label = "Incubadora Alpha" });
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
             var confirmBtn = container.Locator("[data-cs='confirm']");
             await Assertions.Expect(confirmBtn).ToBeEnabledAsync(new() { Timeout = 10000 });
 

@@ -56,6 +56,30 @@ public class ListFormTemplatesHandler : BaseCommandHandler<ListFormTemplatesQuer
                 (t.Description != null && t.Description.ToUpper().Contains(search)));
         }
 
+        if (dt.Filters is { Count: > 0 })
+        {
+            if (dt.Filters.TryGetValue("name", out var nameFilter) && !string.IsNullOrEmpty(nameFilter))
+            {
+                query = query.Where(t => t.Name.ToUpper().Contains(nameFilter.ToUpperInvariant()));
+            }
+
+            if (dt.Filters.TryGetValue("description", out var descFilter) && !string.IsNullOrEmpty(descFilter))
+            {
+                query = query.Where(t => t.Description != null && t.Description.ToUpper().Contains(descFilter.ToUpperInvariant()));
+            }
+
+            if (dt.Filters.TryGetValue("subscriptionTier", out var tierFilter) && !string.IsNullOrEmpty(tierFilter))
+            {
+                query = query.Where(t => t.SubscriptionTier != null && t.SubscriptionTier.ToUpper().Contains(tierFilter.ToUpperInvariant()));
+            }
+
+            if (dt.Filters.TryGetValue("isActive", out var activeFilter) && !string.IsNullOrEmpty(activeFilter)
+                && bool.TryParse(activeFilter, out var isActive))
+            {
+                query = query.Where(t => t.IsActive == isActive);
+            }
+        }
+
         var filteredCount = await _formTemplateRepository.CountAsync(query, cancellationToken);
 
         // Apply ordering and paging

@@ -3,76 +3,81 @@
     ViewData["Title"] = "Registrar Usuario Interno";
 }
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-lg-8">
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <form asp-action="RegisterInternal" method="post">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">Registrar Usuario Interno</h5>
+                    <h3 class="card-title">Registrar Usuario Interno</h3>
                 </div>
                 <div class="card-body">
-                    <form asp-action="RegisterInternal" method="post">
-                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label asp-for="Email" class="form-label"></label>
-                                <input asp-for="Email" class="form-control" />
-                                <span asp-validation-for="Email" class="text-danger"></span>
-                            </div>
-                            <div class="col-md-6">
-                                <label asp-for="Password" class="form-label"></label>
-                                <input asp-for="Password" class="form-control" />
-                                <span asp-validation-for="Password" class="text-danger"></span>
+                    <div class="hr-text">Credenciales</div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Email" class="form-label"></label>
+                            <input asp-for="Email" class="form-control" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Password" class="form-label"></label>
+                            <input asp-for="Password" class="form-control" />
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="hr-text">Identificación</div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Country" class="form-label"></label>
+                            <select asp-for="Country" class="form-select" id="countrySelect">
+                                <option value="">Seleccione un país</option>
+                                @foreach (var country in Model.Countries)
+                                {
+                                    <option value="@country.Code"
+                                            data-mask="@country.IdentificationMask"
+                                            data-maxlength="@country.IdentificationMaxLength"
+                                            data-label="@country.IdentificationLabel">
+                                        @country.Name
+                                    </option>
+                                }
+                            </select>
+                            <span asp-validation-for="Country" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Identification" class="form-label" id="identificationLabel"></label>
+                            <input asp-for="Identification" class="form-control" id="identificationInput" />
+                            <span asp-validation-for="Identification" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="hr-text">Opciones</div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ProjectExternalId" class="form-label"></label>
+                            <input asp-for="ProjectExternalId" class="form-control" placeholder="GUID del proyecto" />
+                            <span asp-validation-for="ProjectExternalId" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end mb-3">
+                            <div class="form-check">
+                                <input asp-for="RequireEmailVerification" class="form-check-input" />
+                                <label asp-for="RequireEmailVerification" class="form-check-label"></label>
                             </div>
                         </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label asp-for="Country" class="form-label"></label>
-                                <select asp-for="Country" class="form-select" id="countrySelect">
-                                    <option value="">Seleccione un país</option>
-                                    @foreach (var country in Model.Countries)
-                                    {
-                                        <option value="@country.Code"
-                                                data-mask="@country.IdentificationMask"
-                                                data-maxlength="@country.IdentificationMaxLength"
-                                                data-label="@country.IdentificationLabel">
-                                            @country.Name
-                                        </option>
-                                    }
-                                </select>
-                                <span asp-validation-for="Country" class="text-danger"></span>
-                            </div>
-                            <div class="col-md-6">
-                                <label asp-for="Identification" class="form-label" id="identificationLabel"></label>
-                                <input asp-for="Identification" class="form-control" id="identificationInput" />
-                                <span asp-validation-for="Identification" class="text-danger"></span>
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label asp-for="ProjectExternalId" class="form-label"></label>
-                                <input asp-for="ProjectExternalId" class="form-control" placeholder="GUID del proyecto" />
-                                <span asp-validation-for="ProjectExternalId" class="text-danger"></span>
-                            </div>
-                            <div class="col-md-6 d-flex align-items-end">
-                                <div class="form-check">
-                                    <input asp-for="RequireEmailVerification" class="form-check-input" />
-                                    <label asp-for="RequireEmailVerification" class="form-check-label"></label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">Registrar Usuario</button>
-                            <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
-                        </div>
-                    </form>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="btn-list justify-content-end">
+                        <a asp-action="Index" class="btn btn-ghost-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Registrar Usuario</button>
+                    </div>
                 </div>
             </div>
-        </div>
+        </form>
     </div>
 </div>
 

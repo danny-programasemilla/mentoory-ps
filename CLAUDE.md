@@ -5,7 +5,7 @@
 - **Database**: SQL Server with SSDT/DACPAC schema management and Entity Framework Core 10.x ORM
 - **Architecture**: Clean Architecture with Domain-Driven Design (modular monolith)
 - **Cloud Native**: .NET Aspire 13.2.0 for orchestration and observability
-- **Frontend**: Razor Views with Bootstrap 5 (Phoenix Admin Template)
+- **Frontend**: Razor Views with Tabler Admin Template (built on Bootstrap 5)
 - **Authentication**: Not defined yet, but should avoid vendor lock
 - **Language**: Spanish UI (all user-facing text)
 
@@ -76,8 +76,15 @@ Feature artifacts live in `specs/{###-feature-name}/`. See [`.specify/templates/
 - `.specify/memory/access-security-constitution.md` — version-controlled governance artifact (005-access-security-constitution)
 - C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, CsvHelper (007-csv-sample-download)
 - N/A (no database changes) (007-csv-sample-download)
-- C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC + MediatR 14.1, FluentValidation 12.1, EF Core 10.x, Bootstrap 5 (Phoenix Admin Template) (008-context-selector-ux)
+- C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC + MediatR 14.1, FluentValidation 12.1, EF Core 10.x, Tabler Admin Template (built on Bootstrap 5) (008-context-selector-ux)
 - SQL Server (existing RoleAssignments table — no schema changes) (008-context-selector-ux)
+- C# / .NET 10.0, Razor Views, CSS, JavaScript + Tabler v1.4.0 (Bootstrap 5), jQuery, DataTables 2.3.4, MediatR 14.1 (010-design-system-ux-polish)
+- SQL Server (read-only count queries for dashboard metrics — no schema changes) (010-design-system-ux-polish)
+- C# / .NET 10.0 + Razor Views + CSS + Tabler v1.4.0 (Bootstrap 5), Tabler Icons Webfont, jQuery, DataTables 2.3.4 (011-dashboard-ui-polish)
+- SQL Server (read-only — existing `GetDashboardMetricsQuery`, no changes) (011-dashboard-ui-polish)
+- C# / .NET 10.0 + Razor Views + CSS + JavaScript + Tabler v1.4.0 (Bootstrap 5), DataTables 2.3.4, jQuery, Tabler Icons Webfont (012-table-polish)
+- C# / .NET 10.0 + JavaScript (vanilla, ES5-compatible) + DataTables 2.3.4, jQuery, Tabler v1.4.0 (Bootstrap 5), Tabler Icons Webfont (013-table-filtering)
+- N/A (no schema changes) (013-table-filtering)
 
 ## Code Review Standards
 After completing any implementation, review the code for:
@@ -93,6 +100,6 @@ After completing any implementation, review the code for:
 Run /simplify before presenting code to the user.
 
 ## Recent Changes
-- 008-context-selector-ux: Added C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC + MediatR 14.1, FluentValidation 12.1, EF Core 10.x, Bootstrap 5 (Phoenix Admin Template)
-- 007-csv-sample-download: Added C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, CsvHelper
-- 006-fix-batch-upload-scope: Added C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, MediatR 14.1, FluentValidation 12.1, Mapperly 4.x, EF Core 10.x, CsvHelper
+- 013-table-filtering: Added C# / .NET 10.0 + JavaScript (vanilla, ES5-compatible) + DataTables 2.3.4, jQuery, Tabler v1.4.0 (Bootstrap 5), Tabler Icons Webfont
+- 012-table-polish: Added C# / .NET 10.0 + Razor Views + CSS + JavaScript + Tabler v1.4.0 (Bootstrap 5), DataTables 2.3.4, jQuery, Tabler Icons Webfont
+- 011-dashboard-ui-polish: Added C# / .NET 10.0 + Razor Views + CSS + Tabler v1.4.0 (Bootstrap 5), Tabler Icons Webfont, jQuery, DataTables 2.3.4

@@ -2,22 +2,43 @@
     ViewData["Title"] = "Panel de Patrocinador";
 }
 
-<h2 class="mb-4">Panel de Patrocinador</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Panel de Patrocinador</h2>
+</div>
 
-<div class="row justify-content-center mt-5">
-    <div class="col-md-8 col-lg-6">
-        <div class="card shadow-sm text-center">
-            <div class="card-body py-5">
-                <div class="mb-4">
-                    <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex p-4">
-                        <i class="fas fa-hard-hat fa-3x text-info"></i>
+<div class="row row-deck row-cards">
+    <div class="col-sm-6 col-xl-4">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="avatar bg-info-lt">
+                            <i class="ti ti-helmet"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium">Próximamente</div>
+                        <div class="text-secondary">El panel de patrocinador se encuentra en desarrollo</div>
                     </div>
                 </div>
-                <h4 class="mb-3">Próximamente</h4>
-                <p class="text-muted mb-0">
-                    El panel de patrocinador se encuentra en desarrollo.
-                    Pronto podrá consultar el estado de los proyectos que apoya.
-                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-body">
+                <div class="empty">
+                    <div class="empty-icon">
+                        <i class="ti ti-helmet" style="font-size: 3rem;"></i>
+                    </div>
+                    <p class="empty-title">En desarrollo</p>
+                    <p class="empty-subtitle text-secondary">
+                        Pronto podrá consultar el estado de los proyectos que apoya.
+                    </p>
+                </div>
             </div>
         </div>
     </div>

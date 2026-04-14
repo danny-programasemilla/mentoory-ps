@@ -6,7 +6,7 @@
 
 <div class="mb-4">
     <h2>Corrección de Respuestas</h2>
-    <p class="text-muted">Etapa: <strong>@(Model?.EvaluationStage.ToString() ?? "—")</strong>
+    <p class="text-secondary">Etapa: <strong>@(Model?.EvaluationStage.ToString() ?? "—")</strong>
         — Estado: @(Model?.IsCompleted == true ? "Completado" : "En progreso")</p>
 </div>
 
@@ -27,57 +27,76 @@
 
 @if (Model is null)
 {
-    <div class="alert alert-warning">Respuesta diagnóstica no encontrada.</div>
+    <div class="empty">
+        <div class="empty-icon">
+            <i class="ti ti-file-off" style="font-size: 3rem;"></i>
+        </div>
+        <p class="empty-title">Respuesta diagnóstica no encontrada</p>
+        <p class="empty-subtitle text-secondary">
+            No se encontró la respuesta diagnóstica solicitada.
+        </p>
+    </div>
     return;
 }
 
 @foreach (var response in Model.Responses)
 {
-    <div class="card shadow-sm mb-3">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <span><strong>Pregunta #@response.QuestionId</strong></span>
-            <button class="btn btn-sm btn-outline-warning" type="button"
-                    data-bs-toggle="modal" data-bs-target="#correctModal-@response.Id">
-                <i class="fas fa-edit me-1"></i>Corregir
-            </button>
+    <div class="card mb-3">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center w-100">
+                <h3 class="card-title">Pregunta #@response.QuestionId</h3>
+                <button class="btn btn-sm btn-outline-warning" type="button"
+                        data-bs-toggle="modal" data-bs-target="#correctModal-@response.Id">
+                    <i class="ti ti-edit me-1"></i>Corregir
+                </button>
+            </div>
         </div>
         <div class="card-body">
-            @if (response.TextValue is not null)
-            {
-                <p><strong>Respuesta de texto:</strong> @response.TextValue</p>
-            }
-            @if (response.NumericValue.HasValue)
-            {
-                <p><strong>Valor numérico:</strong> @response.NumericValue</p>
-            }
+            <div class="datagrid mb-3">
+                @if (response.TextValue is not null)
+                {
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Respuesta de texto</div>
+                        <div class="datagrid-content">@response.TextValue</div>
+                    </div>
+                }
+                @if (response.NumericValue.HasValue)
+                {
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Valor numérico</div>
+                        <div class="datagrid-content">@response.NumericValue</div>
+                    </div>
+                }
+            </div>
 
             @if (response.Corrections.Any())
             {
-                <hr />
-                <h6>Historial de Correcciones</h6>
-                <table class="table table-sm table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Valor Anterior</th>
-                            <th>Razón</th>
-                            <th>Corregido por</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var correction in response.Corrections.OrderByDescending(c => c.CorrectedAtUtc))
-                        {
+                <div class="hr-text">Historial de Correcciones</div>
+                <div class="table-responsive">
+                    <table class="table table-vcenter table-striped table-hover table-sm">
+                        <thead>
                             <tr>
-                                <td>@correction.CorrectedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
-                                <td>
-                                    @(correction.PreviousTextValue ?? correction.PreviousNumericValue?.ToString() ?? correction.PreviousSelectedOptionIds ?? "—")
-                                </td>
-                                <td>@(correction.Reason ?? "—")</td>
-                                <td>Usuario #@correction.CorrectedByUserId</td>
+                                <th>Fecha</th>
+                                <th>Valor Anterior</th>
+                                <th>Razón</th>
+                                <th>Corregido por</th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach (var correction in response.Corrections.OrderByDescending(c => c.CorrectedAtUtc))
+                            {
+                                <tr>
+                                    <td>@correction.CorrectedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        @(correction.PreviousTextValue ?? correction.PreviousNumericValue?.ToString() ?? correction.PreviousSelectedOptionIds ?? "—")
+                                    </td>
+                                    <td>@(correction.Reason ?? "—")</td>
+                                    <td>Usuario #@correction.CorrectedByUserId</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             }
         </div>
     </div>
@@ -111,10 +130,12 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-warning">
-                            <i class="fas fa-check me-1"></i>Aplicar Corrección
-                        </button>
+                        <div class="btn-list ms-auto">
+                            <button type="button" class="btn btn-ghost-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="ti ti-check me-1"></i>Aplicar Corrección
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>

@@ -98,10 +98,10 @@ public class BatchUploadTests
             pageContent.Should().Contain("Resultados de Carga Masiva",
                 "results page should display 'Resultados de Carga Masiva'");
 
-            // Assert success row exists
-            var successRows = page.Locator("table tbody tr.table-success");
+            // Assert success row exists (results table uses status-success spans inside rows)
+            var successRows = page.Locator("table tbody tr:has(.status-success)");
             (await successRows.CountAsync()).Should().BeGreaterThan(0,
-                "at least one row should have the table-success class");
+                "at least one row should contain a success status indicator");
         }
         finally
         {
@@ -143,7 +143,7 @@ public class BatchUploadTests
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             // Assert temporary password column in success row is non-empty
-            var tempPasswordCell = page.Locator("table tbody tr.table-success td:nth-child(6)");
+            var tempPasswordCell = page.Locator("table tbody tr:has(.status-success) td:nth-child(6)");
             var tempPassword = await tempPasswordCell.TextContentAsync();
 
             tempPassword.Should().NotBeNullOrWhiteSpace(
@@ -168,8 +168,11 @@ public class BatchUploadTests
             await page.GotoAsync($"{_fixture.BaseUrl}/Administration/BatchUpload");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // Submit without selecting a file
-            await page.ClickAsync("button[type='submit']");
+            // Submit without selecting a file (use filtered locator to avoid TopBar's hidden logout submit)
+            await page.Locator("button[type='submit']").Filter(new LocatorFilterOptions
+            {
+                HasText = "Procesar Archivo"
+            }).ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             // Assert validation error appears

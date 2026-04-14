@@ -46,7 +46,11 @@ public class ContextSwitchingTests
         {
             await LoginAndSelectContextAsync(page, "multirole@test.mentoory.com", "Test123!@#");
 
-            // "Cambiar contexto" should be a button that opens a modal
+            // Open the avatar dropdown in the TopBar to reveal the "Cambiar contexto" button
+            var avatarDropdownToggle = page.Locator("[data-bs-toggle='dropdown'][aria-label='Menu de usuario']");
+            await avatarDropdownToggle.ClickAsync();
+
+            // "Cambiar contexto" is a dropdown item that opens a modal
             var switchButton = page.Locator("button").Filter(new LocatorFilterOptions
             {
                 HasText = "Cambiar contexto"
@@ -89,7 +93,11 @@ public class ContextSwitchingTests
         {
             await LoginAndSelectContextAsync(page, "multirole@test.mentoory.com", "Test123!@#");
 
-            // Open modal
+            // Open the avatar dropdown to reveal the "Cambiar contexto" button
+            var avatarDropdownToggle = page.Locator("[data-bs-toggle='dropdown'][aria-label='Menu de usuario']");
+            await avatarDropdownToggle.ClickAsync();
+
+            // Click the "Cambiar contexto" dropdown item to open the modal
             var switchButton = page.Locator("button").Filter(new LocatorFilterOptions
             {
                 HasText = "Cambiar contexto"

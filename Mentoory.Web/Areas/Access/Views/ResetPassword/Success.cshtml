@@ -1,21 +1,20 @@
 @{
     ViewData["Title"] = "Contraseña Restablecida";
-    Layout = "_Layout";
 }
 
-<div class="login-container">
-    <div class="card login-card shadow">
-        <div class="card-body text-center">
-            <h3 class="card-title mb-4">Mentoory</h3>
-            <h5 class="text-muted mb-4">Contraseña Restablecida</h5>
-
-            <div class="alert alert-success" role="alert">
-                <p class="mb-0">Su contraseña ha sido restablecida exitosamente.</p>
-            </div>
-
-            <div class="mt-4">
-                <a asp-area="Access" asp-controller="Login" asp-action="Index" class="btn btn-primary">Iniciar Sesión</a>
-            </div>
-        </div>
+<div class="text-center">
+    <div class="mb-4">
+        <span class="avatar avatar-xl bg-success-lt">
+            <i class="ti ti-check" style="font-size: 2rem;"></i>
+        </span>
+    </div>
+    <h3>Contraseña Restablecida</h3>
+    <p class="text-secondary">
+        Su contraseña ha sido restablecida exitosamente.
+    </p>
+    <div class="mt-4">
+        <a asp-area="Access" asp-controller="Login" asp-action="Index" class="btn btn-primary">
+            Iniciar Sesión
+        </a>
     </div>
 </div>
