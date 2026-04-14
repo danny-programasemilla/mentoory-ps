@@ -17,22 +17,7 @@
     </div>
 }
 
-<div class="card">
-    <div class="table-responsive">
-        <table id="projectsTable" class="table table-vcenter card-table w-100">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Descripción</th>
-                    <th>Etapa</th>
-                    <th>Estado</th>
-                    <th>Fecha de Creación</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-        </table>
-    </div>
-</div>
+@await Component.InvokeAsync("DataTable", new { tableId = "projectsTable", columns = new[] { "Nombre", "Descripción", "Etapa", "Estado", "Fecha de Creación", "Acciones" } })
 
 <form id="antiForgeryForm">
     @Html.AntiForgeryToken()
@@ -57,15 +42,13 @@
                         data: 'isActive',
                         render: function (data) {
                             return data
-                                ? '<span class="badge bg-success">Activo</span>'
-                                : '<span class="badge bg-secondary">Inactivo</span>';
+                                ? renderStatus('Activo', 'success')
+                                : renderStatus('Inactivo', 'secondary');
                         }
                     },
                     {
                         data: 'createdAtUtc',
-                        render: function (data) {
-                            return new Date(data).toLocaleDateString('es');
-                        }
+                        render: function (data) { return formatDate(data); }
                     },
                     {
                         data: 'externalId',

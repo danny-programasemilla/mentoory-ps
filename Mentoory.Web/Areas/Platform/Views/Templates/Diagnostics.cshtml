@@ -6,25 +6,7 @@
     <h2>Plantillas de Diagnóstico</h2>
 </div>
 
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title">Plantillas de Diagnóstico</h3>
-    </div>
-    <div class="table-responsive">
-        <table id="templatesTable" class="table table-vcenter card-table w-100">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Descripción</th>
-                    <th>Nivel de Suscripción</th>
-                    <th>Versión</th>
-                    <th>Estado</th>
-                    <th>Fecha de Creación</th>
-                </tr>
-            </thead>
-        </table>
-    </div>
-</div>
+@await Component.InvokeAsync("DataTable", new { tableId = "templatesTable", columns = new[] { "Nombre", "Descripción", "Nivel de Suscripción", "Versión", "Estado", "Fecha de Creación" }, title = "Plantillas de Diagnóstico" })
 
 @section Scripts {
     <script src="~/js/datatable-helper.js"></script>
@@ -51,15 +33,13 @@
                         data: 'isActive',
                         render: function (data) {
                             return data
-                                ? '<span class="badge bg-success">Activa</span>'
-                                : '<span class="badge bg-secondary">Inactiva</span>';
+                                ? renderStatus('Activa', 'success')
+                                : renderStatus('Inactiva', 'secondary');
                         }
                     },
                     {
                         data: 'createdAtUtc',
-                        render: function (data) {
-                            return new Date(data).toLocaleDateString('es');
-                        }
+                        render: function (data) { return formatDate(data); }
                     }
                 ],
                 defaultOrder: [[5, 'desc']]

@@ -82,6 +82,7 @@ Feature artifacts live in `specs/{###-feature-name}/`. See [`.specify/templates/
 - SQL Server (read-only count queries for dashboard metrics — no schema changes) (010-design-system-ux-polish)
 - C# / .NET 10.0 + Razor Views + CSS + Tabler v1.4.0 (Bootstrap 5), Tabler Icons Webfont, jQuery, DataTables 2.3.4 (011-dashboard-ui-polish)
 - SQL Server (read-only — existing `GetDashboardMetricsQuery`, no changes) (011-dashboard-ui-polish)
+- C# / .NET 10.0 + Razor Views + CSS + JavaScript + Tabler v1.4.0 (Bootstrap 5), DataTables 2.3.4, jQuery, Tabler Icons Webfont (012-table-polish)
 
 ## Code Review Standards
 After completing any implementation, review the code for:
@@ -97,6 +98,6 @@ After completing any implementation, review the code for:
 Run /simplify before presenting code to the user.
 
 ## Recent Changes
+- 012-table-polish: Added C# / .NET 10.0 + Razor Views + CSS + JavaScript + Tabler v1.4.0 (Bootstrap 5), DataTables 2.3.4, jQuery, Tabler Icons Webfont
 - 011-dashboard-ui-polish: Added C# / .NET 10.0 + Razor Views + CSS + Tabler v1.4.0 (Bootstrap 5), Tabler Icons Webfont, jQuery, DataTables 2.3.4
 - 010-design-system-ux-polish: Added C# / .NET 10.0, Razor Views, CSS, JavaScript + Tabler v1.4.0 (Bootstrap 5), jQuery, DataTables 2.3.4, MediatR 14.1
-- 009-tabler-template-migration: Added Tabler Admin Template (@tabler/core), Tabler Icons Webfont (@tabler/icons-webfont); removed standalone Bootstrap 5 CSS/JS and Font Awesome

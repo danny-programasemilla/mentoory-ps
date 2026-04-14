@@ -9,10 +9,10 @@
         </div>
     }
     <div class="table-responsive">
-        <table id="@ViewBag.TableId" class="table table-vcenter card-table w-100">
+        <table id="@ViewBag.TableId" class="table table-vcenter table-striped table-hover card-table w-100">
             <thead>
                 <tr>
-                    @foreach (var col in (object[])ViewBag.Columns)
+                    @foreach (var col in (string[])ViewBag.Columns)
                     {
                         <th>@col</th>
                     }

@@ -6,24 +6,7 @@
     <h2>Usuarios de la Plataforma</h2>
 </div>
 
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title">Usuarios</h3>
-    </div>
-    <div class="table-responsive">
-        <table id="usersTable" class="table table-vcenter card-table w-100">
-            <thead>
-                <tr>
-                    <th>Correo Electrónico</th>
-                    <th>Nombre</th>
-                    <th>Apellido</th>
-                    <th>Estado</th>
-                    <th>Fecha de Registro</th>
-                </tr>
-            </thead>
-        </table>
-    </div>
-</div>
+@await Component.InvokeAsync("DataTable", new { tableId = "usersTable", columns = new[] { "Correo Electrónico", "Nombre", "Apellido", "Estado", "Fecha de Registro" }, title = "Usuarios" })
 
 <form id="antiForgeryForm">
     @Html.AntiForgeryToken()
@@ -41,19 +24,11 @@
                     { data: 'lastName' },
                     {
                         data: 'accountStatus',
-                        render: function (data) {
-                            var badgeClass = 'bg-secondary';
-                            if (data === 'Active') badgeClass = 'bg-success';
-                            else if (data === 'Locked') badgeClass = 'bg-danger';
-                            else if (data === 'PendingVerification') badgeClass = 'bg-warning text-dark';
-                            return '<span class="badge ' + badgeClass + '">' + data + '</span>';
-                        }
+                        render: function (data) { return renderAccountStatus(data); }
                     },
                     {
                         data: 'createdAtUtc',
-                        render: function (data) {
-                            return new Date(data).toLocaleDateString('es');
-                        }
+                        render: function (data) { return formatDate(data); }
                     }
                 ],
                 defaultOrder: [[4, 'desc']]

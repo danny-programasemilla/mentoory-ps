@@ -17,24 +17,7 @@
     </div>
 }
 
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title">Incubadoras</h3>
-    </div>
-    <div class="table-responsive">
-        <table id="incubatorsTable" class="table table-vcenter card-table w-100">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Descripción</th>
-                    <th>Estado</th>
-                    <th>Fecha de Creación</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-        </table>
-    </div>
-</div>
+@await Component.InvokeAsync("DataTable", new { tableId = "incubatorsTable", columns = new[] { "Nombre", "Descripción", "Estado", "Fecha de Creación", "Acciones" }, title = "Incubadoras" })
 
 <form id="antiForgeryForm">
     @Html.AntiForgeryToken()
@@ -58,15 +41,13 @@
                         data: 'isActive',
                         render: function (data) {
                             return data
-                                ? '<span class="badge bg-success">Activa</span>'
-                                : '<span class="badge bg-secondary">Inactiva</span>';
+                                ? renderStatus('Activa', 'success')
+                                : renderStatus('Inactiva', 'secondary');
                         }
                     },
                     {
                         data: 'createdAtUtc',
-                        render: function (data) {
-                            return new Date(data).toLocaleDateString('es');
-                        }
+                        render: function (data) { return formatDate(data); }
                     },
                     {
                         data: 'externalId',

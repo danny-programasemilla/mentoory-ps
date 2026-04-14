@@ -1,6 +1,57 @@
 // Mentoory - Reusable DataTable initialization and render helpers
 
 /**
+ * Keyword-to-icon map for automatic header icon injection.
+ * Keys are lowercase substrings matched against column header text.
+ */
+var COLUMN_ICON_MAP = {
+    'correo': 'ti-mail',
+    'email': 'ti-mail',
+    'nombre': 'ti-user',
+    'apellido': 'ti-users',
+    'estado': 'ti-circle-check',
+    'fecha': 'ti-calendar',
+    'descripcion': 'ti-file-text',
+    'acciones': 'ti-settings',
+    'etapa': 'ti-list-check',
+    'proyecto': 'ti-briefcase',
+    'preguntas': 'ti-help-circle',
+    'version': 'ti-git-branch',
+    'suscripcion': 'ti-crown',
+    'nivel': 'ti-crown',
+    'sincronizacion': 'ti-refresh',
+    'modo': 'ti-refresh'
+};
+
+function stripAccents(str) {
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+/**
+ * Apply header icons to a DataTable based on column header text.
+ * Scans each <th> and prepends a matching Tabler icon if found.
+ * @param {string} tableId - The table element ID
+ */
+function applyHeaderIcons(tableId) {
+    var headers = document.querySelectorAll('#' + tableId + ' thead th');
+    var keywords = Object.keys(COLUMN_ICON_MAP);
+    headers.forEach(function (th) {
+        if (th.querySelector('.ti')) return;
+        // DataTables 2.x wraps header text in .dt-column-title
+        var target = th.querySelector('.dt-column-title') || th;
+        var text = stripAccents(target.textContent.trim().toLowerCase());
+        for (var i = 0; i < keywords.length; i++) {
+            if (text.indexOf(keywords[i]) !== -1) {
+                var icon = document.createElement('i');
+                icon.className = 'ti ' + COLUMN_ICON_MAP[keywords[i]];
+                target.prepend(icon);
+                break;
+            }
+        }
+    });
+}
+
+/**
  * Initialize a DataTable with server-side processing
  * @param {string} tableId - The table element ID
  * @param {object} config - Configuration object
@@ -81,7 +132,10 @@ function initDataTable(tableId, config) {
             }
         },
         responsive: true,
-        dom: '<"row"<"col-sm-12"tr>><"row"<"col-sm-5"i><"col-sm-7"p>>'
+        dom: '<"row"<"col-sm-12"tr>><"row"<"col-sm-5"i><"col-sm-7"p>>',
+        initComplete: function () {
+            applyHeaderIcons(tableId);
+        }
     });
 }
 
@@ -151,6 +205,30 @@ function renderAvatar(firstName, lastName, email) {
         '<div class="text-truncate">' + escapeHtml(fullName || email || '') + '</div>' +
         (email ? '<div class="text-secondary text-truncate small">' + escapeHtml(email) + '</div>' : '') +
         '</div></div>';
+}
+
+/**
+ * Format an ISO date string as a localized Spanish date
+ * @param {string} isoString - ISO 8601 date string
+ * @returns {string} Formatted date string
+ */
+function formatDate(isoString) {
+    if (!isoString) return '';
+    var date = new Date(isoString);
+    if (isNaN(date.getTime())) return isoString;
+    return date.toLocaleDateString('es');
+}
+
+/**
+ * Render account status (Active, Locked, PendingVerification) as a status dot
+ * @param {string} status - Account status value from the server
+ * @returns {string} HTML for the status indicator
+ */
+function renderAccountStatus(status) {
+    if (status === 'Active') return renderStatus('Active', 'success');
+    if (status === 'Locked') return renderStatus('Locked', 'danger');
+    if (status === 'PendingVerification') return renderStatus('PendingVerification', 'warning', true);
+    return renderStatus(status, 'secondary');
 }
 
 /**

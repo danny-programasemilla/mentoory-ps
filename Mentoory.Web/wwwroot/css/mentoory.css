@@ -132,6 +132,16 @@ a:hover {
 .dt-info {
     font-size: var(--tblr-body-font-size);
     color: var(--tblr-secondary-color);
+    padding-left: 1rem;
+}
+
+.dt-paging {
+    padding-right: 1rem;
+}
+
+/* ── Table header icon spacing ── */
+.table thead th .ti {
+    margin-right: 0.35rem;
 }
 
 .dt-search input {

@@ -26,24 +26,7 @@
     </div>
 }
 
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title">Listado de Formularios</h3>
-    </div>
-    <div class="table-responsive">
-        <table id="diagnosticFormsTable" class="table table-vcenter card-table w-100">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Modo Sincronización</th>
-                    <th>Preguntas</th>
-                    <th>Fecha de Creación</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-        </table>
-    </div>
-</div>
+@await Component.InvokeAsync("DataTable", new { tableId = "diagnosticFormsTable", columns = new[] { "Nombre", "Modo Sincronización", "Preguntas", "Fecha de Creación", "Acciones" }, title = "Listado de Formularios" })
 
 <form id="antiForgeryForm">
     @Html.AntiForgeryToken()
@@ -61,16 +44,14 @@
                         data: 'syncMode',
                         render: function (data) {
                             return data === 0
-                                ? '<span class="badge bg-secondary">Desconectado</span>'
-                                : '<span class="badge bg-info">Sincronización parcial</span>';
+                                ? renderStatus('Desconectado', 'secondary')
+                                : renderStatus('Sincronización parcial', 'info');
                         }
                     },
                     { data: 'questionCount' },
                     {
                         data: 'createdAtUtc',
-                        render: function (data) {
-                            return new Date(data).toLocaleDateString('es');
-                        }
+                        render: function (data) { return formatDate(data); }
                     },
                     {
                         data: 'externalId',

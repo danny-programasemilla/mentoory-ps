@@ -6,23 +6,7 @@
     <h2>Mi Diagnóstico</h2>
 </div>
 
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title">Formularios Disponibles</h3>
-    </div>
-    <div class="table-responsive">
-        <table id="participantFormsTable" class="table table-vcenter card-table w-100">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Preguntas</th>
-                    <th>Fecha de Creación</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-        </table>
-    </div>
-</div>
+@await Component.InvokeAsync("DataTable", new { tableId = "participantFormsTable", columns = new[] { "Nombre", "Preguntas", "Fecha de Creación", "Acciones" }, title = "Formularios Disponibles" })
 
 @section Scripts {
     <script src="~/js/datatable-helper.js"></script>
@@ -35,9 +19,7 @@
                     { data: 'questionCount' },
                     {
                         data: 'createdAtUtc',
-                        render: function (data) {
-                            return new Date(data).toLocaleDateString('es');
-                        }
+                        render: function (data) { return formatDate(data); }
                     },
                     {
                         data: 'externalId',
