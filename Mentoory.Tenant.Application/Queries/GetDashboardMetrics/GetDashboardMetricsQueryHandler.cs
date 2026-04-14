@@ -1,13 +1,13 @@
-using Mentoory.Access.Domain.Repositories;
+using MediatR;
+using Mentoory.Access.Application.Queries.GetActiveUserCount;
 using Mentoory.Shared.Application;
 using Mentoory.Shared.Application.MediatR;
 using Mentoory.Tenant.Domain.Repositories;
-using Microsoft.EntityFrameworkCore;
 
 namespace Mentoory.Tenant.Application.Queries.GetDashboardMetrics;
 
-public class GetDashboardMetricsQueryHandler(
-    IRoleAssignmentRepository roleAssignmentRepository,
+public sealed class GetDashboardMetricsQueryHandler(
+    ISender sender,
     IProjectRepository projectRepository)
     : BaseCommandHandler<GetDashboardMetricsQuery, DashboardMetricsDto>
 {
@@ -15,11 +15,8 @@ public class GetDashboardMetricsQueryHandler(
         GetDashboardMetricsQuery request,
         CancellationToken cancellationToken)
     {
-        var userCount = await roleAssignmentRepository.Query()
-            .Where(ra => ra.IncubatorId == request.IncubatorId && ra.IsActive)
-            .Select(ra => ra.UserId)
-            .Distinct()
-            .CountAsync(cancellationToken);
+        var userCountResult = await sender.Send(new GetActiveUserCountQuery(request.IncubatorId), cancellationToken);
+        var userCount = userCountResult.IsSuccess ? userCountResult.Value : 0;
 
         var projectCount = await projectRepository.CountAsync(
             projectRepository.Query().Where(p => p.IncubatorId == request.IncubatorId),

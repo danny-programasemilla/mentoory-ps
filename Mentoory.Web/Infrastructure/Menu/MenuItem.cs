@@ -18,5 +18,5 @@ public class MenuItem
 
     public string[] Roles { get; }
 
-    public int? BadgeCount { get; set; }
+    public int? BadgeCount { get; init; }
 }

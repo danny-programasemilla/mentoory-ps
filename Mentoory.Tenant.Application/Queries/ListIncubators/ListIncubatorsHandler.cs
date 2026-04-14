@@ -37,20 +37,20 @@ public partial class ListIncubatorsHandler(
         // Apply search filter
         if (!string.IsNullOrWhiteSpace(dt.SearchValue))
         {
-            var search = dt.SearchValue.ToLowerInvariant();
-            query = query.Where(i => i.Name.ToLower().Contains(search));
+            var search = dt.SearchValue.ToUpperInvariant();
+            query = query.Where(i => i.Name.ToUpper().Contains(search));
         }
 
         if (dt.Filters is { Count: > 0 })
         {
             if (dt.Filters.TryGetValue("name", out var nameFilter) && !string.IsNullOrEmpty(nameFilter))
             {
-                query = query.Where(i => i.Name.ToLower().Contains(nameFilter.ToLowerInvariant()));
+                query = query.Where(i => i.Name.ToUpper().Contains(nameFilter.ToUpperInvariant()));
             }
 
             if (dt.Filters.TryGetValue("description", out var descFilter) && !string.IsNullOrEmpty(descFilter))
             {
-                query = query.Where(i => i.Description != null && i.Description.ToLower().Contains(descFilter.ToLowerInvariant()));
+                query = query.Where(i => i.Description != null && i.Description.ToUpper().Contains(descFilter.ToUpperInvariant()));
             }
 
             if (dt.Filters.TryGetValue("isActive", out var activeFilter) && !string.IsNullOrEmpty(activeFilter)
