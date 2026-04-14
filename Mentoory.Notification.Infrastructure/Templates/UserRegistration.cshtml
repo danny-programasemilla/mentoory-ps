@@ -1,0 +1,31 @@
+@{ Layout = "_EmailLayout.cshtml"; }
+<h2 style="margin: 0 0 16px 0; font-size: 20px; color: #333;">Bienvenido/a a Mentoory</h2>
+<p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #555;">
+    Hola <strong>@Model.FirstName @Model.LastName</strong>,
+</p>
+<p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #555;">
+    Tu cuenta ha sido creada exitosamente en la plataforma Mentoory.
+    Para completar el proceso de registro, por favor verifica tu correo electrónico haciendo clic en el siguiente enlace:
+</p>
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin: 24px 0;">
+    <tr>
+        <td align="center">
+            <a href="@Model.VerificationUrl"
+               style="display: inline-block; padding: 12px 32px; background-color: #4e73df; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 15px; font-weight: 600;">
+                Verificar mi correo electrónico
+            </a>
+        </td>
+    </tr>
+</table>
+<p style="margin: 0 0 8px 0; font-size: 13px; color: #858796;">
+    Si no puedes hacer clic en el botón, copia y pega el siguiente enlace en tu navegador:
+</p>
+<p style="margin: 0 0 16px 0; font-size: 13px; color: #4e73df; word-break: break-all;">
+    @Model.VerificationUrl
+</p>
+<div style="background-color: #f8f9fc; border-radius: 6px; padding: 12px 16px; border: 1px solid #e3e6f0;">
+    <p style="margin: 0; font-size: 13px; color: #858796;">
+        <strong>Importante:</strong> Este enlace expirará en <strong>@Model.ExpirationHours horas</strong>.
+        Si el enlace ha expirado, solicita uno nuevo al administrador de tu plataforma.
+    </p>
+</div>

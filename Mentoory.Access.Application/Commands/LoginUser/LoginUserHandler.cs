@@ -1,10 +1,12 @@
 using System.Security.Cryptography;
 using Mentoory.Access.Application.Configuration;
+using Mentoory.Access.Contracts.IntegrationEvents;
 using Mentoory.Access.Domain.Aggregates.AuthSession;
 using Mentoory.Access.Domain.Enums;
 using Mentoory.Access.Domain.Repositories;
 using Mentoory.Access.Domain.Services;
 using Mentoory.Shared.Application;
+using Mentoory.Shared.Application.IntegrationEvents;
 using Mentoory.Shared.Application.MediatR;
 using Mentoory.Shared.Application.TimeProvider;
 using Microsoft.Extensions.Logging;
@@ -18,6 +20,7 @@ public partial class LoginUserHandler : BaseCommandHandler<LoginUserCommand, Log
     private readonly IPasswordHasher _passwordHasher;
     private readonly ITimeProvider _timeProvider;
     private readonly ISystemConfigurationReader _configReader;
+    private readonly IIntegrationEventService _eventService;
     private readonly ILogger<LoginUserHandler> _logger;
 
     public LoginUserHandler(
@@ -26,6 +29,7 @@ public partial class LoginUserHandler : BaseCommandHandler<LoginUserCommand, Log
         IPasswordHasher passwordHasher,
         ITimeProvider timeProvider,
         ISystemConfigurationReader configReader,
+        IIntegrationEventService eventService,
         ILogger<LoginUserHandler> logger)
     {
         _userRepository = userRepository;
@@ -33,6 +37,7 @@ public partial class LoginUserHandler : BaseCommandHandler<LoginUserCommand, Log
         _passwordHasher = passwordHasher;
         _timeProvider = timeProvider;
         _configReader = configReader;
+        _eventService = eventService;
         _logger = logger;
     }
 
@@ -80,6 +85,7 @@ public partial class LoginUserHandler : BaseCommandHandler<LoginUserCommand, Log
             return Failure(ResultErrorCodes.GenericError, ("Login", "Credenciales inválidas."));
         }
 
+        var failedAttemptCount = user.FailedLoginAttempts;
         user.RecordSuccessfulLogin(utcNow);
 
         // Invalidate existing active sessions (single-session enforcement)
@@ -107,6 +113,17 @@ public partial class LoginUserHandler : BaseCommandHandler<LoginUserCommand, Log
         await _userRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
 
         LogLoginSucceeded(normalizedEmail);
+
+        await _eventService.PublishAsync(
+            new LoginAttemptEvent(
+                user.Id,
+                user.Email.Value,
+                true,
+                request.IpAddress,
+                request.UserAgent,
+                failedAttemptCount,
+                utcNow),
+            cancellationToken);
 
         return Success(new LoginUserResult(
             session,

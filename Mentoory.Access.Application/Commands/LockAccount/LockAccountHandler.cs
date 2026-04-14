@@ -1,4 +1,4 @@
-using Mentoory.Access.Application.IntegrationEvents;
+using Mentoory.Access.Contracts.IntegrationEvents;
 using Mentoory.Access.Domain.Repositories;
 using Mentoory.Shared.Application;
 using Mentoory.Shared.Application.IntegrationEvents;

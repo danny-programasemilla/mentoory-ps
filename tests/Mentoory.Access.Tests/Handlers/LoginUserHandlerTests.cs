@@ -7,6 +7,7 @@ using Mentoory.Access.Domain.Enums;
 using Mentoory.Access.Domain.Repositories;
 using Mentoory.Access.Domain.Services;
 using Mentoory.Shared.Application;
+using Mentoory.Shared.Application.IntegrationEvents;
 using Mentoory.Shared.Application.TimeProvider;
 using Mentoory.Shared.Domain.SeedWork;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -25,6 +26,7 @@ public class LoginUserHandlerTests
     private readonly Mock<ITimeProvider> _timeProvider = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
     private readonly Mock<ISystemConfigurationReader> _configReader = new();
+    private readonly Mock<IIntegrationEventService> _eventService = new();
     private readonly LoginUserHandler _handler;
 
     public LoginUserHandlerTests()
@@ -51,6 +53,7 @@ public class LoginUserHandlerTests
             _passwordHasher.Object,
             _timeProvider.Object,
             _configReader.Object,
+            _eventService.Object,
             NullLogger<LoginUserHandler>.Instance);
     }
 
