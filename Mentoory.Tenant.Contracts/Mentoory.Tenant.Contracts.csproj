@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+        <ProjectReference Include="..\Mentoory.Shared.Application\Mentoory.Shared.Application.csproj"/>
+    </ItemGroup>
+</Project>

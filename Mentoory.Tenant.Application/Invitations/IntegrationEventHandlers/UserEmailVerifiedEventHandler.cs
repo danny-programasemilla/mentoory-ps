@@ -1,5 +1,5 @@
 using MediatR;
-using Mentoory.Access.Application.IntegrationEvents;
+using Mentoory.Access.Contracts.IntegrationEvents;
 using Mentoory.Shared.Application.TimeProvider;
 using Mentoory.Shared.Domain.Constants;
 using Mentoory.Tenant.Domain.Enums;

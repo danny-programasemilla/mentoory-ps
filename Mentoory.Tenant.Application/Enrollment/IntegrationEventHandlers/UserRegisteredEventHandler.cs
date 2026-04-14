@@ -1,5 +1,5 @@
 using MediatR;
-using Mentoory.Access.Application.IntegrationEvents;
+using Mentoory.Access.Contracts.IntegrationEvents;
 using Mentoory.Shared.Application.TimeProvider;
 using Mentoory.Tenant.Application.Commands.EnrollParticipant;
 using Mentoory.Tenant.Application.Invitations.Commands.CreateInvitation;

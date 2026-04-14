@@ -1,6 +1,6 @@
 using Mentoory.Shared.Application.IntegrationEvents;
 
-namespace Mentoory.Tenant.Application.IntegrationEvents;
+namespace Mentoory.Tenant.Contracts.IntegrationEvents;
 
 /// <summary>
 /// Integration event raised when a new incubator is created.
