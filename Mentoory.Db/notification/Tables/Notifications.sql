@@ -14,12 +14,14 @@ CREATE TABLE [notification].[Notifications]
     [LoginContext_IsSuspicious]    BIT            NULL,
     CONSTRAINT [PK_Notifications] PRIMARY KEY CLUSTERED ([Id]),
     CONSTRAINT [UQ_Notifications_ExternalId] UNIQUE ([ExternalId])
-);
+)
+GO
 
 CREATE UNIQUE NONCLUSTERED INDEX [IX_Notifications_SourceEventId_Type]
     ON [notification].[Notifications] ([SourceEventId], [NotificationType])
-    WHERE [SourceEventId] IS NOT NULL;
+    WHERE [SourceEventId] IS NOT NULL
+GO
 
 CREATE NONCLUSTERED INDEX [IX_Notifications_ScheduledForUtc]
     ON [notification].[Notifications] ([ScheduledForUtc])
-    INCLUDE ([NotificationType]);
+    INCLUDE ([NotificationType])

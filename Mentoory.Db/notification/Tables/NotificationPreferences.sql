@@ -9,4 +9,4 @@ CREATE TABLE [notification].[NotificationPreferences]
     CONSTRAINT [PK_NotificationPreferences] PRIMARY KEY CLUSTERED ([Id]),
     CONSTRAINT [UQ_NotificationPreferences_ExternalId] UNIQUE ([ExternalId]),
     CONSTRAINT [UQ_NotificationPreferences_User_Type] UNIQUE ([UserId], [NotificationType])
-);
+)
