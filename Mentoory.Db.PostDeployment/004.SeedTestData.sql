@@ -380,13 +380,6 @@ BEGIN
     VALUES (NEWID(), @MultiRoleId, @Incubator1Id, NULL, N'IncubatorAdmin', 1, @Now, @Now);
 END
 
--- IncubatorAdmin @ Beta
-IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @MultiRoleId AND [IncubatorId] = @Incubator2Id AND [ProjectId] IS NULL AND [Role] = N'IncubatorAdmin' AND [IsActive] = 1)
-BEGIN
-    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
-    VALUES (NEWID(), @MultiRoleId, @Incubator2Id, NULL, N'IncubatorAdmin', 1, @Now, @Now);
-END
-
 -- ProjectCoordinator @ Alpha / Innovación
 IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @MultiRoleId AND [IncubatorId] = @Incubator1Id AND [ProjectId] = @Project1Id AND [Role] = N'ProjectCoordinator' AND [IsActive] = 1)
 BEGIN
