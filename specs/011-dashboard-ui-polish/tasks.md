@@ -23,10 +23,10 @@
 
 ### Implementation for User Story 1
 
-- [ ] T001 [US1] Rewrite navigation cards to use correct Tabler child-div card-status-start pattern (bg-primary, bg-success, bg-info) in `Mentoory.Web/Areas/Administration/Views/Dashboard/Index.cshtml`
-- [ ] T002 [US1] Enhance stat cards with prominent metric typography (h1 for count, text-secondary for description) in `Mentoory.Web/Areas/Administration/Views/Dashboard/Index.cshtml`
-- [ ] T003 [US1] Add data-testid attributes to all dashboard cards (stat-card-users, stat-card-projects, nav-card-projects, nav-card-users, nav-card-batch) in `Mentoory.Web/Areas/Administration/Views/Dashboard/Index.cshtml`
-- [ ] T004 [US1] Verify build compiles clean with `dotnet build` (zero warnings)
+- [X] T001 [US1] Rewrite navigation cards to use correct Tabler child-div card-status-start pattern (bg-primary, bg-success, bg-info) in `Mentoory.Web/Areas/Administration/Views/Dashboard/Index.cshtml`
+- [X] T002 [US1] Enhance stat cards with prominent metric typography (h1 for count, text-secondary for description) in `Mentoory.Web/Areas/Administration/Views/Dashboard/Index.cshtml`
+- [X] T003 [US1] Add data-testid attributes to all dashboard cards (stat-card-users, stat-card-projects, nav-card-projects, nav-card-users, nav-card-batch) in `Mentoory.Web/Areas/Administration/Views/Dashboard/Index.cshtml`
+- [X] T004 [US1] Verify build compiles clean with `dotnet build` (zero warnings)
 
 **Checkpoint**: Dashboard renders without layout bugs — no vertical text, no full-height colored lines, no overlapping content.
 
@@ -40,11 +40,11 @@
 
 ### Implementation for User Story 2
 
-- [ ] T005 [US2] Add card box-shadow at rest and transition property (box-shadow 0.2s ease, transform 0.2s ease) in `Mentoory.Web/wwwroot/css/mentoory.css`
-- [ ] T006 [US2] Add interactive card hover state with translateY(-2px) lift and elevated shadow via .card-link-hover class in `Mentoory.Web/wwwroot/css/mentoory.css`
-- [ ] T007 [US2] Apply .card-link-hover class to navigation cards in `Mentoory.Web/Areas/Administration/Views/Dashboard/Index.cshtml`
-- [ ] T008 [US2] Verify brand coral color is visually present in avatar backgrounds, card-status-start strips, and link hover states in `Mentoory.Web/wwwroot/css/mentoory.css`
-- [ ] T009 [US2] Verify build compiles clean with `dotnet build` (zero warnings)
+- [X] T005 [US2] Add card box-shadow at rest and transition property (box-shadow 0.2s ease, transform 0.2s ease) in `Mentoory.Web/wwwroot/css/mentoory.css`
+- [X] T006 [US2] Add interactive card hover state with translateY(-2px) lift and elevated shadow via .card-link-hover class in `Mentoory.Web/wwwroot/css/mentoory.css`
+- [X] T007 [US2] Apply .card-link-hover class to navigation cards in `Mentoory.Web/Areas/Administration/Views/Dashboard/Index.cshtml`
+- [X] T008 [US2] Verify brand coral color is visually present in avatar backgrounds, card-status-start strips, and link hover states in `Mentoory.Web/wwwroot/css/mentoory.css`
+- [X] T009 [US2] Verify build compiles clean with `dotnet build` (zero warnings)
 
 **Checkpoint**: Dashboard cards have depth, hover effects work, brand identity is felt.
 
@@ -58,9 +58,9 @@
 
 ### E2E Test Implementation
 
-- [ ] T010 [US1] Enhance IncubatorAdminDashboard_ShouldRender_WithContent to assert stat cards and nav cards are visible via data-testid selectors in `tests/Mentoory.Tests.E2E/Tests/DashboardRenderingTests.cs`
-- [ ] T011 [US1] Add test IncubatorAdminDashboard_ShouldRender_StatCardMetrics to verify stat cards display numeric values and nav card links render horizontally in `tests/Mentoory.Tests.E2E/Tests/DashboardRenderingTests.cs`
-- [ ] T012 [US1] Run E2E tests with `dotnet test tests/Mentoory.Tests.E2E --filter "DashboardRendering"` and verify all pass
+- [X] T010 [US1] Enhance IncubatorAdminDashboard_ShouldRender_WithContent to assert stat cards and nav cards are visible via data-testid selectors in `tests/Mentoory.Tests.E2E/Tests/DashboardRenderingTests.cs`
+- [X] T011 [US1] Add test IncubatorAdminDashboard_ShouldRender_StatCardMetrics to verify stat cards display numeric values and nav card links render horizontally in `tests/Mentoory.Tests.E2E/Tests/DashboardRenderingTests.cs`
+- [X] T012 [US1] Run E2E tests with `dotnet test tests/Mentoory.Tests.E2E --filter "DashboardRendering"` and verify all pass
 
 **Checkpoint**: E2E tests pass, confirming card structure is correct.
 
@@ -74,12 +74,12 @@
 
 ### Visual QA
 
-- [ ] T013 [US3] Visual QA: Users Index at `/Administration/Users` — table layout, sidebar, topbar intact
-- [ ] T014 [US3] Visual QA: Projects Index at `/Administration/Projects` — card/table layout intact
-- [ ] T015 [US3] Visual QA: Diagnostics Index at `/Coordination/Diagnostics` — page renders correctly
-- [ ] T016 [US3] Visual QA: Batch Upload at `/Administration/BatchUpload` — page renders correctly
-- [ ] T017 [US3] Visual QA: Sidebar navigation on any page — active states, hover effects, section headers correct
-- [ ] T018 [US3] Visual QA: Login page at `/Access/Login` — auth gradient panel and decorative elements intact
+- [X] T013 [US3] Visual QA: Users Index at `/Administration/Users` — table layout, sidebar, topbar intact
+- [X] T014 [US3] Visual QA: Projects Index at `/Administration/Projects` — card/table layout intact
+- [X] T015 [US3] Visual QA: Diagnostics Index at `/Coordination/Diagnostics` — page renders correctly
+- [X] T016 [US3] Visual QA: Batch Upload at `/Administration/BatchUpload` — page renders correctly
+- [X] T017 [US3] Visual QA: Sidebar navigation on any page — active states, hover effects, section headers correct
+- [X] T018 [US3] Visual QA: Login page at `/Access/Login` — auth gradient panel and decorative elements intact
 
 **Checkpoint**: All 6 QA pages render correctly. No regressions.
 
@@ -89,9 +89,9 @@
 
 **Purpose**: Final verification and cleanup.
 
-- [ ] T019 Run full build verification with `dotnet build` (zero warnings)
-- [ ] T020 Run full E2E test suite with `dotnet test tests/Mentoory.Tests.E2E` to ensure no regressions
-- [ ] T021 Run quickstart.md validation steps
+- [X] T019 Run full build verification with `dotnet build` (zero warnings)
+- [X] T020 Run full E2E test suite with `dotnet test tests/Mentoory.Tests.E2E` to ensure no regressions
+- [X] T021 Run quickstart.md validation steps
 
 ---
 

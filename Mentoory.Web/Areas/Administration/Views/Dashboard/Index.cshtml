@@ -28,7 +28,7 @@ else
 {
     <div class="row row-deck row-cards mb-4">
         <div class="col-sm-6 col-xl-4">
-            <div class="card card-sm">
+            <div class="card card-sm" data-testid="stat-card-users">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-auto">
@@ -37,7 +37,7 @@ else
                             </span>
                         </div>
                         <div class="col">
-                            <div class="font-weight-medium">@Model.UserCount Usuarios</div>
+                            <div class="h1 mb-0">@Model.UserCount</div>
                             <div class="text-secondary">Usuarios activos en esta incubadora</div>
                         </div>
                     </div>
@@ -45,7 +45,7 @@ else
             </div>
         </div>
         <div class="col-sm-6 col-xl-4">
-            <div class="card card-sm">
+            <div class="card card-sm" data-testid="stat-card-projects">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-auto">
@@ -54,7 +54,7 @@ else
                             </span>
                         </div>
                         <div class="col">
-                            <div class="font-weight-medium">@Model.ProjectCount Proyectos</div>
+                            <div class="h1 mb-0">@Model.ProjectCount</div>
                             <div class="text-secondary">Proyectos en esta incubadora</div>
                         </div>
                     </div>
@@ -65,7 +65,8 @@ else
 
     <div class="row row-deck row-cards">
         <div class="col-md-6 col-xl-4">
-            <div class="card card-status-start border-start border-primary border-3">
+            <div class="card card-link-hover" data-testid="nav-card-projects">
+                <div class="card-status-start bg-primary"></div>
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">
@@ -87,7 +88,8 @@ else
             </div>
         </div>
         <div class="col-md-6 col-xl-4">
-            <div class="card card-status-start border-start border-success border-3">
+            <div class="card card-link-hover" data-testid="nav-card-users">
+                <div class="card-status-start bg-success"></div>
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">
@@ -109,7 +111,8 @@ else
             </div>
         </div>
         <div class="col-md-6 col-xl-4">
-            <div class="card card-status-start border-start border-info border-3">
+            <div class="card card-link-hover" data-testid="nav-card-batch">
+                <div class="card-status-start bg-info"></div>
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">

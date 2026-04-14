@@ -57,17 +57,70 @@ public class DashboardRenderingTests
             await page.GotoAsync($"{_fixture.BaseUrl}/Administration/Dashboard");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // The dashboard should not be empty and should not show a server error
             var pageContent = await page.ContentAsync();
             pageContent.Should().NotContain("Internal Server Error");
 
             var heading = page.Locator("h1, h2").First;
             (await heading.IsVisibleAsync()).Should().BeTrue(
                 "IncubatorAdmin dashboard should display a heading");
+
+            var expectedCards = new[]
+            {
+                "stat-card-users",
+                "stat-card-projects",
+                "nav-card-projects",
+                "nav-card-users",
+                "nav-card-batch",
+            };
+
+            foreach (var testId in expectedCards)
+            {
+                var card = page.Locator($"[data-testid='{testId}']");
+                (await card.IsVisibleAsync()).Should().BeTrue(
+                    $"card '{testId}' should be visible");
+            }
         }
         finally
         {
             await _fixture.TakeScreenshotOnFailureAsync(page, nameof(IncubatorAdminDashboard_ShouldRender_WithContent));
+            await page.Context.DisposeAsync();
+        }
+    }
+
+    [Fact]
+    public async Task IncubatorAdminDashboard_ShouldRender_StatCardMetrics()
+    {
+        var page = await _fixture.CreatePageAsync();
+        try
+        {
+            await LoginAsync(page, "incadmin1@test.mentoory.com", "Test123!@#");
+
+            await page.GotoAsync($"{_fixture.BaseUrl}/Administration/Dashboard");
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            var usersMetric = page.Locator("[data-testid='stat-card-users'] .h1");
+            var usersText = await usersMetric.TextContentAsync();
+            usersText.Should().NotBeNullOrWhiteSpace(
+                "users stat card should display a metric value");
+            usersText!.Trim().Should().MatchRegex(@"^\d+$",
+                "users metric should be a number");
+
+            var projectsMetric = page.Locator("[data-testid='stat-card-projects'] .h1");
+            var projectsText = await projectsMetric.TextContentAsync();
+            projectsText.Should().NotBeNullOrWhiteSpace(
+                "projects stat card should display a metric value");
+            projectsText!.Trim().Should().MatchRegex(@"^\d+$",
+                "projects metric should be a number");
+
+            var navFooterLink = page.Locator("[data-testid='nav-card-projects'] .card-footer a");
+            var box = await navFooterLink.BoundingBoxAsync();
+            box.Should().NotBeNull("nav card footer link should be rendered");
+            box!.Width.Should().BeGreaterThan(box.Height,
+                "footer link should render horizontally, not vertically");
+        }
+        finally
+        {
+            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(IncubatorAdminDashboard_ShouldRender_StatCardMetrics));
             await page.Context.DisposeAsync();
         }
     }

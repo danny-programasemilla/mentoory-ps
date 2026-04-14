@@ -83,6 +83,20 @@ a:hover {
     color: #fff;
 }
 
+/* ── Card depth & hover ── */
+.card {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.card-link-hover {
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card-link-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
 /* ── Form focus ring ── */
 .form-control:focus,
 .form-select:focus {
