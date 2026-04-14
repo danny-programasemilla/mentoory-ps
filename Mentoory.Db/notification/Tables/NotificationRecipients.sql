@@ -11,9 +11,10 @@ CREATE TABLE [notification].[NotificationRecipients]
     CONSTRAINT [PK_NotificationRecipients] PRIMARY KEY CLUSTERED ([Id]),
     CONSTRAINT [FK_NotificationRecipients_Notifications]
         FOREIGN KEY ([NotificationId]) REFERENCES [notification].[Notifications]([Id])
-);
+)
+GO
 
 CREATE NONCLUSTERED INDEX [IX_NotificationRecipients_Status]
     ON [notification].[NotificationRecipients] ([DeliveryStatus])
     INCLUDE ([NotificationId], [SentAtUtc])
-    WHERE [DeliveryStatus] = 0;
+    WHERE [DeliveryStatus] = 0

@@ -9,4 +9,4 @@ CREATE TABLE [notification].[DeliveryAttempts]
     CONSTRAINT [PK_DeliveryAttempts] PRIMARY KEY CLUSTERED ([Id]),
     CONSTRAINT [FK_DeliveryAttempts_NotificationRecipients]
         FOREIGN KEY ([NotificationRecipientId]) REFERENCES [notification].[NotificationRecipients]([Id])
-);
+)
