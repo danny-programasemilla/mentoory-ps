@@ -10,6 +10,7 @@ Last updated: 2026-04-13
 | 02 | 2026-04-13 | tabler-template-migration | spec-created | 009 |
 | 03 | 2026-04-13 | design-system-ux-polish | spec-created | 010, 011 |
 | 04 | 2026-04-13 | table-polish | spec-created | 012 |
+| 05 | 2026-04-13 | table-filtering | spec-created | 013 |
 
 ## Open Threads
 - GlobalAdmin incubator dropdown may need search/filter at scale (from #01)
@@ -20,6 +21,9 @@ Last updated: 2026-04-13
 - Global card shadow/hover styles may need tuning after visual QA (from #03 revisit)
 - Should the icon registry be extensible by individual views? (from #04)
 - Consider standardizing date formatting across tables in a follow-up (from #04)
+- Filter panel animation: CSS transitions vs Bootstrap collapse (from #05)
+- URL param namespacing strategy to avoid conflicts with existing query params (from #05)
+- Filter panel layout on tables with 7+ filterable columns (from #05)
 
 ## Parked Ideas
 (none)
