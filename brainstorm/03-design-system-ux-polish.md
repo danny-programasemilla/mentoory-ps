@@ -45,3 +45,32 @@ After migrating from Bootstrap 5 to the Tabler admin template (brainstorm #02, s
 - Logo SVG delivery mechanism: extract from PDF or create fresh? Where to store in wwwroot?
 - CSS variable prefix: `--mentory-` (current) vs `--mentoory-` (matching product name exactly)
 - Whether global `--tblr-primary` override might cause issues with non-primary Tabler components
+
+---
+
+## Revisit: 2026-04-13
+
+### Updated Problem Framing
+
+Spec 010 was implemented but the result has visual bugs and lacks polish. The root cause: Tabler's `card-status-start` was used as a CSS class on the card element instead of as a child `<div>` inside the card. This caused full-height colored lines, vertically stacked text in card footers, and overlapping content on the dashboard. Beyond the bugs, the overall UI feels generic — no card shadows, no hover effects, no visual depth.
+
+### New Approaches Considered
+
+#### A: Surgical Fix
+Fix card-status-start markup, add CSS polish, QA key pages. Minimal risk.
+
+#### B: Dashboard Rewrite + Polish (Selected)
+Rewrite the dashboard view from scratch using correct Tabler patterns, add comprehensive CSS polish (shadows, hover transitions, typography hierarchy, brand warmth) to mentoory.css, and visually QA 6 key pages for regressions.
+
+#### C: CSS-Only Fix
+Fix only the CSS/markup bugs, skip polish. Fast but doesn't address the "wow factor" concern.
+
+### Updated Decision
+
+**Approach B selected.** A clean rewrite of the ~130-line dashboard view using correct Tabler child-div patterns, plus shared CSS polish that will improve all card-based pages across the app. Visual QA on Dashboard, Users, Projects, Diagnostics, Batch Upload, and Login pages.
+
+New spec created: `specs/011-dashboard-ui-polish/`
+
+### Open Threads
+
+- Global card shadow/hover styles may need tuning after visual QA reveals how they affect non-dashboard pages
