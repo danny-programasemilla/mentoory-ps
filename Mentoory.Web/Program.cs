@@ -10,6 +10,8 @@ using Mentoory.Tenant.Application;
 using Mentoory.Tenant.Infrastructure;
 using Mentoory.Diagnostic.Application;
 using Mentoory.Diagnostic.Infrastructure;
+using Mentoory.Notification.Application;
+using Mentoory.Notification.Infrastructure;
 using Mentoory.Shared.Application.Audit;
 using Mentoory.Shared.Application.Behaviors;
 using Mentoory.Shared.Application.Interfaces;
@@ -60,6 +62,8 @@ builder.Services.AddTenantApplication();
 builder.AddTenantInfrastructure();
 builder.Services.AddDiagnosticApplication();
 builder.AddDiagnosticInfrastructure();
+builder.Services.AddNotificationApplication();
+builder.AddNotificationInfrastructure();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

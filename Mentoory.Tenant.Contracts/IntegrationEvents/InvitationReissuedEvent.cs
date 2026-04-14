@@ -1,17 +1,15 @@
 using Mentoory.Shared.Application.IntegrationEvents;
 
-namespace Mentoory.Access.Application.IntegrationEvents;
+namespace Mentoory.Tenant.Contracts.IntegrationEvents;
 
-public sealed record UserRegisteredEvent(
+public sealed record InvitationReissuedEvent(
     long UserId,
     Guid UserExternalId,
     string Email,
     string FirstName,
     string LastName,
-    string AccountStatus,
-    Guid? ProjectExternalId,
-    bool RequiresVerification,
-    string EnrollmentVariant,
+    Guid ProjectExternalId,
+    string ProjectName,
+    string IncubatorName,
     int InvitationExpiryHours,
-    DateTime CreatedAtUtc,
     DateTime OccurredOnUtc) : IntegrationEvent(OccurredOnUtc);

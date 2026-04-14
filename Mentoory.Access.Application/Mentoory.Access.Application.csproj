@@ -5,6 +5,7 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore"/>
     </ItemGroup>
     <ItemGroup>
+        <ProjectReference Include="..\Mentoory.Access.Contracts\Mentoory.Access.Contracts.csproj"/>
         <ProjectReference Include="..\Mentoory.Access.Domain\Mentoory.Access.Domain.csproj"/>
         <ProjectReference Include="..\Mentoory.Shared.Application\Mentoory.Shared.Application.csproj"/>
     </ItemGroup>

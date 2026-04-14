@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 using Mentoory.Access.Application.Configuration;
-using Mentoory.Access.Application.IntegrationEvents;
+using Mentoory.Access.Contracts.IntegrationEvents;
 using Mentoory.Access.Domain.Aggregates.User;
 using Mentoory.Access.Domain.Enums;
 using Mentoory.Access.Domain.Repositories;

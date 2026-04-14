@@ -19,12 +19,12 @@
 
 **Purpose**: Add new NuGet dependencies and prepare empty module projects for implementation.
 
-- [ ] T001 Add RazorLight package to Directory.Packages.props
-- [ ] T002 Add UAParser package to Directory.Packages.props
-- [ ] T003 Add RazorLight PackageReference to Mentoory.Notification.Infrastructure/Mentoory.Notification.Infrastructure.csproj
-- [ ] T004 Add UAParser PackageReference to Mentoory.Notification.Infrastructure/Mentoory.Notification.Infrastructure.csproj
-- [ ] T005 Add Mentoory.Notification.Application PackageReference to Mentoory.Notification.Infrastructure/Mentoory.Notification.Infrastructure.csproj (if not present)
-- [ ] T006 Verify solution builds with zero warnings after dependency additions
+- [X] T001 Add RazorLight package to Directory.Packages.props
+- [X] T002 Add UAParser package to Directory.Packages.props
+- [X] T003 Add RazorLight PackageReference to Mentoory.Notification.Infrastructure/Mentoory.Notification.Infrastructure.csproj
+- [X] T004 Add UAParser PackageReference to Mentoory.Notification.Infrastructure/Mentoory.Notification.Infrastructure.csproj
+- [X] T005 Add Mentoory.Notification.Application PackageReference to Mentoory.Notification.Infrastructure/Mentoory.Notification.Infrastructure.csproj (if not present)
+- [X] T006 Verify solution builds with zero warnings after dependency additions
 
 ---
 
@@ -36,68 +36,68 @@
 
 ### Domain Entities & Enums
 
-- [ ] T007 [P] Create NotificationType enum in Mentoory.Notification.Domain/Enums/NotificationType.cs (LoginAlert=0, UserRegistration=1, ProjectInvitation=2)
-- [ ] T008 [P] Create DeliveryChannel enum in Mentoory.Notification.Domain/Enums/DeliveryChannel.cs (Email=0, Sms=1, InApp=2)
-- [ ] T009 [P] Create DeliveryStatus enum in Mentoory.Notification.Domain/Enums/DeliveryStatus.cs (Pending=0, Sent=1, Failed=2, Suppressed=3)
-- [ ] T010 [P] Create LoginContext value object in Mentoory.Notification.Domain/Aggregates/Notification/LoginContext.cs (IpAddress, BrowserName, OperatingSystem, IsSuspicious)
-- [ ] T011 [P] Create DeliveryAttempt value object in Mentoory.Notification.Domain/Aggregates/Notification/DeliveryAttempt.cs (AttemptNumber, AttemptedAtUtc, Success, FailureReason)
-- [ ] T012 Create NotificationRecipient child entity in Mentoory.Notification.Domain/Aggregates/Notification/NotificationRecipient.cs (UserId, Email, DeliveryChannel, DeliveryStatus, SentAtUtc, FailureReason, _deliveryAttempts collection)
-- [ ] T013 Create Notification aggregate root in Mentoory.Notification.Domain/Aggregates/Notification/Notification.cs (ExternalId, NotificationType, Subject, HtmlBody, SourceEventId, ScheduledForUtc, CreatedAtUtc, LoginContext, _recipients collection; factory method with guards)
-- [ ] T014 [P] Create NotificationPreference aggregate root in Mentoory.Notification.Domain/Aggregates/NotificationPreference/NotificationPreference.cs (ExternalId, UserId, NotificationType, IsEnabled, UpdatedAtUtc; factory method with guard for system-mandatory types)
+- [X] T007 [P] Create NotificationType enum in Mentoory.Notification.Domain/Enums/NotificationType.cs (LoginAlert=0, UserRegistration=1, ProjectInvitation=2)
+- [X] T008 [P] Create DeliveryChannel enum in Mentoory.Notification.Domain/Enums/DeliveryChannel.cs (Email=0, Sms=1, InApp=2)
+- [X] T009 [P] Create DeliveryStatus enum in Mentoory.Notification.Domain/Enums/DeliveryStatus.cs (Pending=0, Sent=1, Failed=2, Suppressed=3)
+- [X] T010 [P] Create LoginContext value object in Mentoory.Notification.Domain/Aggregates/Notification/LoginContext.cs (IpAddress, BrowserName, OperatingSystem, IsSuspicious)
+- [X] T011 [P] Create DeliveryAttempt value object in Mentoory.Notification.Domain/Aggregates/Notification/DeliveryAttempt.cs (AttemptNumber, AttemptedAtUtc, Success, FailureReason)
+- [X] T012 Create NotificationRecipient child entity in Mentoory.Notification.Domain/Aggregates/Notification/NotificationRecipient.cs (UserId, Email, DeliveryChannel, DeliveryStatus, SentAtUtc, FailureReason, _deliveryAttempts collection)
+- [X] T013 Create Notification aggregate root in Mentoory.Notification.Domain/Aggregates/Notification/Notification.cs (ExternalId, NotificationType, Subject, HtmlBody, SourceEventId, ScheduledForUtc, CreatedAtUtc, LoginContext, _recipients collection; factory method with guards)
+- [X] T014 [P] Create NotificationPreference aggregate root in Mentoory.Notification.Domain/Aggregates/NotificationPreference/NotificationPreference.cs (ExternalId, UserId, NotificationType, IsEnabled, UpdatedAtUtc; factory method with guard for system-mandatory types)
 
 ### Repository Interfaces
 
-- [ ] T015 [P] Create INotificationRepository in Mentoory.Notification.Domain/Repositories/INotificationRepository.cs (Add, GetPendingAsync, GetBySourceEventIdAndTypeAsync, UnitOfWork)
-- [ ] T016 [P] Create INotificationPreferenceRepository in Mentoory.Notification.Domain/Repositories/INotificationPreferenceRepository.cs (Add, Update, GetByUserAndTypeAsync, GetByUserAsync, UnitOfWork)
+- [X] T015 [P] Create INotificationRepository in Mentoory.Notification.Domain/Repositories/INotificationRepository.cs (Add, GetPendingAsync, GetBySourceEventIdAndTypeAsync, UnitOfWork)
+- [X] T016 [P] Create INotificationPreferenceRepository in Mentoory.Notification.Domain/Repositories/INotificationPreferenceRepository.cs (Add, Update, GetByUserAndTypeAsync, GetByUserAsync, UnitOfWork)
 
 ### Database Schema (SSDT)
 
-- [ ] T017 [P] Create Notifications table in Mentoory.Db/notification/Tables/Notifications.sql (per data-model.md, includes LoginContext owned columns, deduplication index, schedule index)
-- [ ] T018 [P] Create NotificationRecipients table in Mentoory.Db/notification/Tables/NotificationRecipients.sql (per data-model.md, includes filtered index on Pending status)
-- [ ] T019 [P] Create DeliveryAttempts table in Mentoory.Db/notification/Tables/DeliveryAttempts.sql (per data-model.md)
-- [ ] T020 [P] Create NotificationPreferences table in Mentoory.Db/notification/Tables/NotificationPreferences.sql (per data-model.md, unique index on UserId+NotificationType)
+- [X] T017 [P] Create Notifications table in Mentoory.Db/notification/Tables/Notifications.sql (per data-model.md, includes LoginContext owned columns, deduplication index, schedule index)
+- [X] T018 [P] Create NotificationRecipients table in Mentoory.Db/notification/Tables/NotificationRecipients.sql (per data-model.md, includes filtered index on Pending status)
+- [X] T019 [P] Create DeliveryAttempts table in Mentoory.Db/notification/Tables/DeliveryAttempts.sql (per data-model.md)
+- [X] T020 [P] Create NotificationPreferences table in Mentoory.Db/notification/Tables/NotificationPreferences.sql (per data-model.md, unique index on UserId+NotificationType)
 
 ### DbContext & Repositories
 
-- [ ] T021 Create NotificationDbContext in Mentoory.Notification.Infrastructure/Persistence/NotificationDbContext.cs (inherit SharedAbstractDbContext, DbSets for Notification and NotificationPreference, fluent configuration for all entities including owned LoginContext and DeliveryAttempt)
-- [ ] T022 [P] Create NotificationRepository in Mentoory.Notification.Infrastructure/Persistence/NotificationRepository.cs (implement INotificationRepository, GetPendingAsync with Include for Recipients and DeliveryAttempts, GetBySourceEventIdAndTypeAsync, AsNoTracking on reads)
-- [ ] T023 [P] Create NotificationPreferenceRepository in Mentoory.Notification.Infrastructure/Persistence/NotificationPreferenceRepository.cs (implement INotificationPreferenceRepository, AsNoTracking on reads)
+- [X] T021 Create NotificationDbContext in Mentoory.Notification.Infrastructure/Persistence/NotificationDbContext.cs (inherit SharedAbstractDbContext, DbSets for Notification and NotificationPreference, fluent configuration for all entities including owned LoginContext and DeliveryAttempt)
+- [X] T022 [P] Create NotificationRepository in Mentoory.Notification.Infrastructure/Persistence/NotificationRepository.cs (implement INotificationRepository, GetPendingAsync with Include for Recipients and DeliveryAttempts, GetBySourceEventIdAndTypeAsync, AsNoTracking on reads)
+- [X] T023 [P] Create NotificationPreferenceRepository in Mentoory.Notification.Infrastructure/Persistence/NotificationPreferenceRepository.cs (implement INotificationPreferenceRepository, AsNoTracking on reads)
 
 ### Email Infrastructure
 
-- [ ] T024 [P] Create SmtpSettings options class in Mentoory.Notification.Infrastructure/Configuration/SmtpSettings.cs (Host, Port, Username, Password, FromAddress, FromName, UseSsl)
-- [ ] T025 [P] Create NotificationSettings options class in Mentoory.Notification.Infrastructure/Configuration/NotificationSettings.cs (PollingIntervalSeconds, MaxRetryAttempts, BaseUrl)
-- [ ] T026 [P] Create IEmailService interface in Mentoory.Notification.Infrastructure/Services/IEmailService.cs (SendAsync with to, subject, htmlBody, cancellationToken)
-- [ ] T027 [P] Create ITemplateRenderer interface in Mentoory.Notification.Infrastructure/Services/ITemplateRenderer.cs (RenderAsync with templateName and model object)
-- [ ] T028 [P] Create ILoginContextParser interface in Mentoory.Notification.Application/Services/ILoginContextParser.cs (Parse with userAgentString, ipAddress returning LoginContext)
-- [ ] T029 Create MailtrapEmailService in Mentoory.Notification.Infrastructure/Services/MailtrapEmailService.cs (implement IEmailService using MailKit SmtpClient, connect to sandbox.smtp.mailtrap.io:2525)
-- [ ] T030 Create MailgunEmailService in Mentoory.Notification.Infrastructure/Services/MailgunEmailService.cs (implement IEmailService using MailKit SmtpClient, connect to smtp.mailgun.org:587 with STARTTLS)
-- [ ] T031 Create RazorLightTemplateRenderer in Mentoory.Notification.Infrastructure/Services/RazorLightTemplateRenderer.cs (implement ITemplateRenderer using RazorLight embedded resources project with memory caching)
-- [ ] T032 Create UaParserLoginContextParser in Mentoory.Notification.Infrastructure/Services/UaParserLoginContextParser.cs (implement ILoginContextParser using UAParser, graceful degradation to "Navegador desconocido"/"Sistema operativo desconocido")
+- [X] T024 [P] Create SmtpSettings options class in Mentoory.Notification.Infrastructure/Configuration/SmtpSettings.cs (Host, Port, Username, Password, FromAddress, FromName, UseSsl)
+- [X] T025 [P] Create NotificationSettings options class in Mentoory.Notification.Infrastructure/Configuration/NotificationSettings.cs (PollingIntervalSeconds, MaxRetryAttempts, BaseUrl)
+- [X] T026 [P] Create IEmailService interface in Mentoory.Notification.Infrastructure/Services/IEmailService.cs (SendAsync with to, subject, htmlBody, cancellationToken)
+- [X] T027 [P] Create ITemplateRenderer interface in Mentoory.Notification.Infrastructure/Services/ITemplateRenderer.cs (RenderAsync with templateName and model object)
+- [X] T028 [P] Create ILoginContextParser interface in Mentoory.Notification.Application/Services/ILoginContextParser.cs (Parse with userAgentString, ipAddress returning LoginContext)
+- [X] T029 Create MailtrapEmailService in Mentoory.Notification.Infrastructure/Services/MailtrapEmailService.cs (implement IEmailService using MailKit SmtpClient, connect to sandbox.smtp.mailtrap.io:2525)
+- [X] T030 Create MailgunEmailService in Mentoory.Notification.Infrastructure/Services/MailgunEmailService.cs (implement IEmailService using MailKit SmtpClient, connect to smtp.mailgun.org:587 with STARTTLS)
+- [X] T031 Create RazorLightTemplateRenderer in Mentoory.Notification.Infrastructure/Services/RazorLightTemplateRenderer.cs (implement ITemplateRenderer using RazorLight embedded resources project with memory caching)
+- [X] T032 Create UaParserLoginContextParser in Mentoory.Notification.Infrastructure/Services/UaParserLoginContextParser.cs (implement ILoginContextParser using UAParser, graceful degradation to "Navegador desconocido"/"Sistema operativo desconocido")
 
 ### Razor Email Templates
 
-- [ ] T033 Create shared email layout in Mentoory.Notification.Infrastructure/Templates/_EmailLayout.cshtml (branded header with logo and color banner, card-based content area with @RenderBody(), footer with platform links, all Spanish text)
-- [ ] T034 [P] Create login alert template in Mentoory.Notification.Infrastructure/Templates/LoginAlert.cshtml (IP, browser, OS, timestamp, standard tone, uses _EmailLayout)
-- [ ] T035 [P] Create suspicious login alert template in Mentoory.Notification.Infrastructure/Templates/SuspiciousLoginAlert.cshtml (same data as LoginAlert but urgency styling, warning banner, uses _EmailLayout)
-- [ ] T036 [P] Create user registration template in Mentoory.Notification.Infrastructure/Templates/UserRegistration.cshtml (user name, project name, verification URL, expiration, uses _EmailLayout)
-- [ ] T037 [P] Create project invitation template in Mentoory.Notification.Infrastructure/Templates/ProjectInvitation.cshtml (inviter context, project name, incubator name, action URL, expiration, uses _EmailLayout)
-- [ ] T038 Mark all .cshtml template files as EmbeddedResource in Mentoory.Notification.Infrastructure/Mentoory.Notification.Infrastructure.csproj
+- [X] T033 Create shared email layout in Mentoory.Notification.Infrastructure/Templates/_EmailLayout.cshtml (branded header with logo and color banner, card-based content area with @RenderBody(), footer with platform links, all Spanish text)
+- [X] T034 [P] Create login alert template in Mentoory.Notification.Infrastructure/Templates/LoginAlert.cshtml (IP, browser, OS, timestamp, standard tone, uses _EmailLayout)
+- [X] T035 [P] Create suspicious login alert template in Mentoory.Notification.Infrastructure/Templates/SuspiciousLoginAlert.cshtml (same data as LoginAlert but urgency styling, warning banner, uses _EmailLayout)
+- [X] T036 [P] Create user registration template in Mentoory.Notification.Infrastructure/Templates/UserRegistration.cshtml (user name, project name, verification URL, expiration, uses _EmailLayout)
+- [X] T037 [P] Create project invitation template in Mentoory.Notification.Infrastructure/Templates/ProjectInvitation.cshtml (inviter context, project name, incubator name, action URL, expiration, uses _EmailLayout)
+- [X] T038 Mark all .cshtml template files as EmbeddedResource in Mentoory.Notification.Infrastructure/Mentoory.Notification.Infrastructure.csproj
 
 ### SMTP Configuration
 
-- [ ] T039 [P] Add Smtp and Notification sections to Mentoory.Web/appsettings.Development.json (Mailtrap credentials placeholder per quickstart.md)
-- [ ] T040 [P] Add Smtp and Notification sections to Mentoory.Web/appsettings.json (Mailgun credentials placeholder per quickstart.md)
+- [X] T039 [P] Add Smtp and Notification sections to Mentoory.Web/appsettings.Development.json (Mailtrap credentials placeholder per quickstart.md)
+- [X] T040 [P] Add Smtp and Notification sections to Mentoory.Web/appsettings.json (Mailgun credentials placeholder per quickstart.md)
 
 ### DI Registration
 
-- [ ] T041 Create DependencyInjection.cs in Mentoory.Notification.Application/DependencyInjection.cs (AddNotificationApplication extension: register MediatR from assembly, FluentValidation validators)
-- [ ] T042 Create DependencyInjection.cs in Mentoory.Notification.Infrastructure/DependencyInjection.cs (AddNotificationInfrastructure extension: DbContext, repositories, IEmailService based on environment, ITemplateRenderer, ILoginContextParser, IHostedService, SmtpSettings/NotificationSettings binding)
-- [ ] T043 Register notification module in Mentoory.Web/Program.cs (add builder.Services.AddNotificationApplication() and builder.AddNotificationInfrastructure() calls)
+- [X] T041 Create DependencyInjection.cs in Mentoory.Notification.Application/DependencyInjection.cs (AddNotificationApplication extension: register MediatR from assembly, FluentValidation validators)
+- [X] T042 Create DependencyInjection.cs in Mentoory.Notification.Infrastructure/DependencyInjection.cs (AddNotificationInfrastructure extension: DbContext, repositories, IEmailService based on environment, ITemplateRenderer, ILoginContextParser, IHostedService, SmtpSettings/NotificationSettings binding)
+- [X] T043 Register notification module in Mentoory.Web/Program.cs (add builder.Services.AddNotificationApplication() and builder.AddNotificationInfrastructure() calls)
 
 ### Build Verification
 
-- [ ] T044 Verify solution builds with zero warnings after foundational phase
+- [X] T044 Verify solution builds with zero warnings after foundational phase
 
 **Checkpoint**: Foundation ready -- domain model, database schema, email infrastructure, and DI all in place. User story implementation can begin.
 
@@ -111,11 +111,11 @@
 
 ### Implementation for User Story 1
 
-- [ ] T045 [US1] Create INotificationQueueService interface in Mentoory.Notification.Application/Services/INotificationQueueService.cs (QueueRegistrationEmailAsync, QueueInvitationEmailAsync, QueueLoginAlertAsync, ProcessPendingAsync)
-- [ ] T046 [US1] Create NotificationQueueService in Mentoory.Notification.Infrastructure/Services/NotificationQueueService.cs (implement INotificationQueueService: create Notification aggregate with rendered template, add recipient, check deduplication via SourceEventId, persist via repository)
-- [ ] T047 [US1] Create UserRegisteredNotificationHandler in Mentoory.Notification.Application/IntegrationEvents/UserRegisteredNotificationHandler.cs (implement INotificationHandler<UserRegisteredEvent>, check RequiresVerification, call INotificationQueueService.QueueRegistrationEmailAsync)
-- [ ] T048 [US1] Create NotificationProcessorService in Mentoory.Notification.Infrastructure/Services/NotificationProcessorService.cs (BackgroundService with PeriodicTimer 15s, IServiceScopeFactory for scoped access, call ProcessPendingAsync, try-catch per notification, exponential backoff retry logic: 1m/5m/15m/1h/4h, max 5 attempts, record DeliveryAttempt, handle template rendering errors as immediate failure)
-- [ ] T049 [US1] Verify registration email end-to-end: create user, confirm Notification record created in DB with Pending status, confirm email arrives in Mailtrap within 2 minutes, verify template content (Spanish, branded layout, verification link, expiration)
+- [X] T045 [US1] Create INotificationQueueService interface in Mentoory.Notification.Application/Services/INotificationQueueService.cs (QueueRegistrationEmailAsync, QueueInvitationEmailAsync, QueueLoginAlertAsync, ProcessPendingAsync)
+- [X] T046 [US1] Create NotificationQueueService in Mentoory.Notification.Infrastructure/Services/NotificationQueueService.cs (implement INotificationQueueService: create Notification aggregate with rendered template, add recipient, check deduplication via SourceEventId, persist via repository)
+- [X] T047 [US1] Create UserRegisteredNotificationHandler in Mentoory.Notification.Application/IntegrationEvents/UserRegisteredNotificationHandler.cs (implement INotificationHandler<UserRegisteredEvent>, check RequiresVerification, call INotificationQueueService.QueueRegistrationEmailAsync)
+- [X] T048 [US1] Create NotificationProcessorService in Mentoory.Notification.Infrastructure/Services/NotificationProcessorService.cs (BackgroundService with PeriodicTimer 15s, IServiceScopeFactory for scoped access, call ProcessPendingAsync, try-catch per notification, exponential backoff retry logic: 1m/5m/15m/1h/4h, max 5 attempts, record DeliveryAttempt, handle template rendering errors as immediate failure)
+- [X] T049 [US1] Verify registration email end-to-end: create user, confirm Notification record created in DB with Pending status, confirm email arrives in Mailtrap within 2 minutes, verify template content (Spanish, branded layout, verification link, expiration)
 
 **Checkpoint**: User Story 1 fully functional. Registration emails are queued, processed by background service, and delivered via Mailtrap.
 
@@ -129,11 +129,11 @@
 
 ### Implementation for User Story 2
 
-- [ ] T050 [US2] Create InvitationReissuedEvent in Mentoory.Tenant.Application/IntegrationEvents/InvitationReissuedEvent.cs (UserId, UserExternalId, Email, FirstName, LastName, ProjectExternalId, ProjectName, IncubatorName, InvitationExpiryHours, OccurredOnUtc per contracts/integration-events.md)
-- [ ] T051 [US2] Publish InvitationReissuedEvent from ReissueInvitationHandler in Mentoory.Tenant.Application/Invitations/Commands/ReissueInvitation/ReissueInvitationHandler.cs (enrich with user/project/incubator names, publish via IIntegrationEventService after SaveEntitiesAsync)
-- [ ] T052 [US2] Extend UserRegisteredNotificationHandler to also queue ProjectInvitation email when EnrollmentVariant is "Invitation" and ProjectExternalId is not null in Mentoory.Notification.Application/IntegrationEvents/UserRegisteredNotificationHandler.cs
-- [ ] T053 [US2] Create InvitationReissuedNotificationHandler in Mentoory.Notification.Application/IntegrationEvents/InvitationReissuedNotificationHandler.cs (implement INotificationHandler<InvitationReissuedEvent>, call INotificationQueueService.QueueInvitationEmailAsync)
-- [ ] T054 [US2] Verify invitation email end-to-end: create user with Invitation enrollment, confirm invitation email arrives. Reissue invitation, confirm fresh email arrives with new token. Verify deduplication (replay same event, no duplicate)
+- [X] T050 [US2] Create InvitationReissuedEvent in Mentoory.Tenant.Application/IntegrationEvents/InvitationReissuedEvent.cs (UserId, UserExternalId, Email, FirstName, LastName, ProjectExternalId, ProjectName, IncubatorName, InvitationExpiryHours, OccurredOnUtc per contracts/integration-events.md)
+- [X] T051 [US2] Publish InvitationReissuedEvent from ReissueInvitationHandler in Mentoory.Tenant.Application/Invitations/Commands/ReissueInvitation/ReissueInvitationHandler.cs (enrich with user/project/incubator names, publish via IIntegrationEventService after SaveEntitiesAsync)
+- [X] T052 [US2] Extend UserRegisteredNotificationHandler to also queue ProjectInvitation email when EnrollmentVariant is "Invitation" and ProjectExternalId is not null in Mentoory.Notification.Application/IntegrationEvents/UserRegisteredNotificationHandler.cs
+- [X] T053 [US2] Create InvitationReissuedNotificationHandler in Mentoory.Notification.Application/IntegrationEvents/InvitationReissuedNotificationHandler.cs (implement INotificationHandler<InvitationReissuedEvent>, call INotificationQueueService.QueueInvitationEmailAsync)
+- [X] T054 [US2] Verify invitation email end-to-end: create user with Invitation enrollment, confirm invitation email arrives. Reissue invitation, confirm fresh email arrives with new token. Verify deduplication (replay same event, no duplicate)
 
 **Checkpoint**: User Stories 1 and 2 both functional. Registration and invitation emails work independently.
 
@@ -147,10 +147,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T055 [US3] Enrich LoginAttemptEvent with UserAgentString and FailedAttemptCount in Mentoory.Access.Application/IntegrationEvents/LoginAttemptEvent.cs (add string? UserAgentString and int FailedAttemptCount parameters)
-- [ ] T056 [US3] Publish LoginAttemptEvent from LoginController on successful login in Mentoory.Web/Areas/Access/Controllers/LoginController.cs (populate IpAddress from HttpContext.Connection.RemoteIpAddress, UserAgentString from Request.Headers["User-Agent"], FailedAttemptCount from User aggregate)
-- [ ] T057 [US3] Create LoginAttemptNotificationHandler in Mentoory.Notification.Application/IntegrationEvents/LoginAttemptNotificationHandler.cs (implement INotificationHandler<LoginAttemptEvent>, filter Success==true only, check preferences before queuing, determine suspicious flag: FailedAttemptCount >= 3, parse UA via ILoginContextParser, call INotificationQueueService.QueueLoginAlertAsync)
-- [ ] T058 [US3] Verify login alert end-to-end: log in, confirm standard alert arrives with IP/browser/OS. Fail 3+ times then succeed, confirm suspicious alert with "Actividad sospechosa detectada" subject. Test unknown User-Agent, confirm "Navegador desconocido"/"Sistema operativo desconocido" in email
+- [X] T055 [US3] Enrich LoginAttemptEvent with UserAgentString and FailedAttemptCount in Mentoory.Access.Application/IntegrationEvents/LoginAttemptEvent.cs (add string? UserAgentString and int FailedAttemptCount parameters)
+- [X] T056 [US3] Publish LoginAttemptEvent from LoginController on successful login in Mentoory.Web/Areas/Access/Controllers/LoginController.cs (populate IpAddress from HttpContext.Connection.RemoteIpAddress, UserAgentString from Request.Headers["User-Agent"], FailedAttemptCount from User aggregate)
+- [X] T057 [US3] Create LoginAttemptNotificationHandler in Mentoory.Notification.Application/IntegrationEvents/LoginAttemptNotificationHandler.cs (implement INotificationHandler<LoginAttemptEvent>, filter Success==true only, check preferences before queuing, determine suspicious flag: FailedAttemptCount >= 3, parse UA via ILoginContextParser, call INotificationQueueService.QueueLoginAlertAsync)
+- [X] T058 [US3] Verify login alert end-to-end: log in, confirm standard alert arrives with IP/browser/OS. Fail 3+ times then succeed, confirm suspicious alert with "Actividad sospechosa detectada" subject. Test unknown User-Agent, confirm "Navegador desconocido"/"Sistema operativo desconocido" in email
 
 **Checkpoint**: All three notification types functional. Login alerts work with standard and suspicious variants.
 
@@ -164,14 +164,14 @@
 
 ### Implementation for User Story 4
 
-- [ ] T059 [US4] Create UpdateNotificationPreferenceCommand in Mentoory.Notification.Application/Commands/UpdateNotificationPreference/UpdateNotificationPreferenceCommand.cs (UserId, NotificationType, IsEnabled)
-- [ ] T060 [US4] Create UpdateNotificationPreferenceValidator in Mentoory.Notification.Application/Commands/UpdateNotificationPreference/UpdateNotificationPreferenceValidator.cs (reject disabling system-mandatory types: UserRegistration, ProjectInvitation; Spanish validation messages)
-- [ ] T061 [US4] Create UpdateNotificationPreferenceHandler in Mentoory.Notification.Application/Commands/UpdateNotificationPreference/UpdateNotificationPreferenceHandler.cs (create or update NotificationPreference aggregate, persist via repository)
-- [ ] T062 [P] [US4] Create GetNotificationPreferencesQuery in Mentoory.Notification.Application/Queries/GetNotificationPreferences/GetNotificationPreferencesQuery.cs (UserId)
-- [ ] T063 [P] [US4] Create NotificationPreferenceDto in Mentoory.Notification.Application/Queries/GetNotificationPreferences/NotificationPreferenceDto.cs
-- [ ] T064 [US4] Create GetNotificationPreferencesHandler in Mentoory.Notification.Application/Queries/GetNotificationPreferences/GetNotificationPreferencesHandler.cs (query preferences via repository, AsNoTracking, return list of DTOs)
-- [ ] T065 [US4] Add preference check to LoginAttemptNotificationHandler before queuing in Mentoory.Notification.Application/IntegrationEvents/LoginAttemptNotificationHandler.cs (query INotificationPreferenceRepository, if disabled skip silently, if lookup fails default to sending with error log)
-- [ ] T066 [US4] Verify preferences end-to-end: disable login alerts for user, log in, confirm no alert email. Attempt to disable registration type, confirm rejection. Verify registration email still sends. Simulate preference lookup failure, confirm fail-open behavior
+- [X] T059 [US4] Create UpdateNotificationPreferenceCommand in Mentoory.Notification.Application/Commands/UpdateNotificationPreference/UpdateNotificationPreferenceCommand.cs (UserId, NotificationType, IsEnabled)
+- [X] T060 [US4] Create UpdateNotificationPreferenceValidator in Mentoory.Notification.Application/Commands/UpdateNotificationPreference/UpdateNotificationPreferenceValidator.cs (reject disabling system-mandatory types: UserRegistration, ProjectInvitation; Spanish validation messages)
+- [X] T061 [US4] Create UpdateNotificationPreferenceHandler in Mentoory.Notification.Application/Commands/UpdateNotificationPreference/UpdateNotificationPreferenceHandler.cs (create or update NotificationPreference aggregate, persist via repository)
+- [X] T062 [P] [US4] Create GetNotificationPreferencesQuery in Mentoory.Notification.Application/Queries/GetNotificationPreferences/GetNotificationPreferencesQuery.cs (UserId)
+- [X] T063 [P] [US4] Create NotificationPreferenceDto in Mentoory.Notification.Application/Queries/GetNotificationPreferences/NotificationPreferenceDto.cs
+- [X] T064 [US4] Create GetNotificationPreferencesHandler in Mentoory.Notification.Application/Queries/GetNotificationPreferences/GetNotificationPreferencesHandler.cs (query preferences via repository, AsNoTracking, return list of DTOs)
+- [X] T065 [US4] Add preference check to LoginAttemptNotificationHandler before queuing in Mentoory.Notification.Application/IntegrationEvents/LoginAttemptNotificationHandler.cs (query INotificationPreferenceRepository, if disabled skip silently, if lookup fails default to sending with error log)
+- [X] T066 [US4] Verify preferences end-to-end: disable login alerts for user, log in, confirm no alert email. Attempt to disable registration type, confirm rejection. Verify registration email still sends. Simulate preference lookup failure, confirm fail-open behavior
 
 **Checkpoint**: Full notification preferences working. Login alerts respect user toggle. System emails always send.
 
@@ -185,10 +185,10 @@
 
 ### Implementation for User Story 5
 
-- [ ] T067 [US5] Verify MailtrapEmailService connects and sends via Mailtrap in development environment (run app with appsettings.Development.json, send test email, confirm arrival in Mailtrap inbox)
-- [ ] T068 [US5] Verify MailgunEmailService configuration is correct for production (validate SMTP host smtp.mailgun.org:587, STARTTLS, mail.mentoory.com credentials in appsettings.json)
-- [ ] T069 [US5] Verify DI registration selects correct provider based on IHostEnvironment.IsDevelopment() in Mentoory.Notification.Infrastructure/DependencyInjection.cs
-- [ ] T070 [US5] Verify missing/invalid SMTP credentials produce clear error in DeliveryAttempt.FailureReason and notification is marked for retry
+- [X] T067 [US5] Verify MailtrapEmailService connects and sends via Mailtrap in development environment (run app with appsettings.Development.json, send test email, confirm arrival in Mailtrap inbox)
+- [X] T068 [US5] Verify MailgunEmailService configuration is correct for production (validate SMTP host smtp.mailgun.org:587, STARTTLS, mail.mentoory.com credentials in appsettings.json)
+- [X] T069 [US5] Verify DI registration selects correct provider based on IHostEnvironment.IsDevelopment() in Mentoory.Notification.Infrastructure/DependencyInjection.cs
+- [X] T070 [US5] Verify missing/invalid SMTP credentials produce clear error in DeliveryAttempt.FailureReason and notification is marked for retry
 
 **Checkpoint**: Both email providers verified. Environment-based switching confirmed.
 
@@ -198,13 +198,13 @@
 
 **Purpose**: Final validation and cleanup across all user stories.
 
-- [ ] T071 Verify solution builds with zero warnings (TreatWarningsAsErrors)
-- [ ] T072 Verify all email templates render correctly in Spanish with consistent branded layout
-- [ ] T073 Verify deduplication works across all notification types (replay events, confirm no duplicates)
-- [ ] T074 Verify exponential backoff retry: simulate SMTP failure, confirm retry schedule 1m/5m/15m/1h/4h, confirm Failed after 5 attempts
-- [ ] T075 Verify background service recovers after crash: stop and restart app, confirm pending notifications are picked up
-- [ ] T076 Run quickstart.md validation end-to-end with fresh Mailtrap inbox
-- [ ] T077 Publish DACPAC and verify all notification schema tables are created correctly
+- [X] T071 Verify solution builds with zero warnings (TreatWarningsAsErrors)
+- [X] T072 Verify all email templates render correctly in Spanish with consistent branded layout
+- [X] T073 Verify deduplication works across all notification types (replay events, confirm no duplicates)
+- [X] T074 Verify exponential backoff retry: simulate SMTP failure, confirm retry schedule 1m/5m/15m/1h/4h, confirm Failed after 5 attempts
+- [X] T075 Verify background service recovers after crash: stop and restart app, confirm pending notifications are picked up
+- [X] T076 Run quickstart.md validation end-to-end with fresh Mailtrap inbox
+- [X] T077 Publish DACPAC and verify all notification schema tables are created correctly
 
 ---
 
