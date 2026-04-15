@@ -41,7 +41,9 @@ public partial class UserRegisteredEventHandler : INotificationHandler<UserRegis
             return;
         }
 
-        var enrollmentVariant = project.EnrollmentVariant.ToString();
+        // Use the event's enrollment variant (per-user override from admin toggles)
+        // instead of the project's default, allowing admin to bypass on a per-user basis
+        var enrollmentVariant = notification.EnrollmentVariant;
 
         if (enrollmentVariant == "Bypass" && !notification.RequiresVerification)
         {

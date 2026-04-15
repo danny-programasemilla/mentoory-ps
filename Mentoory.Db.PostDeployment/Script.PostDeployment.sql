@@ -39,4 +39,8 @@ PRINT '[018.SeedProjectPublicFlag.sql] Starting';
 :r ./018.SeedProjectPublicFlag.sql
 PRINT '[018.SeedProjectPublicFlag.sql] Finished';
 
+PRINT '[019.SeedNotificationConfiguration.sql] Starting';
+:r ./019.SeedNotificationConfiguration.sql
+PRINT '[019.SeedNotificationConfiguration.sql] Finished';
+
 PRINT '[Script.PostDeployment.sql] Finished';

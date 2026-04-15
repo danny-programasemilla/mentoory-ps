@@ -127,6 +127,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mentoory.Access.Contracts",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mentoory.Tenant.Contracts", "Mentoory.Tenant.Contracts\Mentoory.Tenant.Contracts.csproj", "{5E9494DB-121C-444A-AA44-A8F6A7897029}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mentoory.Notification.Contracts", "Mentoory.Notification.Contracts\Mentoory.Notification.Contracts.csproj", "{FBED604D-D9AC-4C35-B3A4-612F4F5842DB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -629,6 +631,18 @@ Global
 		{5E9494DB-121C-444A-AA44-A8F6A7897029}.Release|x64.Build.0 = Release|Any CPU
 		{5E9494DB-121C-444A-AA44-A8F6A7897029}.Release|x86.ActiveCfg = Release|Any CPU
 		{5E9494DB-121C-444A-AA44-A8F6A7897029}.Release|x86.Build.0 = Release|Any CPU
+		{FBED604D-D9AC-4C35-B3A4-612F4F5842DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBED604D-D9AC-4C35-B3A4-612F4F5842DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FBED604D-D9AC-4C35-B3A4-612F4F5842DB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FBED604D-D9AC-4C35-B3A4-612F4F5842DB}.Debug|x64.Build.0 = Debug|Any CPU
+		{FBED604D-D9AC-4C35-B3A4-612F4F5842DB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FBED604D-D9AC-4C35-B3A4-612F4F5842DB}.Debug|x86.Build.0 = Debug|Any CPU
+		{FBED604D-D9AC-4C35-B3A4-612F4F5842DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBED604D-D9AC-4C35-B3A4-612F4F5842DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FBED604D-D9AC-4C35-B3A4-612F4F5842DB}.Release|x64.ActiveCfg = Release|Any CPU
+		{FBED604D-D9AC-4C35-B3A4-612F4F5842DB}.Release|x64.Build.0 = Release|Any CPU
+		{FBED604D-D9AC-4C35-B3A4-612F4F5842DB}.Release|x86.ActiveCfg = Release|Any CPU
+		{FBED604D-D9AC-4C35-B3A4-612F4F5842DB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -684,5 +698,6 @@ Global
 		{21C3F197-A298-4E84-B0CF-DB3081235FD2} = {42CE624E-8FB4-11FE-339D-FA58CAE39C8F}
 		{4FC21CDD-E083-4C58-AF6E-5A5E17BEFA9B} = {42CE624E-8FB4-11FE-339D-FA58CAE39C8F}
 		{5E9494DB-121C-444A-AA44-A8F6A7897029} = {4C1F38D3-C716-95B4-18BD-32257F2F06C6}
+		{FBED604D-D9AC-4C35-B3A4-612F4F5842DB} = {3F684D0C-8ECB-245E-6EFA-2D6D061B3E06}
 	EndGlobalSection
 EndGlobal

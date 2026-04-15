@@ -1,38 +1,46 @@
 using MailKit.Net.Smtp;
 using MailKit.Security;
-using Mentoory.Notification.Infrastructure.Configuration;
+using Mentoory.Notification.Contracts.Configuration;
+using Mentoory.Notification.Domain.Enums;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using MimeKit;
 
 namespace Mentoory.Notification.Infrastructure.Services;
 
 public partial class SmtpEmailService : IEmailService
 {
-    private readonly SmtpSettings _settings;
+    private readonly INotificationConfigurationReader _configReader;
     private readonly ILogger<SmtpEmailService> _logger;
 
-    public SmtpEmailService(IOptions<SmtpSettings> settings, ILogger<SmtpEmailService> logger)
+    public SmtpEmailService(INotificationConfigurationReader configReader, ILogger<SmtpEmailService> logger)
     {
-        _settings = settings.Value;
+        _configReader = configReader;
         _logger = logger;
     }
 
     public async Task SendAsync(string to, string subject, string htmlBody, CancellationToken cancellationToken)
     {
+        var host = await _configReader.GetStringAsync(nameof(NotificationConfigurationKey.SmtpHost), cancellationToken);
+        var port = await _configReader.GetIntAsync(nameof(NotificationConfigurationKey.SmtpPort), cancellationToken);
+        var username = await _configReader.GetStringAsync(nameof(NotificationConfigurationKey.SmtpUsername), cancellationToken);
+        var password = await _configReader.GetStringAsync(nameof(NotificationConfigurationKey.SmtpPassword), cancellationToken);
+        var fromAddress = await _configReader.GetStringAsync(nameof(NotificationConfigurationKey.SmtpFromAddress), cancellationToken);
+        var fromName = await _configReader.GetStringAsync(nameof(NotificationConfigurationKey.SmtpFromName), cancellationToken);
+        var useSsl = await _configReader.GetBoolAsync(nameof(NotificationConfigurationKey.SmtpUseSsl), cancellationToken);
+
         var message = new MimeMessage();
-        message.From.Add(new MailboxAddress(_settings.FromName, _settings.FromAddress));
+        message.From.Add(new MailboxAddress(fromName, fromAddress));
         message.To.Add(MailboxAddress.Parse(to));
         message.Subject = subject;
         message.Body = new TextPart("html") { Text = htmlBody };
 
-        var secureSocketOptions = _settings.UseSsl
+        var secureSocketOptions = useSsl
             ? SecureSocketOptions.StartTls
             : SecureSocketOptions.None;
 
         using var client = new SmtpClient();
-        await client.ConnectAsync(_settings.Host, _settings.Port, secureSocketOptions, cancellationToken);
-        await client.AuthenticateAsync(_settings.Username, _settings.Password, cancellationToken);
+        await client.ConnectAsync(host, port, secureSocketOptions, cancellationToken);
+        await client.AuthenticateAsync(username, password, cancellationToken);
         await client.SendAsync(message, cancellationToken);
         await client.DisconnectAsync(true, cancellationToken);
 

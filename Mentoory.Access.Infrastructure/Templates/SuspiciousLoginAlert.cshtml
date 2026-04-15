@@ -1,0 +1,37 @@
+<!-- Warning Banner -->
+<div style="background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; padding: 12px 16px; margin-bottom: 16px;">
+    <p style="margin: 0; font-size: 14px; color: #856404; font-weight: 600;">
+        &#9888; Se ha detectado actividad sospechosa en tu cuenta.
+    </p>
+</div>
+<h2 style="margin: 0 0 16px 0; font-size: 20px; color: #e74a3b;">Actividad sospechosa detectada</h2>
+<p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #555;">
+    Hemos detectado un inicio de sesión en tu cuenta después de múltiples intentos fallidos. Por favor revisa los detalles a continuación.
+</p>
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin: 16px 0; background-color: #fff5f5; border-radius: 6px; border: 1px solid #f5c6cb;">
+    <tr>
+        <td style="padding: 16px;">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                    <td style="padding: 4px 0; font-size: 14px; color: #858796; width: 140px;">Dirección IP:</td>
+                    <td style="padding: 4px 0; font-size: 14px; color: #333; font-weight: 600;">@Model.IpAddress</td>
+                </tr>
+                <tr>
+                    <td style="padding: 4px 0; font-size: 14px; color: #858796;">Navegador:</td>
+                    <td style="padding: 4px 0; font-size: 14px; color: #333; font-weight: 600;">@Model.BrowserName</td>
+                </tr>
+                <tr>
+                    <td style="padding: 4px 0; font-size: 14px; color: #858796;">Sistema operativo:</td>
+                    <td style="padding: 4px 0; font-size: 14px; color: #333; font-weight: 600;">@Model.OperatingSystem</td>
+                </tr>
+                <tr>
+                    <td style="padding: 4px 0; font-size: 14px; color: #858796;">Fecha y hora:</td>
+                    <td style="padding: 4px 0; font-size: 14px; color: #333; font-weight: 600;">@Model.Timestamp</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+<p style="margin: 16px 0 0 0; font-size: 14px; color: #e74a3b; font-weight: 600;">
+    Si no reconoces este inicio de sesión, contacta al administrador de tu plataforma de inmediato.
+</p>

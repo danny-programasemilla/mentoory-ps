@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+        <ProjectReference Include="..\Mentoory.Shared.Application\Mentoory.Shared.Application.csproj"/>
+        <ProjectReference Include="..\Mentoory.Notification.Domain\Mentoory.Notification.Domain.csproj"/>
+    </ItemGroup>
+</Project>

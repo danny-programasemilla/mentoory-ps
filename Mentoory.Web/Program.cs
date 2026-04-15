@@ -19,6 +19,8 @@ using Mentoory.Shared.Application.TimeProvider;
 using Mentoory.Shared.Infrastructure.Audit;
 using Mentoory.Shared.Infrastructure.Behaviors;
 using Mentoory.Shared.Infrastructure.Persistence;
+using Mentoory.Shared.Application.Notifications;
+using Mentoory.Shared.Infrastructure.Notifications;
 using Mentoory.Shared.Infrastructure.Services;
 using Mentoory.Web.Infrastructure.Authentication;
 using Mentoory.Web.Infrastructure.Authorization;
@@ -45,6 +47,7 @@ builder.Services.AddMediatR(cfg =>
 builder.Services.AddScoped<IDbContextFactory, DbContextFactory>();
 
 builder.Services.AddSingleton<ITimeProvider, DefaultSystemTimeProvider>();
+builder.Services.AddSingleton<IEmailLayoutWrapper, EmailLayoutWrapper>();
 
 builder.Services.AddScoped<MediatRExecutor>();
 

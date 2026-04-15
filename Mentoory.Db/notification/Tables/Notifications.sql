@@ -8,10 +8,6 @@ CREATE TABLE [notification].[Notifications]
     [SourceEventId]    UNIQUEIDENTIFIER  NULL,
     [ScheduledForUtc]  DATETIME2(7)      NOT NULL,
     [CreatedAtUtc]     DATETIME2(7)      NOT NULL,
-    [LoginContext_IpAddress]       NVARCHAR(45)   NULL,
-    [LoginContext_BrowserName]     NVARCHAR(128)  NULL,
-    [LoginContext_OperatingSystem] NVARCHAR(128)  NULL,
-    [LoginContext_IsSuspicious]    BIT            NULL,
     CONSTRAINT [PK_Notifications] PRIMARY KEY CLUSTERED ([Id]),
     CONSTRAINT [UQ_Notifications_ExternalId] UNIQUE ([ExternalId])
 )

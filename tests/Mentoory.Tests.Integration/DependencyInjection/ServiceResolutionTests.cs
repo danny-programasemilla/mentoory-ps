@@ -6,6 +6,7 @@ using Mentoory.Access.Application.Commands.LoginUser;
 using Mentoory.Access.Application.Commands.LogoutUser;
 using Mentoory.Access.Application.Commands.RegisterUser;
 using Mentoory.Access.Application.Commands.RevokeRole;
+using Mentoory.Access.Application.Services;
 using Mentoory.Access.Application.Commands.SetActiveContext;
 using Mentoory.Access.Application.Commands.VerifyEmail;
 using Mentoory.Access.Application.Queries.CheckPermission;
@@ -66,6 +67,7 @@ public class ServiceResolutionTests : IntegrationTestBase
     [InlineData(typeof(IUserRepository))]
     [InlineData(typeof(IAuthSessionRepository))]
     [InlineData(typeof(IPasswordHasher))]
+    [InlineData(typeof(IUserRegistrationService))]
     public void IdentityInfrastructure_ShouldResolve(Type serviceType)
     {
         using var scope = CreateScope();

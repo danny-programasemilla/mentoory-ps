@@ -4,6 +4,7 @@ using Mentoory.Notification.Domain.Enums;
 using Mentoory.Shared.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using NotificationAggregate = Mentoory.Notification.Domain.Aggregates.Notification.Notification;
+using NotificationConfigurationAggregate = Mentoory.Notification.Domain.Aggregates.NotificationConfiguration.NotificationConfiguration;
 using NotificationPreferenceAggregate = Mentoory.Notification.Domain.Aggregates.NotificationPreference.NotificationPreference;
 
 namespace Mentoory.Notification.Infrastructure.Persistence;
@@ -19,12 +20,15 @@ public class NotificationDbContext : SharedAbstractDbContext
 
     public virtual DbSet<NotificationPreferenceAggregate> NotificationPreferences { get; set; } = null!;
 
+    public virtual DbSet<NotificationConfigurationAggregate> NotificationConfigurations { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureNotification(modelBuilder);
         ConfigureNotificationRecipient(modelBuilder);
         ConfigureDeliveryAttempt(modelBuilder);
         ConfigureNotificationPreference(modelBuilder);
+        ConfigureNotificationConfiguration(modelBuilder);
     }
 
     private static void ConfigureNotification(ModelBuilder modelBuilder)
@@ -65,24 +69,6 @@ public class NotificationDbContext : SharedAbstractDbContext
 
             entity.Property(e => e.CreatedAtUtc)
                 .IsRequired();
-
-            entity.OwnsOne(e => e.LoginContext, lc =>
-            {
-                lc.Property(v => v.IpAddress)
-                    .HasColumnName("LoginContext_IpAddress")
-                    .HasMaxLength(45);
-
-                lc.Property(v => v.BrowserName)
-                    .HasColumnName("LoginContext_BrowserName")
-                    .HasMaxLength(128);
-
-                lc.Property(v => v.OperatingSystem)
-                    .HasColumnName("LoginContext_OperatingSystem")
-                    .HasMaxLength(128);
-
-                lc.Property(v => v.IsSuspicious)
-                    .HasColumnName("LoginContext_IsSuspicious");
-            });
 
             entity.HasMany(e => e.Recipients)
                 .WithOne()
@@ -186,6 +172,24 @@ public class NotificationDbContext : SharedAbstractDbContext
 
             entity.Property(e => e.UpdatedAtUtc)
                 .IsRequired();
+        });
+    }
+
+    private static void ConfigureNotificationConfiguration(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<NotificationConfigurationAggregate>(entity =>
+        {
+            entity.ToTable("NotificationConfigurations", "notification");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ExternalId).IsRequired();
+            entity.HasIndex(e => e.ExternalId).IsUnique();
+            entity.Property(e => e.Key).IsRequired().HasMaxLength(100);
+            entity.HasIndex(e => e.Key).IsUnique();
+            entity.Property(e => e.Value).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.DataType).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.CreatedAtUtc).IsRequired();
+            entity.Property(e => e.UpdatedAtUtc).IsRequired();
         });
     }
 }

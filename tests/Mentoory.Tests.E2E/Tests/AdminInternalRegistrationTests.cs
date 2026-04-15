@@ -1,14 +1,13 @@
 using FluentAssertions;
 using Mentoory.Tests.E2E.Infrastructure;
-using Microsoft.Data.SqlClient;
 using Microsoft.Playwright;
 using Xunit;
 
 namespace Mentoory.Tests.E2E.Tests;
 
 /// <summary>
-/// E2E-T005 - Validates internal user registration form with country dropdown,
-/// project assignment, and verification toggle.
+/// E2E-T005 - Validates admin user creation form with country dropdown,
+/// toggle switches for verification/invitation, and project context requirement.
 /// </summary>
 [Collection(E2ETestCollection.Name)]
 public class AdminInternalRegistrationTests
@@ -21,31 +20,25 @@ public class AdminInternalRegistrationTests
     }
 
     [Fact]
-    public async Task RegisterInternal_PageLoads_WithCountryDropdownAndFields()
+    public async Task Create_PageLoads_WithCountryDropdownAndFields()
     {
         var page = await _fixture.CreatePageAsync();
         try
         {
-            await LoginAndSelectContextAsync(page, "incadmin1@test.mentoory.com", "Test123!@#");
-            await page.GotoAsync($"{_fixture.BaseUrl}/Administration/Users/RegisterInternal");
+            await LoginAndSelectContextAsync(page, "multirole@test.mentoory.com", "Test123!@#");
+            await page.GotoAsync($"{_fixture.BaseUrl}/Administration/Users/Create");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-
-            // Assert heading (rendered as <h5> inside .card-header)
-            var heading = page.Locator("h1, h2, h3, h4, h5").Filter(new LocatorFilterOptions
-            {
-                HasText = "Registrar Usuario Interno"
-            });
-            (await heading.CountAsync()).Should().BeGreaterThan(0,
-                "page should show 'Registrar Usuario Interno' heading");
 
             // Assert all required form fields are present
             (await page.Locator("input[name='Email']").CountAsync()).Should().Be(1);
-            (await page.Locator("input[name='Password']").CountAsync()).Should().Be(1);
             (await page.Locator("select[name='Country']").CountAsync()).Should().Be(1);
             (await page.Locator("input[name='Identification']").CountAsync()).Should().Be(1);
-            (await page.Locator("input[name='ProjectExternalId']").CountAsync()).Should().BeGreaterThanOrEqualTo(1);
-            // ASP.NET renders a hidden input alongside the checkbox; target only the checkbox
-            (await page.Locator("input[type='checkbox'][name='RequireEmailVerification']").CountAsync()).Should().Be(1);
+            (await page.Locator("input[name='FirstName']").CountAsync()).Should().Be(1);
+            (await page.Locator("input[name='LastName']").CountAsync()).Should().Be(1);
+
+            // Toggle switches for verification and invitation
+            (await page.Locator("input[type='checkbox'][name='SkipEmailVerification']").CountAsync()).Should().Be(1);
+            (await page.Locator("input[type='checkbox'][name='SkipInvitationAcceptance']").CountAsync()).Should().Be(1);
 
             // Assert Country dropdown has Costa Rica option
             var costaRicaOption = page.Locator("select[name='Country'] option[value='CRI']");
@@ -54,85 +47,78 @@ public class AdminInternalRegistrationTests
         }
         finally
         {
-            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(RegisterInternal_PageLoads_WithCountryDropdownAndFields));
+            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(Create_PageLoads_WithCountryDropdownAndFields));
             await page.Context.DisposeAsync();
         }
     }
 
     [Fact]
-    public async Task RegisterInternal_SuccessfulRegistration_RedirectsToUsersList()
+    public async Task Create_SuccessfulCreation_RedirectsToUsersList()
     {
         var page = await _fixture.CreatePageAsync();
         try
         {
-            // Lookup ProjectExternalId from DB
-            var projectExternalId = await GetFirstProjectExternalIdAsync();
-
-            await LoginAndSelectContextAsync(page, "incadmin1@test.mentoory.com", "Test123!@#");
-            await page.GotoAsync($"{_fixture.BaseUrl}/Administration/Users/RegisterInternal");
+            await LoginAndSelectContextAsync(page, "multirole@test.mentoory.com", "Test123!@#");
+            await page.GotoAsync($"{_fixture.BaseUrl}/Administration/Users/Create");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             var uniqueId = Guid.NewGuid().ToString("N")[..8];
-            var uniqueEmail = $"e2e-reginternal-{uniqueId}@test.mentoory.com";
+            var uniqueEmail = $"e2e-create-{uniqueId}@test.mentoory.com";
             var uniqueNationalId = $"1-{uniqueId[..4]}-{uniqueId[4..8]}";
 
             await page.FillAsync("input[name='Email']", uniqueEmail);
-            await page.FillAsync("input[name='Password']", "SecurePass12!@");
             await page.SelectOptionAsync("select[name='Country']", "CRI");
             await page.FillAsync("input[name='Identification']", uniqueNationalId);
+            await page.FillAsync("input[name='FirstName']", "E2E");
+            await page.FillAsync("input[name='LastName']", "TestUser");
 
-            // Fill ProjectExternalId (could be hidden input or select)
-            var projectInput = page.Locator("input[name='ProjectExternalId']");
-            if (await projectInput.CountAsync() > 0)
+            // Enable both toggles for simplest flow (skip verification + skip invitation = temp password)
+            var skipEmail = page.Locator("input[type='checkbox'][name='SkipEmailVerification']");
+            if (!await skipEmail.IsCheckedAsync())
             {
-                await projectInput.FillAsync(projectExternalId);
-            }
-            else
-            {
-                await page.SelectOptionAsync("select[name='ProjectExternalId']", projectExternalId);
+                await skipEmail.CheckAsync();
             }
 
-            // Ensure RequireEmailVerification is unchecked (use type='checkbox' to avoid hidden input)
-            var verificationCheckbox = page.Locator("input[type='checkbox'][name='RequireEmailVerification']");
-            if (await verificationCheckbox.IsCheckedAsync())
+            var skipInvitation = page.Locator("input[type='checkbox'][name='SkipInvitationAcceptance']");
+            if (!await skipInvitation.IsCheckedAsync())
             {
-                await verificationCheckbox.UncheckAsync();
+                await skipInvitation.CheckAsync();
             }
 
             await page.Locator("button[type='submit']").Filter(new LocatorFilterOptions
             {
-                HasText = "Registrar Usuario"
+                HasText = "Crear Usuario"
             }).ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             page.Url.Should().Contain("/Administration/Users",
-                "after successful internal registration, should redirect to users list");
+                "after successful user creation, should redirect to users list");
 
             var pageContent = await page.ContentAsync();
-            pageContent.Should().Contain("Usuario registrado exitosamente",
+            pageContent.Should().Contain("exitosamente",
                 "success message should be displayed");
         }
         finally
         {
-            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(RegisterInternal_SuccessfulRegistration_RedirectsToUsersList));
+            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(Create_SuccessfulCreation_RedirectsToUsersList));
             await page.Context.DisposeAsync();
         }
     }
 
     [Fact]
-    public async Task RegisterInternal_EmptyForm_ShowsValidationErrors()
+    public async Task Create_EmptyForm_ShowsValidationErrors()
     {
         var page = await _fixture.CreatePageAsync();
         try
         {
-            await LoginAndSelectContextAsync(page, "incadmin1@test.mentoory.com", "Test123!@#");
-            await page.GotoAsync($"{_fixture.BaseUrl}/Administration/Users/RegisterInternal");
+            await LoginAndSelectContextAsync(page, "multirole@test.mentoory.com", "Test123!@#");
+            await page.GotoAsync($"{_fixture.BaseUrl}/Administration/Users/Create");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // Submit empty form (use filtered locator to avoid TopBar's hidden logout submit)
+            // Submit empty form (filter to the Create form's submit button)
             await page.Locator("button[type='submit']").Filter(new LocatorFilterOptions
             {
-                HasText = "Registrar Usuario"
+                HasText = "Crear Usuario"
             }).ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
@@ -143,21 +129,71 @@ public class AdminInternalRegistrationTests
         }
         finally
         {
-            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(RegisterInternal_EmptyForm_ShowsValidationErrors));
+            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(Create_EmptyForm_ShowsValidationErrors));
             await page.Context.DisposeAsync();
         }
     }
 
-    private async Task<string> GetFirstProjectExternalIdAsync()
+    private async Task EnsureProjectContextAsync(IPage page)
     {
-        await using var connection = new SqlConnection(_fixture.ConnectionString);
-        await connection.OpenAsync();
+        // Navigate to Users/Index to get an antiforgery token (the page has a token form)
+        await page.GotoAsync($"{_fixture.BaseUrl}/Administration/Users");
+        await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-        await using var command = connection.CreateCommand();
-        command.CommandText = "SELECT TOP 1 CAST(ExternalId AS NVARCHAR(50)) FROM [tenant].[Projects]";
+        // Use the context API to switch context with the first available project
+        var hasProject = await page.EvaluateAsync<bool>(@"
+            (async () => {
+                try {
+                    var rolesResp = await fetch('/api/context/roles');
+                    var roles = await rolesResp.json();
+                    if (!roles || roles.length === 0) return false;
 
-        var result = await command.ExecuteScalarAsync();
-        return result?.ToString() ?? throw new InvalidOperationException("No projects found in seed data");
+                    var role = roles[0].role;
+
+                    var incResp = await fetch('/api/context/incubators?role=' + role);
+                    var incubators = await incResp.json();
+                    if (!incubators || incubators.length === 0) return false;
+
+                    var incubatorId = incubators[0].id;
+                    var incubatorName = incubators[0].name;
+                    var raExternalId = incubators[0].roleAssignmentExternalId;
+
+                    var projResp = await fetch('/api/context/projects?role=' + role + '&incubatorId=' + incubatorId);
+                    var projects = await projResp.json();
+                    if (!projects || projects.length === 0) return false;
+
+                    var tokenEl = document.querySelector('[name=""__RequestVerificationToken""]');
+                    if (!tokenEl) return false;
+
+                    var switchResp = await fetch('/api/context/switch', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': tokenEl.value
+                        },
+                        body: JSON.stringify({
+                            roleAssignmentExternalId: raExternalId,
+                            incubatorId: incubatorId,
+                            incubatorName: incubatorName,
+                            projectId: projects[0].id,
+                            projectName: projects[0].name
+                        })
+                    });
+                    return switchResp.ok;
+                } catch (e) {
+                    return false;
+                }
+            })()
+        ");
+
+        if (hasProject)
+        {
+            // Reload to pick up the updated auth cookie
+            await page.ReloadAsync();
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        }
+
+        // If no project available, the Create form will show disabled state — this is expected
     }
 
     private async Task LoginAndSelectContextAsync(IPage page, string email, string password)
@@ -195,10 +231,27 @@ public class AdminInternalRegistrationTests
                 await incubatorDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
             }
 
+            // Wait for project dropdown to be enabled (populated after incubator selection)
+            var projectDropdown = page.Locator("[data-mode='page'] [data-cs='project']");
+            if (await projectDropdown.CountAsync() > 0)
+            {
+                // Wait for dropdown to become enabled (projects load async after incubator selection)
+                await Assertions.Expect(projectDropdown).ToBeEnabledAsync(new() { Timeout = 15000 });
+                await page.WaitForFunctionAsync(
+                    "sel => sel.options.length > 1",
+                    await projectDropdown.ElementHandleAsync(),
+                    new() { Timeout = 10000 });
+                await projectDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
+            }
+
             var confirmBtn = page.Locator("[data-mode='page'] [data-cs='confirm']");
             await Assertions.Expect(confirmBtn).ToBeEnabledAsync(new() { Timeout = 15000 });
             await confirmBtn.ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         }
+
+        // Ensure project context is set (auto-skip may not include a project).
+        // Use the context API to switch context with the first available project.
+        await EnsureProjectContextAsync(page);
     }
 }

@@ -1,33 +1,37 @@
+using Mentoory.Notification.Contracts.Configuration;
 using Mentoory.Notification.Application.Services;
-using Mentoory.Notification.Application.Configuration;
+using Mentoory.Notification.Domain.Enums;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Mentoory.Notification.Infrastructure.Services;
 
 public partial class NotificationProcessorService : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly NotificationSettings _settings;
     private readonly ILogger<NotificationProcessorService> _logger;
 
     public NotificationProcessorService(
         IServiceScopeFactory scopeFactory,
-        IOptions<NotificationSettings> settings,
         ILogger<NotificationProcessorService> logger)
     {
         _scopeFactory = scopeFactory;
-        _settings = settings.Value;
         _logger = logger;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        LogProcessorStarted(_settings.PollingIntervalSeconds);
+        int pollingIntervalSeconds;
+        using (var scope = _scopeFactory.CreateScope())
+        {
+            var configReader = scope.ServiceProvider.GetRequiredService<INotificationConfigurationReader>();
+            pollingIntervalSeconds = await configReader.GetIntAsync(nameof(NotificationConfigurationKey.PollingIntervalSeconds), stoppingToken);
+        }
 
-        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(_settings.PollingIntervalSeconds));
+        LogProcessorStarted(pollingIntervalSeconds);
+
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(pollingIntervalSeconds));
 
         while (await timer.WaitForNextTickAsync(stoppingToken))
         {

@@ -1,7 +1,6 @@
 using Mentoory.Notification.Application.Services;
 using Mentoory.Notification.Domain.Repositories;
-using Mentoory.Notification.Application.Configuration;
-using Mentoory.Notification.Infrastructure.Configuration;
+using Mentoory.Notification.Contracts.Configuration;
 using Mentoory.Notification.Infrastructure.Persistence;
 using Mentoory.Notification.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
@@ -32,17 +31,12 @@ public static class DependencyInjection
             settings.CommandTimeout = 30;
         });
 
-        builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("Smtp"));
-        builder.Services.Configure<NotificationSettings>(builder.Configuration.GetSection("Notification"));
-
         builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
         builder.Services.AddScoped<INotificationPreferenceRepository, NotificationPreferenceRepository>();
+        builder.Services.AddScoped<INotificationConfigurationRepository, NotificationConfigurationRepository>();
+        builder.Services.AddScoped<INotificationConfigurationReader, NotificationConfigurationReader>();
 
         builder.Services.AddScoped<IEmailService, SmtpEmailService>();
-
-        builder.Services.AddSingleton<ITemplateRenderer, RazorLightTemplateRenderer>();
-        builder.Services.AddSingleton<ILoginContextParser, UaParserLoginContextParser>();
-
         builder.Services.AddScoped<INotificationQueueService, NotificationQueueService>();
         builder.Services.AddHostedService<NotificationProcessorService>();
 

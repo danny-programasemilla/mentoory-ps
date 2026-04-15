@@ -25,8 +25,6 @@ public class Notification : Entity, IAggregateRoot
 
     public DateTime CreatedAtUtc { get; private set; }
 
-    public LoginContext? LoginContext { get; private set; }
-
     public IReadOnlyCollection<NotificationRecipient> Recipients => _recipients.AsReadOnly();
 
     public static Notification Create(
@@ -35,8 +33,7 @@ public class Notification : Entity, IAggregateRoot
         string htmlBody,
         Guid? sourceEventId,
         DateTime scheduledForUtc,
-        DateTime createdAtUtc,
-        LoginContext? loginContext = null)
+        DateTime createdAtUtc)
     {
         if (string.IsNullOrWhiteSpace(subject))
         {
@@ -57,7 +54,6 @@ public class Notification : Entity, IAggregateRoot
             SourceEventId = sourceEventId,
             ScheduledForUtc = scheduledForUtc,
             CreatedAtUtc = createdAtUtc,
-            LoginContext = loginContext,
         };
     }
 

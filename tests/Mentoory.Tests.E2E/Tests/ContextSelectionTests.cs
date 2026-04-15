@@ -149,11 +149,7 @@ public class ContextSelectionTests
             await roleDropdown.SelectOptionAsync(new SelectOptionValue { Label = "Administrador de Incubadora" });
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // Multirole user has IncubatorAdmin at 2 incubators → must manually select one
-            var incubatorDropdown = container.Locator("[data-cs='incubator']");
-            await incubatorDropdown.SelectOptionAsync(new SelectOptionValue { Label = "Incubadora Alpha" });
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-
+            // Multirole user has IncubatorAdmin at 1 incubator → auto-selected by cascade JS
             var confirmBtn = container.Locator("[data-cs='confirm']");
             await Assertions.Expect(confirmBtn).ToBeEnabledAsync(new() { Timeout = 10000 });
 

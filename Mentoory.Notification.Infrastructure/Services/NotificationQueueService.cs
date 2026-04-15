@@ -1,11 +1,9 @@
 using Mentoory.Notification.Application.Services;
-using Mentoory.Notification.Domain.Aggregates.Notification;
+using Mentoory.Notification.Contracts.Configuration;
 using Mentoory.Notification.Domain.Enums;
 using Mentoory.Notification.Domain.Repositories;
-using Mentoory.Notification.Application.Configuration;
 using Mentoory.Shared.Application.TimeProvider;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using NotificationAggregate = Mentoory.Notification.Domain.Aggregates.Notification.Notification;
 
 namespace Mentoory.Notification.Infrastructure.Services;
@@ -14,159 +12,61 @@ public partial class NotificationQueueService : INotificationQueueService
 {
     private readonly INotificationRepository _notificationRepository;
     private readonly IEmailService _emailService;
-    private readonly ITemplateRenderer _templateRenderer;
     private readonly ITimeProvider _timeProvider;
-    private readonly NotificationSettings _settings;
+    private readonly INotificationConfigurationReader _configReader;
     private readonly ILogger<NotificationQueueService> _logger;
 
     public NotificationQueueService(
         INotificationRepository notificationRepository,
         IEmailService emailService,
-        ITemplateRenderer templateRenderer,
         ITimeProvider timeProvider,
-        IOptions<NotificationSettings> settings,
+        INotificationConfigurationReader configReader,
         ILogger<NotificationQueueService> logger)
     {
         _notificationRepository = notificationRepository;
         _emailService = emailService;
-        _templateRenderer = templateRenderer;
         _timeProvider = timeProvider;
-        _settings = settings.Value;
+        _configReader = configReader;
         _logger = logger;
     }
 
-    public async Task QueueRegistrationEmailAsync(
-        long userId,
-        string email,
-        string firstName,
-        string lastName,
-        string verificationUrl,
-        int expirationHours,
-        Guid sourceEventId,
+    public async Task QueueAsync(
+        NotificationType notificationType,
+        string subject,
+        string htmlBody,
+        long recipientUserId,
+        string recipientEmail,
+        Guid? sourceEventId,
+        DateTime scheduledForUtc,
         CancellationToken cancellationToken)
     {
-        if (await IsDuplicateAsync(sourceEventId, NotificationType.UserRegistration, cancellationToken))
+        if (sourceEventId.HasValue &&
+            await IsDuplicateAsync(sourceEventId.Value, notificationType, cancellationToken))
         {
-            LogDuplicateSkipped(sourceEventId, NotificationType.UserRegistration);
+            LogDuplicateSkipped(sourceEventId.Value, notificationType);
             return;
         }
 
-        var htmlBody = await _templateRenderer.RenderAsync("UserRegistration.cshtml", new
-        {
-            FirstName = firstName,
-            LastName = lastName,
-            VerificationUrl = verificationUrl,
-            ExpirationHours = expirationHours,
-        });
-
         var utcNow = _timeProvider.UtcNow;
         var notification = NotificationAggregate.Create(
-            NotificationType.UserRegistration,
-            "Bienvenido/a a Mentoory - Verifica tu correo electrónico",
-            htmlBody,
-            sourceEventId,
-            utcNow,
-            utcNow);
-
-        notification.AddRecipient(userId, email, DeliveryChannel.Email);
-        _notificationRepository.Add(notification);
-        await _notificationRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
-
-        LogNotificationQueued(NotificationType.UserRegistration, email);
-    }
-
-    public async Task QueueInvitationEmailAsync(
-        long userId,
-        string email,
-        string firstName,
-        string lastName,
-        string projectName,
-        string incubatorName,
-        string actionUrl,
-        int expirationHours,
-        Guid sourceEventId,
-        CancellationToken cancellationToken)
-    {
-        if (await IsDuplicateAsync(sourceEventId, NotificationType.ProjectInvitation, cancellationToken))
-        {
-            LogDuplicateSkipped(sourceEventId, NotificationType.ProjectInvitation);
-            return;
-        }
-
-        var htmlBody = await _templateRenderer.RenderAsync("ProjectInvitation.cshtml", new
-        {
-            FirstName = firstName,
-            LastName = lastName,
-            ProjectName = projectName,
-            IncubatorName = incubatorName,
-            ActionUrl = actionUrl,
-            ExpirationHours = expirationHours,
-        });
-
-        var utcNow = _timeProvider.UtcNow;
-        var notification = NotificationAggregate.Create(
-            NotificationType.ProjectInvitation,
-            $"Invitación al proyecto {projectName} - Mentoory",
-            htmlBody,
-            sourceEventId,
-            utcNow,
-            utcNow);
-
-        notification.AddRecipient(userId, email, DeliveryChannel.Email);
-        _notificationRepository.Add(notification);
-        await _notificationRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
-
-        LogNotificationQueued(NotificationType.ProjectInvitation, email);
-    }
-
-    public async Task QueueLoginAlertAsync(
-        long userId,
-        string email,
-        LoginContext loginContext,
-        Guid sourceEventId,
-        CancellationToken cancellationToken)
-    {
-        if (await IsDuplicateAsync(sourceEventId, NotificationType.LoginAlert, cancellationToken))
-        {
-            LogDuplicateSkipped(sourceEventId, NotificationType.LoginAlert);
-            return;
-        }
-
-        var templateName = loginContext.IsSuspicious
-            ? "SuspiciousLoginAlert.cshtml"
-            : "LoginAlert.cshtml";
-
-        var subject = loginContext.IsSuspicious
-            ? "Actividad sospechosa detectada - Mentoory"
-            : "Alerta de inicio de sesión - Mentoory";
-
-        var utcNow = _timeProvider.UtcNow;
-
-        var htmlBody = await _templateRenderer.RenderAsync(templateName, new
-        {
-            loginContext.IpAddress,
-            loginContext.BrowserName,
-            loginContext.OperatingSystem,
-            Timestamp = utcNow.ToString("dd/MM/yyyy HH:mm:ss 'UTC'"),
-        });
-        var notification = NotificationAggregate.Create(
-            NotificationType.LoginAlert,
+            notificationType,
             subject,
             htmlBody,
             sourceEventId,
-            utcNow,
-            utcNow,
-            loginContext);
+            scheduledForUtc,
+            utcNow);
 
-        notification.AddRecipient(userId, email, DeliveryChannel.Email);
+        notification.AddRecipient(recipientUserId, recipientEmail, DeliveryChannel.Email);
         _notificationRepository.Add(notification);
         await _notificationRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
 
-        LogNotificationQueued(NotificationType.LoginAlert, email);
+        LogNotificationQueued(notificationType, recipientEmail);
     }
 
     public async Task ProcessPendingAsync(CancellationToken cancellationToken)
     {
+        var maxRetryAttempts = await _configReader.GetIntAsync(
+            nameof(NotificationConfigurationKey.MaxRetryAttempts), cancellationToken);
         var utcNow = _timeProvider.UtcNow;
         var pending = await _notificationRepository.GetPendingAsync(utcNow, cancellationToken);
 
@@ -198,7 +98,7 @@ public partial class NotificationQueueService : INotificationQueueService
                 }
                 catch (Exception ex)
                 {
-                    recipient.RecordFailedAttempt(utcNow, ex.Message, _settings.MaxRetryAttempts);
+                    recipient.RecordFailedAttempt(utcNow, ex.Message, maxRetryAttempts);
                     LogDeliveryFailed(notification.ExternalId, recipient.Email, ex);
                 }
             }
@@ -212,7 +112,8 @@ public partial class NotificationQueueService : INotificationQueueService
         NotificationType type,
         CancellationToken cancellationToken)
     {
-        var existing = await _notificationRepository.GetBySourceEventIdAndTypeAsync(sourceEventId, type, cancellationToken);
+        var existing = await _notificationRepository.GetBySourceEventIdAndTypeAsync(
+            sourceEventId, type, cancellationToken);
         return existing is not null;
     }
 

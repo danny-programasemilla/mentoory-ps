@@ -1,9 +1,9 @@
 using Mentoory.Access.Application.Commands.AdminVerifyEmail;
+using Mentoory.Access.Application.Commands.CreateUser;
 using Mentoory.Access.Application.Commands.RegenerateVerificationToken;
-using Mentoory.Access.Application.Commands.RegisterInternalUser;
-using Mentoory.Access.Application.Commands.RegisterUser;
 using Mentoory.Access.Application.Countries.Queries.ListCountries;
 using Mentoory.Access.Application.Queries.ListIncubatorMembers;
+using Mentoory.Tenant.Application.Queries.ResolveProjectExternalId;
 using Mentoory.Web.Areas.Administration.Models;
 using Mentoory.Web.Infrastructure;
 using Mentoory.Web.Models;
@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Mentoory.Web.Areas.Administration.Controllers;
 
 [Area("Administration")]
-[Authorize(Roles = "IncubatorAdmin,GlobalAdmin")]
+[Authorize(Roles = "ProjectCoordinator,IncubatorAdmin,GlobalAdmin")]
 public class UsersController : Controller
 {
     private readonly MediatRExecutor _executor;
@@ -53,84 +53,87 @@ public class UsersController : Controller
     }
 
     [HttpGet]
-    public IActionResult Enroll()
+    public async Task<IActionResult> Create(CancellationToken ct)
     {
-        return View(new EnrollUserViewModel());
-    }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Enroll(EnrollUserViewModel model, CancellationToken ct)
-    {
-        if (!ModelState.IsValid)
-        {
-            return View(model);
-        }
-
-        var result = await _executor.SendAndLogIfFailureAsync(
-            new RegisterUserCommand(
-                model.Email,
-                model.Country,
-                model.NationalId,
-                model.FirstName,
-                model.LastName,
-                model.Password),
-            ct);
-
-        if (result.IsSuccess)
-        {
-            TempData["SuccessMessage"] = "Usuario inscrito exitosamente.";
-            return RedirectToAction(nameof(Index));
-        }
-
-        if (result.ErrorMessages is not null)
-        {
-            foreach (var (context, message) in result.ErrorMessages)
-            {
-                ModelState.AddModelError(context, message);
-            }
-        }
-        else
-        {
-            ModelState.AddModelError(string.Empty, "Error al inscribir el usuario.");
-        }
-
-        return View(model);
-    }
-
-    [HttpGet]
-    public async Task<IActionResult> RegisterInternal(CancellationToken ct)
-    {
-        var model = new InternalRegistrationViewModel();
+        var model = new CreateUserViewModel();
         var countriesResult = await _executor.SendAndLogIfFailureAsync(new ListCountriesQuery(), ct);
         model.Countries = countriesResult.IsSuccess ? countriesResult.Value! : [];
+
+        if (User.HasValidProjectContext())
+        {
+            model.HasActiveProject = true;
+            model.ActiveProjectName = User.GetActiveProjectName();
+        }
+
         return View(model);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> RegisterInternal(InternalRegistrationViewModel model, CancellationToken ct)
+    public async Task<IActionResult> Create(CreateUserViewModel model, CancellationToken ct)
     {
         if (!ModelState.IsValid)
         {
-            var countriesResult = await _executor.SendAndLogIfFailureAsync(new ListCountriesQuery(), ct);
-            model.Countries = countriesResult.IsSuccess ? countriesResult.Value! : [];
+            await PopulateCreateViewModel(model, ct);
             return View(model);
         }
 
-        var command = new RegisterInternalUserCommand(
+        if (!User.HasValidProjectContext())
+        {
+            TempData["ErrorMessage"] = "Debe seleccionar un proyecto antes de crear un usuario.";
+            await PopulateCreateViewModel(model, ct);
+            return View(model);
+        }
+
+        var projectId = User.GetActiveProjectId()!.Value;
+        var resolveResult = await _executor.SendAndLogIfFailureAsync(
+            new ResolveProjectExternalIdQuery(projectId), ct);
+
+        if (resolveResult.IsFailure)
+        {
+            TempData["ErrorMessage"] = "No se pudo resolver el proyecto seleccionado.";
+            await PopulateCreateViewModel(model, ct);
+            return View(model);
+        }
+
+        var command = new CreateUserCommand(
+            model.Email,
             model.Country,
             model.Identification,
-            model.Email,
-            model.Password,
-            model.RequireEmailVerification,
-            model.ProjectExternalId);
+            model.FirstName,
+            model.LastName,
+            model.SkipEmailVerification,
+            model.SkipInvitationAcceptance,
+            resolveResult.Value!);
 
         var result = await _executor.SendAndLogIfFailureAsync(command, ct);
 
         if (result.IsSuccess)
         {
-            TempData["SuccessMessage"] = "Usuario registrado exitosamente.";
+            var value = result.Value!;
+            switch (value.Outcome)
+            {
+                case CreateUserOutcome.Created:
+                    TempData["SuccessMessage"] = "Usuario creado exitosamente.";
+                    break;
+                case CreateUserOutcome.Enrolled:
+                    TempData["SuccessMessage"] = "Usuario existente inscrito al proyecto.";
+                    break;
+                case CreateUserOutcome.AlreadyEnrolled:
+                    TempData["SuccessMessage"] = "El usuario ya está inscrito en este proyecto.";
+                    break;
+            }
+
+            if (value.TemporaryPassword is not null)
+            {
+                TempData["TemporaryPassword"] = value.TemporaryPassword;
+            }
+
+            if (value.Warnings.Count > 0)
+            {
+                TempData["WarningMessages"] = string.Join("|", value.Warnings);
+            }
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -139,8 +142,7 @@ public class UsersController : Controller
             ModelState.AddModelError(error.Context, error.Message);
         }
 
-        var countries = await _executor.SendAndLogIfFailureAsync(new ListCountriesQuery(), ct);
-        model.Countries = countries.IsSuccess ? countries.Value! : [];
+        await PopulateCreateViewModel(model, ct);
         return View(model);
     }
 
@@ -180,5 +182,17 @@ public class UsersController : Controller
         }
 
         return RedirectToAction(nameof(Index));
+    }
+
+    private async Task PopulateCreateViewModel(CreateUserViewModel model, CancellationToken ct)
+    {
+        var countriesResult = await _executor.SendAndLogIfFailureAsync(new ListCountriesQuery(), ct);
+        model.Countries = countriesResult.IsSuccess ? countriesResult.Value! : [];
+
+        if (User.HasValidProjectContext())
+        {
+            model.HasActiveProject = true;
+            model.ActiveProjectName = User.GetActiveProjectName();
+        }
     }
 }
