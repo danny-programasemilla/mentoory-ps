@@ -1,6 +1,6 @@
 # Brainstorm Overview
 
-Last updated: 2026-04-14
+Last updated: 2026-04-14 (session 08)
 
 ## Sessions
 
@@ -13,6 +13,7 @@ Last updated: 2026-04-14
 | 04 | 2026-04-13 | table-polish | spec-created | 012 |
 | 05 | 2026-04-13 | table-filtering | spec-created | 013 |
 | 07 | 2026-04-14 | diagnosis-stage-pipeline | spec-created | 014 |
+| 08 | 2026-04-14 | pipeline-editor-ux-polish | spec-created | 015 |
 
 ## Open Threads
 - GlobalAdmin incubator dropdown may need search/filter at scale (from #01)
@@ -31,6 +32,8 @@ Last updated: 2026-04-14
 - Automatic reminder emails before invitation expiration (from #06)
 - Pipeline editor: drag-and-drop vs up/down arrows for v1? (from #07)
 - Stage advancement warning: per-entrepreneur completion stats vs simple count? (from #07)
+- "Guardar Orden" button position: header bar vs floating/sticky (from #08)
+- Tabler filled-circle icon availability for status dots (from #08)
 
 ## Parked Ideas
 (none)
