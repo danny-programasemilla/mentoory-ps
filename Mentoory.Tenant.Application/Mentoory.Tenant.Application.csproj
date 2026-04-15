@@ -4,8 +4,11 @@
         <PackageReference Include="MediatR"/>
     </ItemGroup>
     <ItemGroup>
+        <ProjectReference Include="..\Mentoory.Access.Contracts\Mentoory.Access.Contracts.csproj"/>
+        <ProjectReference Include="..\Mentoory.Notification.Contracts\Mentoory.Notification.Contracts.csproj"/>
+        <ProjectReference Include="..\Mentoory.Tenant.Contracts\Mentoory.Tenant.Contracts.csproj"/>
         <ProjectReference Include="..\Mentoory.Tenant.Domain\Mentoory.Tenant.Domain.csproj"/>
         <ProjectReference Include="..\Mentoory.Shared.Application\Mentoory.Shared.Application.csproj"/>
-        <ProjectReference Include="..\Mentoory.Access.Application\Mentoory.Access.Application.csproj"/>
+        <ProjectReference Include="..\Mentoory.Access.Application\Mentoory.Access.Application.csproj"/><!-- TODO: Remove once RequestSelfEnrollmentHandler no longer depends on ISystemConfigurationReader from Access -->
     </ItemGroup>
 </Project>

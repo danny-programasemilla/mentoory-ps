@@ -49,7 +49,6 @@ public class GetProjectFormHandler : BaseCommandHandler<GetProjectFormQuery, Pro
                     q.TopicId,
                     q.QuestionText,
                     q.QuestionType,
-                    q.StageApplicability,
                     q.SortOrder,
                     q.BlockGroup,
                     q.IsOptional,

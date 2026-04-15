@@ -1,5 +1,5 @@
 using MediatR;
-using Mentoory.Access.Application.IntegrationEvents;
+using Mentoory.Access.Contracts.IntegrationEvents;
 using Mentoory.Shared.Application.TimeProvider;
 using Mentoory.Tenant.Application.Commands.EnrollParticipant;
 using Mentoory.Tenant.Application.Invitations.Commands.CreateInvitation;
@@ -41,7 +41,9 @@ public partial class UserRegisteredEventHandler : INotificationHandler<UserRegis
             return;
         }
 
-        var enrollmentVariant = project.EnrollmentVariant.ToString();
+        // Use the event's enrollment variant (per-user override from admin toggles)
+        // instead of the project's default, allowing admin to bypass on a per-user basis
+        var enrollmentVariant = notification.EnrollmentVariant;
 
         if (enrollmentVariant == "Bypass" && !notification.RequiresVerification)
         {

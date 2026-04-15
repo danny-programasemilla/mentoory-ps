@@ -32,6 +32,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<IFormTemplateRepository, FormTemplateRepository>();
         builder.Services.AddScoped<IProjectFormRepository, ProjectFormRepository>();
         builder.Services.AddScoped<IDiagnosticResponseRepository, DiagnosticResponseRepository>();
+        builder.Services.AddScoped<IStageFormAssignmentRepository, StageFormAssignmentRepository>();
 
         return builder;
     }

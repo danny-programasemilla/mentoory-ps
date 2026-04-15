@@ -1,6 +1,8 @@
+using Mentoory.Shared.Application.Notifications;
 using Mentoory.Tenant.Domain.Repositories;
 using Mentoory.Tenant.Infrastructure.Persistence;
 using Mentoory.Tenant.Infrastructure.Persistence.Repositories;
+using Mentoory.Tenant.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,6 +34,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<IIncubatorRepository, IncubatorRepository>();
         builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
         builder.Services.AddScoped<IProjectInvitationRepository, ProjectInvitationRepository>();
+        builder.Services.AddKeyedSingleton<ITemplateRenderer, TenantTemplateRenderer>("Tenant");
 
         return builder;
     }

@@ -1,0 +1,23 @@
+CREATE TABLE [notification].[Notifications]
+(
+    [Id]               BIGINT            IDENTITY(1,1) NOT NULL,
+    [ExternalId]       UNIQUEIDENTIFIER  NOT NULL DEFAULT NEWID(),
+    [NotificationType] TINYINT           NOT NULL,
+    [Subject]          NVARCHAR(256)     NOT NULL,
+    [HtmlBody]         NVARCHAR(MAX)     NOT NULL,
+    [SourceEventId]    UNIQUEIDENTIFIER  NULL,
+    [ScheduledForUtc]  DATETIME2(7)      NOT NULL,
+    [CreatedAtUtc]     DATETIME2(7)      NOT NULL,
+    CONSTRAINT [PK_Notifications] PRIMARY KEY CLUSTERED ([Id]),
+    CONSTRAINT [UQ_Notifications_ExternalId] UNIQUE ([ExternalId])
+)
+GO
+
+CREATE UNIQUE NONCLUSTERED INDEX [IX_Notifications_SourceEventId_Type]
+    ON [notification].[Notifications] ([SourceEventId], [NotificationType])
+    WHERE [SourceEventId] IS NOT NULL
+GO
+
+CREATE NONCLUSTERED INDEX [IX_Notifications_ScheduledForUtc]
+    ON [notification].[Notifications] ([ScheduledForUtc])
+    INCLUDE ([NotificationType])

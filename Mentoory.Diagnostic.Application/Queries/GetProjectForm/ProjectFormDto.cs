@@ -38,7 +38,6 @@ public sealed record AnswerOptionDto(
 /// <param name="TopicId">The topic identifier.</param>
 /// <param name="QuestionText">The question text.</param>
 /// <param name="QuestionType">The type of question.</param>
-/// <param name="StageApplicability">The evaluation stage applicability.</param>
 /// <param name="SortOrder">The display sort order.</param>
 /// <param name="BlockGroup">The optional block group.</param>
 /// <param name="IsOptional">Whether the question is optional.</param>
@@ -50,7 +49,6 @@ public sealed record QuestionDto(
     long TopicId,
     string QuestionText,
     QuestionType QuestionType,
-    StageApplicability StageApplicability,
     int SortOrder,
     string? BlockGroup,
     bool IsOptional,

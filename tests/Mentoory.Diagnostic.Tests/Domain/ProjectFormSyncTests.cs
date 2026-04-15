@@ -18,7 +18,7 @@ public class ProjectFormSyncTests
         form.EnablePartialSync();
 
         // Add a new question to the template
-        template.AddQuestion(3, "Pregunta 3", QuestionType.Numeric, StageApplicability.Final, 3, null, false);
+        template.AddQuestion(3, "Pregunta 3", QuestionType.Numeric, 3, null, false);
 
         form.SyncNewQuestionsFromTemplate(template);
 
@@ -47,7 +47,7 @@ public class ProjectFormSyncTests
         form.EnablePartialSync();
 
         template.Update("Template v2", null, null);
-        template.AddQuestion(3, "Pregunta 3", QuestionType.Text, StageApplicability.Both, 3, null, false);
+        template.AddQuestion(3, "Pregunta 3", QuestionType.Text, 3, null, false);
 
         form.SyncNewQuestionsFromTemplate(template);
 
@@ -86,8 +86,8 @@ public class ProjectFormSyncTests
         var form = ProjectForm.CloneFromTemplate(template, 10, 1, UtcNow);
         form.EnablePartialSync();
 
-        template.AddQuestion(3, "Pregunta 3", QuestionType.Numeric, StageApplicability.Final, 3, null, false);
-        template.AddQuestion(4, "Pregunta 4", QuestionType.Text, StageApplicability.Both, 4, null, false);
+        template.AddQuestion(3, "Pregunta 3", QuestionType.Numeric, 3, null, false);
+        template.AddQuestion(4, "Pregunta 4", QuestionType.Text, 4, null, false);
 
         form.SyncNewQuestionsFromTemplate(template);
 
@@ -132,10 +132,10 @@ public class ProjectFormSyncTests
     private static FormTemplate CreateTemplateWithQuestions()
     {
         var template = FormTemplate.Create("Template", "Desc", null, UtcNow);
-        var q1 = template.AddQuestion(1, "Pregunta 1", QuestionType.SingleSelect, StageApplicability.Both, 1, null, false);
+        var q1 = template.AddQuestion(1, "Pregunta 1", QuestionType.SingleSelect, 1, null, false);
         q1.AddAnswerOption("Opción A", 5.0m, SwotClassification.Strength, OdsrOrientation.Offensive, 1);
         q1.AddAnswerOption("Opción B", 3.0m, SwotClassification.Weakness, OdsrOrientation.Defensive, 2);
-        template.AddQuestion(2, "Pregunta 2", QuestionType.Text, StageApplicability.Initial, 2, null, true);
+        template.AddQuestion(2, "Pregunta 2", QuestionType.Text, 2, null, true);
         return template;
     }
 }

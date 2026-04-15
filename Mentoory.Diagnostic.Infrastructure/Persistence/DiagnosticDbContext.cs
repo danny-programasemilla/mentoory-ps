@@ -2,23 +2,17 @@ using MediatR;
 using Mentoory.Diagnostic.Domain.Aggregates.DiagnosticResponse;
 using Mentoory.Diagnostic.Domain.Aggregates.FormTemplate;
 using Mentoory.Diagnostic.Domain.Aggregates.ProjectForm;
-using Mentoory.Diagnostic.Domain.Enums;
+using Mentoory.Diagnostic.Domain.Aggregates.StageFormAssignment;
 using Mentoory.Shared.Application.Interfaces;
 using Mentoory.Shared.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace Mentoory.Diagnostic.Infrastructure.Persistence;
 
-/// <summary>
-/// Database context for the Diagnostic domain.
-/// </summary>
 public class DiagnosticDbContext : SharedAbstractDbContext
 {
     private readonly ITenantContext _tenantContext;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DiagnosticDbContext"/> class.
-    /// </summary>
     public DiagnosticDbContext(DbContextOptions<DiagnosticDbContext> options, IMediator mediator, ITenantContext tenantContext)
         : base(options, mediator)
     {
@@ -35,8 +29,9 @@ public class DiagnosticDbContext : SharedAbstractDbContext
     public virtual DbSet<DiagnosticResponse> DiagnosticResponses { get; set; } = null!;
     public virtual DbSet<QuestionResponse> QuestionResponses { get; set; } = null!;
     public virtual DbSet<AnswerCorrection> AnswerCorrections { get; set; } = null!;
+    public virtual DbSet<StageFormAssignment> StageFormAssignments { get; set; } = null!;
+    public virtual DbSet<AssignedQuestion> AssignedQuestions { get; set; } = null!;
 
-    /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureFormTemplate(modelBuilder);
@@ -49,6 +44,8 @@ public class DiagnosticDbContext : SharedAbstractDbContext
         ConfigureDiagnosticResponse(modelBuilder);
         ConfigureQuestionResponse(modelBuilder);
         ConfigureAnswerCorrection(modelBuilder);
+        ConfigureStageFormAssignment(modelBuilder);
+        ConfigureAssignedQuestion(modelBuilder);
     }
 
     private void ConfigureFormTemplate(ModelBuilder modelBuilder)
@@ -85,7 +82,6 @@ public class DiagnosticDbContext : SharedAbstractDbContext
             entity.Property(e => e.TopicId).IsRequired();
             entity.Property(e => e.QuestionText).IsRequired().HasMaxLength(2000);
             entity.Property(e => e.QuestionType).IsRequired().HasConversion<byte>();
-            entity.Property(e => e.StageApplicability).IsRequired().HasConversion<byte>();
             entity.Property(e => e.SortOrder).IsRequired();
             entity.Property(e => e.BlockGroup).HasMaxLength(100);
             entity.Property(e => e.IsOptional).IsRequired().HasDefaultValue(false);
@@ -136,10 +132,9 @@ public class DiagnosticDbContext : SharedAbstractDbContext
             entity.Property(e => e.SourceTemplateId);
             entity.Property(e => e.SourceTemplateVersion);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
-            entity.Property(e => e.SyncMode).IsRequired().HasConversion<byte>().HasDefaultValue(SyncMode.Disconnected);
+            entity.Property(e => e.SyncMode).IsRequired().HasConversion<byte>().HasDefaultValue(Domain.Enums.SyncMode.Disconnected);
             entity.Property(e => e.CreatedAtUtc).IsRequired();
 
-            // Multi-tenant query filter
             entity.HasQueryFilter(e => tenantContext.CurrentIncubatorId == null || e.IncubatorId == tenantContext.CurrentIncubatorId);
 
             entity.HasMany(e => e.Questions)
@@ -162,7 +157,6 @@ public class DiagnosticDbContext : SharedAbstractDbContext
             entity.Property(e => e.TopicId).IsRequired();
             entity.Property(e => e.QuestionText).IsRequired().HasMaxLength(2000);
             entity.Property(e => e.QuestionType).IsRequired().HasConversion<byte>();
-            entity.Property(e => e.StageApplicability).IsRequired().HasConversion<byte>();
             entity.Property(e => e.SortOrder).IsRequired();
             entity.Property(e => e.BlockGroup).HasMaxLength(100);
             entity.Property(e => e.IsOptional).IsRequired().HasDefaultValue(false);
@@ -229,15 +223,14 @@ public class DiagnosticDbContext : SharedAbstractDbContext
             entity.HasIndex(e => e.IncubatorId);
 
             entity.Property(e => e.EntrepreneurUserId).IsRequired();
-            entity.Property(e => e.EvaluationStage).IsRequired().HasConversion<byte>();
+            entity.Property(e => e.StageFormAssignmentId).IsRequired();
             entity.Property(e => e.IsCompleted).IsRequired().HasDefaultValue(false);
             entity.Property(e => e.CompletedAtUtc);
             entity.Property(e => e.CreatedAtUtc).IsRequired();
 
-            // Multi-tenant query filter
             entity.HasQueryFilter(e => tenantContext.CurrentIncubatorId == null || e.IncubatorId == tenantContext.CurrentIncubatorId);
 
-            entity.HasIndex(e => new { e.ProjectFormId, e.EntrepreneurUserId, e.EvaluationStage })
+            entity.HasIndex(e => new { e.StageFormAssignmentId, e.EntrepreneurUserId })
                 .IsUnique();
 
             entity.HasMany(e => e.QuestionResponses)
@@ -288,6 +281,56 @@ public class DiagnosticDbContext : SharedAbstractDbContext
             entity.Property(e => e.Reason).HasMaxLength(500);
 
             entity.Property<long>("QuestionResponseId").IsRequired();
+        });
+    }
+
+    private void ConfigureAssignedQuestion(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<AssignedQuestion>(entity =>
+        {
+            entity.ToTable("AssignedQuestions", "diagnostic");
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.QuestionId).IsRequired();
+            entity.Property(e => e.SortOrder).IsRequired();
+
+            entity.Property<long>("StageFormAssignmentId").IsRequired();
+
+            entity.HasIndex("StageFormAssignmentId", nameof(AssignedQuestion.QuestionId)).IsUnique();
+            entity.HasIndex(e => e.QuestionId);
+        });
+    }
+
+    private void ConfigureStageFormAssignment(ModelBuilder modelBuilder)
+    {
+        var tenantContext = _tenantContext;
+        modelBuilder.Entity<StageFormAssignment>(entity =>
+        {
+            entity.ToTable("StageFormAssignments", "diagnostic");
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.ExternalId).IsRequired();
+            entity.HasIndex(e => e.ExternalId).IsUnique();
+
+            entity.Property(e => e.ProjectId).IsRequired();
+            entity.Property(e => e.IncubatorId).IsRequired();
+            entity.HasIndex(e => e.IncubatorId);
+
+            entity.Property(e => e.ProjectStageId).IsRequired();
+            entity.HasIndex(e => e.ProjectStageId);
+
+            entity.Property(e => e.ProjectFormId).IsRequired();
+            entity.HasIndex(e => e.ProjectFormId);
+
+            entity.Property(e => e.IsActive).IsRequired().HasDefaultValue(true);
+            entity.Property(e => e.CreatedAtUtc).IsRequired();
+
+            entity.HasQueryFilter(e => tenantContext.CurrentIncubatorId == null || e.IncubatorId == tenantContext.CurrentIncubatorId);
+
+            entity.HasMany(e => e.AssignedQuestions)
+                .WithOne()
+                .HasForeignKey("StageFormAssignmentId")
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

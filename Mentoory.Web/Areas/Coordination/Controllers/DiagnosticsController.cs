@@ -1,8 +1,14 @@
+using Mentoory.Diagnostic.Application.Commands.AssignFormToStage;
 using Mentoory.Diagnostic.Application.Commands.CloneFormTemplate;
+using Mentoory.Diagnostic.Application.Commands.RemoveFormFromStage;
+using Mentoory.Diagnostic.Application.Commands.UpdateStageQuestionSelection;
 using Mentoory.Diagnostic.Application.Queries.GetProjectForm;
+using Mentoory.Diagnostic.Application.Queries.GetStageFormAssignment;
 using Mentoory.Diagnostic.Application.Queries.ListFormTemplates;
 using Mentoory.Diagnostic.Application.Queries.ListProjectForms;
+using Mentoory.Diagnostic.Application.Queries.ListStageFormAssignments;
 using Mentoory.Shared.Application.DataTables;
+using Mentoory.Tenant.Application.Queries.GetProjectStageInternalId;
 using Mentoory.Web.Areas.Coordination.Models;
 using Mentoory.Web.Infrastructure;
 using Mentoory.Web.Models;
@@ -114,6 +120,148 @@ public class DiagnosticsController : Controller
             new GetProjectFormQuery(externalId, detailsProjectId.Value), ct);
 
         return View(form);
+    }
+
+    [HttpGet("StageConfig/{stageExternalId:guid}")]
+    public async Task<IActionResult> StageConfig(Guid stageExternalId, CancellationToken ct)
+    {
+        var projectId = User.GetActiveProjectId();
+        if (!projectId.HasValue)
+        {
+            TempData["WarningMessage"] = "Debe seleccionar un proyecto antes de continuar.";
+            return RedirectToAction("Select", "Context", new { area = string.Empty, returnUrl = Request.Path.Value });
+        }
+
+        var stageId = await ResolveStageIdAsync(projectId.Value, stageExternalId, ct);
+        if (!stageId.HasValue)
+        {
+            return NotFound();
+        }
+
+        var assignments = await _executor.SendOrThrowAsync(
+            new ListStageFormAssignmentsQuery(stageId.Value), ct);
+
+        await PopulateFormsViewBag(projectId.Value, ct);
+
+        var viewModel = new StageConfigViewModel
+        {
+            ProjectStageExternalId = stageExternalId,
+            Assignments = assignments.Select(a => new AssignedFormViewModel
+            {
+                ExternalId = a.ExternalId,
+                FormName = a.FormName,
+                QuestionCount = a.QuestionCount,
+                IsActive = a.IsActive,
+                CreatedAtUtc = a.CreatedAtUtc,
+            }).ToList(),
+        };
+
+        return View(viewModel);
+    }
+
+    [HttpPost("StageConfig/{stageExternalId:guid}/Assign")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AssignForm(Guid stageExternalId, [FromForm] Guid formExternalId, CancellationToken ct)
+    {
+        var projectId = User.GetActiveProjectId();
+        var incubatorId = User.GetActiveIncubatorId();
+        if (!projectId.HasValue || incubatorId == 0)
+        {
+            return BadRequest();
+        }
+
+        var stageId = await ResolveStageIdAsync(projectId.Value, stageExternalId, ct);
+        if (!stageId.HasValue)
+        {
+            return NotFound();
+        }
+
+        var result = await _executor.SendAndLogIfFailureAsync(
+            new AssignFormToStageCommand(projectId.Value, incubatorId, stageId.Value, formExternalId), ct);
+
+        TempData[result.IsSuccess ? "SuccessMessage" : "ErrorMessage"] =
+            result.IsSuccess ? "Formulario asignado exitosamente." : "Error al asignar el formulario.";
+
+        return RedirectToAction(nameof(StageConfig), new { stageExternalId });
+    }
+
+    [HttpPost("StageConfig/RemoveAssignment/{assignmentExternalId:guid}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RemoveAssignment(Guid assignmentExternalId, [FromForm] Guid stageExternalId, CancellationToken ct)
+    {
+        var result = await _executor.SendAndLogIfFailureAsync(
+            new RemoveFormFromStageCommand(assignmentExternalId), ct);
+
+        TempData[result.IsSuccess ? "SuccessMessage" : "ErrorMessage"] =
+            result.IsSuccess ? "Asignación eliminada exitosamente." : "Error al eliminar la asignación.";
+
+        return RedirectToAction(nameof(StageConfig), new { stageExternalId });
+    }
+
+    [HttpGet("QuestionSelection/{assignmentExternalId:guid}")]
+    public async Task<IActionResult> QuestionSelection(Guid assignmentExternalId, CancellationToken ct)
+    {
+        var assignment = await _executor.SendOrThrowAsync(
+            new GetStageFormAssignmentQuery(assignmentExternalId), ct);
+
+        var selectedIds = assignment.AssignedQuestions
+            .Select(aq => aq.QuestionId)
+            .ToHashSet();
+
+        var viewModel = new QuestionSelectionViewModel
+        {
+            AssignmentExternalId = assignment.ExternalId,
+            FormName = assignment.FormName,
+            Questions = assignment.AllFormQuestions.Select(q => new SelectableQuestionViewModel
+            {
+                QuestionId = q.QuestionId,
+                QuestionText = q.QuestionText,
+                QuestionType = q.QuestionType,
+                IsSelected = selectedIds.Contains(q.QuestionId),
+            }).ToList(),
+        };
+
+        return View(viewModel);
+    }
+
+    [HttpPost("QuestionSelection/{assignmentExternalId:guid}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> QuestionSelection(Guid assignmentExternalId, [FromForm] List<long> selectedQuestionIds, CancellationToken ct)
+    {
+        if (selectedQuestionIds.Count == 0)
+        {
+            TempData["ErrorMessage"] = "Debe seleccionar al menos una pregunta.";
+            return RedirectToAction(nameof(QuestionSelection), new { assignmentExternalId });
+        }
+
+        var result = await _executor.SendAndLogIfFailureAsync(
+            new UpdateStageQuestionSelectionCommand(assignmentExternalId, selectedQuestionIds), ct);
+
+        TempData[result.IsSuccess ? "SuccessMessage" : "ErrorMessage"] =
+            result.IsSuccess ? "Selección de preguntas actualizada." : "Error al actualizar la selección.";
+
+        return RedirectToAction(nameof(QuestionSelection), new { assignmentExternalId });
+    }
+
+    private async Task<long?> ResolveStageIdAsync(long projectId, Guid stageExternalId, CancellationToken ct)
+    {
+        var result = await _executor.SendAndLogIfFailureAsync(
+            new GetProjectStageInternalIdQuery(projectId, stageExternalId), ct);
+
+        return result.IsSuccess ? result.Value : null;
+    }
+
+    private async Task PopulateFormsViewBag(long projectId, CancellationToken ct)
+    {
+        var query = new ListProjectFormsQuery(
+            new DataTableRequest(1, 0, 100, null, "asc", null, null), projectId);
+        var result = await _executor.SendOrThrowAsync(query, ct);
+
+        ViewBag.AvailableForms = result.Data.Select(f => new FormOptionViewModel
+        {
+            ExternalId = f.ExternalId,
+            Name = f.Name,
+        }).ToList();
     }
 
     private async Task PopulateTemplatesViewBag(CancellationToken ct)

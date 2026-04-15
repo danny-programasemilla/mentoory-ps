@@ -1,14 +1,14 @@
 using System.Security.Cryptography;
 using Mentoory.Access.Application.Configuration;
-using Mentoory.Access.Application.IntegrationEvents;
-using Mentoory.Access.Domain.Aggregates.User;
+using Mentoory.Access.Application.Services;
+using Mentoory.Access.Contracts.IntegrationEvents;
 using Mentoory.Access.Domain.Enums;
 using Mentoory.Access.Domain.Repositories;
-using Mentoory.Access.Domain.Services;
 using Mentoory.Shared.Application;
 using Mentoory.Shared.Application.IntegrationEvents;
 using Mentoory.Shared.Application.MediatR;
 using Mentoory.Shared.Application.TimeProvider;
+using Mentoory.Shared.Domain.Constants;
 using Microsoft.Extensions.Logging;
 
 namespace Mentoory.Access.Application.Commands.BatchRegisterUsers;
@@ -17,25 +17,25 @@ public partial class BatchRegisterUsersHandler
     : BaseCommandHandler<BatchRegisterUsersCommand, BatchRegistrationResult>
 {
     private readonly IUserRepository _userRepository;
-    private readonly IPasswordHasher _passwordHasher;
+    private readonly IUserRegistrationService _registrationService;
+    private readonly IIntegrationEventService _eventService;
     private readonly ITimeProvider _timeProvider;
     private readonly ISystemConfigurationReader _configReader;
-    private readonly IIntegrationEventService _eventService;
     private readonly ILogger<BatchRegisterUsersHandler> _logger;
 
     public BatchRegisterUsersHandler(
         IUserRepository userRepository,
-        IPasswordHasher passwordHasher,
+        IUserRegistrationService registrationService,
+        IIntegrationEventService eventService,
         ITimeProvider timeProvider,
         ISystemConfigurationReader configReader,
-        IIntegrationEventService eventService,
         ILogger<BatchRegisterUsersHandler> logger)
     {
         _userRepository = userRepository;
-        _passwordHasher = passwordHasher;
+        _registrationService = registrationService;
+        _eventService = eventService;
         _timeProvider = timeProvider;
         _configReader = configReader;
-        _eventService = eventService;
         _logger = logger;
     }
 
@@ -161,7 +161,7 @@ public partial class BatchRegisterUsersHandler
                     existingUser.AccountStatus.ToString(),
                     projectExternalId,
                     false,
-                    "FullFlow",
+                    EnrollmentVariants.FullFlow,
                     invitationExpiryHours,
                     existingUser.CreatedAtUtc,
                     utcNow),
@@ -179,8 +179,24 @@ public partial class BatchRegisterUsersHandler
             };
         }
 
-        // Check email uniqueness
-        if (await _userRepository.ExistsByEmailAsync(normalizedEmail, cancellationToken))
+        // Register new user via shared service
+        var tempPassword = GenerateTemporaryPassword();
+
+        var registrationRequest = new UserRegistrationRequest(
+            record.Email,
+            record.Country,
+            record.Identification,
+            record.FirstName,
+            record.LastName,
+            tempPassword,
+            projectExternalId,
+            EmailVerificationMode.Skipped,
+            EnrollmentVariant: EnrollmentVariants.FullFlow,
+            RequirePasswordReset: true);
+
+        var result = await _registrationService.RegisterAsync(registrationRequest, cancellationToken);
+
+        if (result.IsFailure)
         {
             return new BatchRowResult
             {
@@ -189,39 +205,9 @@ public partial class BatchRegisterUsersHandler
                 Identification = record.Identification,
                 Email = record.Email,
                 Status = "Error",
-                ErrorMessage = "Ya existe una cuenta con este correo electrónico.",
+                ErrorMessage = result.ErrorMessages?.FirstOrDefault().Message ?? "Error al registrar el usuario.",
             };
         }
-
-        // Generate temporary password
-        var tempPassword = GenerateTemporaryPassword();
-        var hashedPassword = _passwordHasher.HashPassword(tempPassword);
-
-        var user = User.Register(
-            record.Email,
-            record.Country,
-            record.Identification,
-            record.FirstName,
-            record.LastName,
-            hashedPassword,
-            utcNow);
-
-        // Set PasswordResetRequired so user must change on first login
-        user.AdminVerifyEmail(utcNow); // Verify immediately (batch users skip email verification)
-        user.SetPasswordResetRequired(utcNow);
-
-        _userRepository.Add(user);
-        await _userRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
-
-        // Publish event for enrollment
-        await _eventService.PublishAsync(
-            new UserRegisteredEvent(
-                user.Id, user.ExternalId, user.Email.Value,
-                user.FirstName, user.LastName,
-                user.AccountStatus.ToString(),
-                projectExternalId, false, "FullFlow",
-                invitationExpiryHours, user.CreatedAtUtc, utcNow),
-            cancellationToken);
 
         return new BatchRowResult
         {

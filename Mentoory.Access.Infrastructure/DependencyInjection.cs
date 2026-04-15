@@ -4,6 +4,8 @@ using Mentoory.Access.Domain.Services;
 using Mentoory.Access.Infrastructure.Persistence;
 using Mentoory.Access.Infrastructure.Persistence.Repositories;
 using Mentoory.Access.Infrastructure.Services;
+using Mentoory.Access.Application.Services;
+using Mentoory.Shared.Application.Notifications;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -49,6 +51,8 @@ public static class DependencyInjection
         builder.Services.AddScoped<ICountryRepository, CountryRepository>();
         builder.Services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
         builder.Services.AddScoped<ISystemConfigurationReader, SystemConfigurationReader>();
+        builder.Services.AddKeyedSingleton<ITemplateRenderer, AccessTemplateRenderer>("Access");
+        builder.Services.AddSingleton<IUserAgentParser, UaParserUserAgentParser>();
 
         return builder;
     }

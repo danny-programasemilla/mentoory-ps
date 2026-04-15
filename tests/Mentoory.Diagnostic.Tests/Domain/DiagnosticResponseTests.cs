@@ -1,6 +1,5 @@
 using FluentAssertions;
 using Mentoory.Diagnostic.Domain.Aggregates.DiagnosticResponse;
-using Mentoory.Diagnostic.Domain.Enums;
 using Xunit;
 
 namespace Mentoory.Diagnostic.Tests.Domain;
@@ -17,14 +16,14 @@ public class DiagnosticResponseTests
             projectId: 10,
             incubatorId: 1,
             entrepreneurUserId: 100,
-            evaluationStage: EvaluationStage.Initial,
+            stageFormAssignmentId: 1L,
             utcNow: UtcNow);
 
         response.ProjectFormId.Should().Be(1);
         response.ProjectId.Should().Be(10);
         response.IncubatorId.Should().Be(1);
         response.EntrepreneurUserId.Should().Be(100);
-        response.EvaluationStage.Should().Be(EvaluationStage.Initial);
+        response.StageFormAssignmentId.Should().Be(1L);
         response.IsCompleted.Should().BeFalse();
         response.CompletedAtUtc.Should().BeNull();
         response.ExternalId.Should().NotBeEmpty();
@@ -34,7 +33,7 @@ public class DiagnosticResponseTests
     [Fact]
     public void AddResponse_ShouldAddQuestionResponse()
     {
-        var response = DiagnosticResponse.Create(1, 10, 1, 100, EvaluationStage.Initial, UtcNow);
+        var response = DiagnosticResponse.Create(1, 10, 1, 100, 1L, UtcNow);
 
         var qr = response.AddResponse(questionId: 1, textValue: "My answer", numericValue: null, selectedOptionIds: null, UtcNow);
 
@@ -46,7 +45,7 @@ public class DiagnosticResponseTests
     [Fact]
     public void AddResponse_DuplicateQuestion_ShouldThrow()
     {
-        var response = DiagnosticResponse.Create(1, 10, 1, 100, EvaluationStage.Initial, UtcNow);
+        var response = DiagnosticResponse.Create(1, 10, 1, 100, 1L, UtcNow);
         response.AddResponse(1, "Answer", null, null, UtcNow);
 
         var act = () => response.AddResponse(1, "Another", null, null, UtcNow);
@@ -58,7 +57,7 @@ public class DiagnosticResponseTests
     [Fact]
     public void AddResponse_WhenCompleted_ShouldThrow()
     {
-        var response = DiagnosticResponse.Create(1, 10, 1, 100, EvaluationStage.Initial, UtcNow);
+        var response = DiagnosticResponse.Create(1, 10, 1, 100, 1L, UtcNow);
         response.MarkAsCompleted(UtcNow);
 
         var act = () => response.AddResponse(1, "Answer", null, null, UtcNow);
@@ -70,7 +69,7 @@ public class DiagnosticResponseTests
     [Fact]
     public void MarkAsCompleted_ShouldSetCompletedState()
     {
-        var response = DiagnosticResponse.Create(1, 10, 1, 100, EvaluationStage.Initial, UtcNow);
+        var response = DiagnosticResponse.Create(1, 10, 1, 100, 1L, UtcNow);
         var completedAt = UtcNow.AddHours(1);
 
         response.MarkAsCompleted(completedAt);
@@ -82,7 +81,7 @@ public class DiagnosticResponseTests
     [Fact]
     public void MarkAsCompleted_WhenAlreadyCompleted_ShouldThrow()
     {
-        var response = DiagnosticResponse.Create(1, 10, 1, 100, EvaluationStage.Initial, UtcNow);
+        var response = DiagnosticResponse.Create(1, 10, 1, 100, 1L, UtcNow);
         response.MarkAsCompleted(UtcNow);
 
         var act = () => response.MarkAsCompleted(UtcNow.AddHours(1));
@@ -94,7 +93,7 @@ public class DiagnosticResponseTests
     [Fact]
     public void AddResponse_WithSelectedOptions_ShouldStoreOptionIds()
     {
-        var response = DiagnosticResponse.Create(1, 10, 1, 100, EvaluationStage.Initial, UtcNow);
+        var response = DiagnosticResponse.Create(1, 10, 1, 100, 1L, UtcNow);
 
         var qr = response.AddResponse(1, null, null, new List<long> { 10, 20, 30 }, UtcNow);
 

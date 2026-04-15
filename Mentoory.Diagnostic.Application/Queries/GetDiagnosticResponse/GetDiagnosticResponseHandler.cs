@@ -37,7 +37,7 @@ public class GetDiagnosticResponseHandler : BaseCommandHandler<GetDiagnosticResp
         var dto = new DiagnosticResponseDto(
             response.ExternalId,
             response.ProjectFormId,
-            response.EvaluationStage,
+            response.StageFormAssignmentId,
             response.IsCompleted,
             response.CompletedAtUtc,
             response.QuestionResponses

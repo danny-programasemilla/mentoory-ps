@@ -1,10 +1,8 @@
 using Mentoory.Diagnostic.Application.Commands.SubmitDiagnosticResponse;
+using Mentoory.Diagnostic.Application.Queries.GetEntrepreneurDiagnosticStatus;
+using Mentoory.Diagnostic.Application.Queries.GetStageFormAssignment;
 using Mentoory.Web.Infrastructure;
-using Mentoory.Diagnostic.Application.Queries.GetProjectForm;
-using Mentoory.Diagnostic.Application.Queries.ListProjectForms;
-using Mentoory.Shared.Application.DataTables;
 using Mentoory.Web.Areas.Participant.Models;
-using Mentoory.Web.Models;
 using Mentoory.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,84 +22,56 @@ public class DiagnosticController : Controller
     }
 
     [HttpGet("")]
-    public async Task<IActionResult> Index(Guid? formExternalId, int evaluationStage = 0, CancellationToken ct = default)
+    public async Task<IActionResult> Index(CancellationToken ct)
     {
         var projectId = User.GetActiveProjectId();
-        if (!projectId.HasValue)
+        var userId = User.GetUserId();
+
+        if (!projectId.HasValue || !userId.HasValue)
         {
             TempData["WarningMessage"] = "Debe seleccionar un proyecto antes de continuar.";
             return RedirectToAction("Select", "Context", new { area = string.Empty, returnUrl = Request.Path.Value });
         }
 
-        if (!formExternalId.HasValue || formExternalId.Value == Guid.Empty)
+        var statuses = await _executor.SendOrThrowAsync(
+            new GetEntrepreneurDiagnosticStatusQuery(projectId.Value, userId.Value), ct);
+
+        var viewModel = new DiagnosticLandingViewModel
         {
-            return View("List");
-        }
+            Assignments = statuses.Select(s => new DiagnosticStageFormViewModel
+            {
+                AssignmentExternalId = s.AssignmentExternalId,
+                ProjectStageId = s.ProjectStageId,
+                FormName = s.FormName,
+                QuestionCount = s.QuestionCount,
+                IsCompleted = s.IsCompleted,
+                CompletedAtUtc = s.CompletedAtUtc,
+            }).ToList(),
+        };
 
-        if (!Enum.IsDefined(typeof(Mentoory.Diagnostic.Domain.Enums.EvaluationStage), evaluationStage))
-        {
-            evaluationStage = 0;
-        }
+        return View(viewModel);
+    }
 
-        var form = await _executor.SendOrThrowAsync(
-            new GetProjectFormQuery(formExternalId.Value, projectId.Value), ct);
-
-        if (form is null)
-        {
-            return NotFound();
-        }
-
-        var stageName = ((Mentoory.Diagnostic.Domain.Enums.EvaluationStage)evaluationStage).ToString();
+    [HttpGet("Fill/{assignmentExternalId:guid}")]
+    public async Task<IActionResult> Fill(Guid assignmentExternalId, CancellationToken ct)
+    {
+        var assignment = await _executor.SendOrThrowAsync(
+            new GetStageFormAssignmentQuery(assignmentExternalId), ct);
 
         var model = new DiagnosticFormViewModel
         {
-            FormExternalId = form.ExternalId,
-            FormName = form.Name,
-            EvaluationStage = stageName,
-            Questions = form.Questions.Select(q => new QuestionViewModel
+            FormExternalId = assignment.FormExternalId,
+            FormName = assignment.FormName,
+            StageFormAssignmentExternalId = assignment.ExternalId,
+            Questions = assignment.AssignedQuestions.Select(q => new QuestionViewModel
             {
-                QuestionId = q.Id,
-                QuestionExternalId = q.ExternalId,
+                QuestionId = q.QuestionId,
                 QuestionText = q.QuestionText,
-                QuestionType = q.QuestionType.ToString(),
-                IsOptional = q.IsOptional,
-                BlockGroup = q.BlockGroup,
-                AnswerOptions = q.AnswerOptions.Select(ao => new AnswerOptionViewModel
-                {
-                    AnswerOptionId = ao.Id,
-                    OptionText = ao.OptionText,
-                    SortOrder = ao.SortOrder
-                }).ToList(),
-                FollowUpQuestions = q.FollowUpQuestions.Select(fu => new FollowUpQuestionViewModel
-                {
-                    FollowUpQuestionId = fu.Id,
-                    QuestionText = fu.QuestionText
-                }).ToList()
-            }).ToList()
+                QuestionType = q.QuestionType,
+            }).ToList(),
         };
 
         return View(model);
-    }
-
-    [HttpPost("[action]")]
-    public async Task<IActionResult> Data([FromForm] DataTableServerRequest request, CancellationToken ct)
-    {
-        var dataProjectId = User.GetActiveProjectId();
-        if (!dataProjectId.HasValue)
-        {
-            return Json(new { draw = 0, recordsTotal = 0, recordsFiltered = 0, data = Array.Empty<object>() });
-        }
-
-        var query = new ListProjectFormsQuery(request.ToDataTableRequest(), dataProjectId.Value);
-        var result = await _executor.SendOrThrowAsync(query, ct);
-
-        return Json(new
-        {
-            draw = result.Draw,
-            recordsTotal = result.RecordsTotal,
-            recordsFiltered = result.RecordsFiltered,
-            data = result.Data
-        });
     }
 
     [HttpPost("[action]")]
@@ -110,17 +80,17 @@ public class DiagnosticController : Controller
     {
         if (!ModelState.IsValid)
         {
-            return RedirectToAction(nameof(Index), new { formExternalId = model.FormExternalId });
+            return RedirectToAction(nameof(Fill), new { assignmentExternalId = model.StageFormAssignmentExternalId });
         }
 
         var incubatorId = User.GetActiveIncubatorId();
-        var submitProjectId = User.GetActiveProjectId();
+        var projectId = User.GetActiveProjectId();
         var userId = User.GetUserId();
 
-        if (incubatorId == 0 || !submitProjectId.HasValue || !userId.HasValue)
+        if (incubatorId == 0 || !projectId.HasValue || !userId.HasValue)
         {
             TempData["ErrorMessage"] = "No se pudo determinar el contexto activo.";
-            return RedirectToAction(nameof(Index), new { formExternalId = model.FormExternalId });
+            return RedirectToAction(nameof(Fill), new { assignmentExternalId = model.StageFormAssignmentExternalId });
         }
 
         var responses = model.Responses.Select(r =>
@@ -128,11 +98,10 @@ public class DiagnosticController : Controller
 
         var result = await _executor.SendAndLogIfFailureAsync(
             new SubmitDiagnosticResponseCommand(
-                model.FormExternalId,
-                submitProjectId.Value,
+                model.StageFormAssignmentExternalId,
+                projectId.Value,
                 incubatorId,
                 userId.Value,
-                (Mentoory.Diagnostic.Domain.Enums.EvaluationStage)model.EvaluationStage,
                 responses),
             ct);
 
@@ -143,7 +112,7 @@ public class DiagnosticController : Controller
         }
 
         TempData["ErrorMessage"] = "Error al enviar el diagnóstico.";
-        return RedirectToAction(nameof(Index), new { formExternalId = model.FormExternalId });
+        return RedirectToAction(nameof(Fill), new { assignmentExternalId = model.StageFormAssignmentExternalId });
     }
 
     [HttpGet("[action]")]

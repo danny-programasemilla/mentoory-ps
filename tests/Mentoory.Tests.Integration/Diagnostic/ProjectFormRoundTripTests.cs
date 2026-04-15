@@ -29,10 +29,10 @@ public class ProjectFormRoundTripTests : IntegrationTestBase
             var dbContext = scope.ServiceProvider.GetRequiredService<DiagnosticDbContext>();
 
             var template = FormTemplate.Create("Template", "Desc", null, DateTime.UtcNow);
-            var q1 = template.AddQuestion(1, "Pregunta 1", QuestionType.SingleSelect, StageApplicability.Both, 1, null, false);
+            var q1 = template.AddQuestion(1, "Pregunta 1", QuestionType.SingleSelect, 1, null, false);
             q1.AddAnswerOption("Opción A", 5.0m, SwotClassification.Strength, OdsrOrientation.Offensive, 1);
             q1.AddAnswerOption("Opción B", 3.0m, SwotClassification.Weakness, OdsrOrientation.Defensive, 2);
-            template.AddQuestion(2, "Pregunta 2", QuestionType.Text, StageApplicability.Initial, 2, null, true);
+            template.AddQuestion(2, "Pregunta 2", QuestionType.Text, 2, null, true);
 
             dbContext.FormTemplates.Add(template);
             await dbContext.SaveChangesAsync();
@@ -74,7 +74,7 @@ public class ProjectFormRoundTripTests : IntegrationTestBase
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<DiagnosticDbContext>();
             var form = ProjectForm.Create("Custom Form", 10, 1, DateTime.UtcNow);
-            form.AddQuestion(1, "Custom Q1", QuestionType.Numeric, StageApplicability.Final, 1, "GroupA", false);
+            form.AddQuestion(1, "Custom Q1", QuestionType.Numeric, 1, "GroupA", false);
             dbContext.ProjectForms.Add(form);
             await dbContext.SaveChangesAsync();
             formExternalId = form.ExternalId;

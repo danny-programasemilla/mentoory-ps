@@ -82,9 +82,18 @@ Feature artifacts live in `specs/{###-feature-name}/`. See [`.specify/templates/
 - SQL Server (read-only count queries for dashboard metrics — no schema changes) (010-design-system-ux-polish)
 - C# / .NET 10.0 + Razor Views + CSS + Tabler v1.4.0 (Bootstrap 5), Tabler Icons Webfont, jQuery, DataTables 2.3.4 (011-dashboard-ui-polish)
 - SQL Server (read-only — existing `GetDashboardMetricsQuery`, no changes) (011-dashboard-ui-polish)
+- C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, MediatR 14.1, FluentValidation 12.1, MailKit 4.15.1, RazorLight (TBD version -- needs addition to Directory.Packages.props), UAParser (TBD version -- needs addition to Directory.Packages.props), EF Core 10.x (011-notification-email-delivery)
 - C# / .NET 10.0 + Razor Views + CSS + JavaScript + Tabler v1.4.0 (Bootstrap 5), DataTables 2.3.4, jQuery, Tabler Icons Webfont (012-table-polish)
 - C# / .NET 10.0 + JavaScript (vanilla, ES5-compatible) + DataTables 2.3.4, jQuery, Tabler v1.4.0 (Bootstrap 5), Tabler Icons Webfont (013-table-filtering)
 - N/A (no schema changes) (013-table-filtering)
+- C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, MediatR 14.1, FluentValidation 12.1, EF Core 10.x, MailKit 4.15.1 (013-notification-db-config)
+- C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, MediatR 14.1, FluentValidation 12.1, EF Core 10.x, MailKit/MimeKit, RazorLight 2.3.1 (014-notification-generic-delivery)
+- C# / .NET 10.0 (SDK 10.0.0-preview) + ASP.NET Core MVC, MediatR 14.1, FluentValidation 12.1, Mapperly 4.x, EF Core 10.x (014-diagnosis-stage-pipeline)
+- SQL Server with SSDT/DACPAC schema management (no EF migrations) (014-diagnosis-stage-pipeline)
+- C# / .NET 10.0 (SDK 10.0.0) + MediatR 14.1, FluentValidation 12.1, EF Core 10.x (015-registration-consolidation)
+- SQL Server (no schema changes — pure application-layer refactoring) (015-registration-consolidation)
+- C# / .NET 10.0 (SDK 10.0.0-preview), JavaScript (vanilla, ES5-compatible) + ASP.NET Core MVC, MediatR 14.1, EF Core 10.x, Tabler v1.4.0 (Bootstrap 5), Tabler Icons Webfont v3.41.1 (015-pipeline-editor-ux-polish)
+- SQL Server (read-only queries — no schema changes) (015-pipeline-editor-ux-polish)
 
 ## Code Review Standards
 After completing any implementation, review the code for:
@@ -100,6 +109,9 @@ After completing any implementation, review the code for:
 Run /simplify before presenting code to the user.
 
 ## Recent Changes
+- 015-pipeline-editor-ux-polish: Added C# / .NET 10.0 (SDK 10.0.0-preview), JavaScript (vanilla, ES5-compatible) + ASP.NET Core MVC, MediatR 14.1, EF Core 10.x, Tabler v1.4.0 (Bootstrap 5), Tabler Icons Webfont v3.41.1
+- 015-registration-consolidation: Added C# / .NET 10.0 (SDK 10.0.0) + MediatR 14.1, FluentValidation 12.1, EF Core 10.x
+- 014-notification-generic-delivery: Added C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, MediatR 14.1, FluentValidation 12.1, EF Core 10.x, MailKit/MimeKit, RazorLight 2.3.1
+- 014-diagnosis-stage-pipeline: Added C# / .NET 10.0 (SDK 10.0.0-preview) + ASP.NET Core MVC, MediatR 14.1, FluentValidation 12.1, Mapperly 4.x, EF Core 10.x
+- 013-notification-db-config: Added C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, MediatR 14.1, FluentValidation 12.1, EF Core 10.x, MailKit 4.15.1
 - 013-table-filtering: Added C# / .NET 10.0 + JavaScript (vanilla, ES5-compatible) + DataTables 2.3.4, jQuery, Tabler v1.4.0 (Bootstrap 5), Tabler Icons Webfont
-- 012-table-polish: Added C# / .NET 10.0 + Razor Views + CSS + JavaScript + Tabler v1.4.0 (Bootstrap 5), DataTables 2.3.4, jQuery, Tabler Icons Webfont
-- 011-dashboard-ui-polish: Added C# / .NET 10.0 + Razor Views + CSS + Tabler v1.4.0 (Bootstrap 5), Tabler Icons Webfont, jQuery, DataTables 2.3.4

@@ -1,0 +1,98 @@
+@model Mentoory.Web.Areas.Coordination.Models.CompareViewModel
+@{
+    ViewData["Title"] = "Comparación de Diagnósticos";
+}
+
+<div class="mb-4">
+    <h2>Comparación de Diagnósticos</h2>
+    <p class="text-secondary">
+        <strong>@Model.Earlier.FormName</strong> (@Model.Earlier.CompletedAtUtc.ToString("dd/MM/yyyy"))
+        vs
+        <strong>@Model.Later.FormName</strong> (@Model.Later.CompletedAtUtc.ToString("dd/MM/yyyy"))
+    </p>
+</div>
+
+@if (Model.TopicComparisons.Any())
+{
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="card-title">Comparación por Tema</h3>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table">
+                <thead>
+                    <tr>
+                        <th>Tema</th>
+                        <th>Puntaje Anterior</th>
+                        <th>Puntaje Actual</th>
+                        <th>Diferencia</th>
+                        <th>Cambio %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var topic in Model.TopicComparisons)
+                    {
+                        <tr>
+                            <td>Tema @topic.TopicId</td>
+                            <td>@topic.PreviousScore.ToString("F2")</td>
+                            <td>@topic.CurrentScore.ToString("F2")</td>
+                            <td>
+                                <span class="@(topic.Delta >= 0 ? "text-success" : "text-danger")">
+                                    @(topic.Delta >= 0 ? "+" : "")@topic.Delta.ToString("F2")
+                                </span>
+                            </td>
+                            <td>
+                                <span class="@(topic.PercentageChange >= 0 ? "text-success" : "text-danger")">
+                                    @(topic.PercentageChange >= 0 ? "+" : "")@topic.PercentageChange.ToString("F1")%
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@if (Model.SharedQuestions.Any())
+{
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Comparación por Pregunta (@Model.SharedQuestions.Count preguntas compartidas)</h3>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table">
+                <thead>
+                    <tr>
+                        <th>Pregunta</th>
+                        <th>Respuesta Anterior</th>
+                        <th>Respuesta Actual</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var q in Model.SharedQuestions)
+                    {
+                        <tr>
+                            <td>@q.QuestionText</td>
+                            <td>@(q.EarlierAnswer ?? q.EarlierNumeric?.ToString("F2") ?? "-")</td>
+                            <td>@(q.LaterAnswer ?? q.LaterNumeric?.ToString("F2") ?? "-")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        <i class="ti ti-info-circle me-1"></i>
+        No se encontraron preguntas compartidas entre los dos diagnósticos.
+    </div>
+}
+
+<div class="mt-3">
+    <a href="javascript:history.back()" class="btn btn-secondary">
+        <i class="ti ti-arrow-left me-1"></i>Volver
+    </a>
+</div>

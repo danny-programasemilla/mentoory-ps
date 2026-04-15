@@ -1,5 +1,3 @@
-using Mentoory.Diagnostic.Domain.Enums;
-
 namespace Mentoory.Diagnostic.Application.Queries.GetDiagnosticResponse;
 
 /// <summary>
@@ -45,14 +43,14 @@ public sealed record QuestionResponseDto(
 /// </summary>
 /// <param name="ExternalId">The external GUID identifier for routing.</param>
 /// <param name="ProjectFormId">The associated project form ID.</param>
-/// <param name="EvaluationStage">The evaluation stage of this diagnostic.</param>
+/// <param name="StageFormAssignmentId">The stage form assignment that this diagnostic belongs to.</param>
 /// <param name="IsCompleted">Whether the diagnostic has been completed.</param>
 /// <param name="CompletedAtUtc">The completion timestamp, if completed.</param>
 /// <param name="Responses">The list of question responses.</param>
 public sealed record DiagnosticResponseDto(
     Guid ExternalId,
     long ProjectFormId,
-    EvaluationStage EvaluationStage,
+    long StageFormAssignmentId,
     bool IsCompleted,
     DateTime? CompletedAtUtc,
     IReadOnlyList<QuestionResponseDto> Responses);

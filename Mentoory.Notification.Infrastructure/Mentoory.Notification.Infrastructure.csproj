@@ -5,6 +5,7 @@
         <PackageReference Include="MediatR"/>
     </ItemGroup>
     <ItemGroup>
+        <ProjectReference Include="..\Mentoory.Notification.Application\Mentoory.Notification.Application.csproj"/>
         <ProjectReference Include="..\Mentoory.Notification.Domain\Mentoory.Notification.Domain.csproj"/>
         <ProjectReference Include="..\Mentoory.Shared.Infrastructure\Mentoory.Shared.Infrastructure.csproj"/>
     </ItemGroup>

@@ -38,7 +38,7 @@ public class CrossTenantIsolationTests : IntegrationTestBase
             .FirstAsync(p => p.ExternalId == projectResult.Value!);
 
         project.Name.Should().Be("My Project");
-        project.Stages.Should().HaveCount(7);
+        project.Stages.Should().HaveCount(5);
 
         var incubator = await dbContext.Incubators.FirstAsync(i => i.ExternalId == incubatorResult.Value!);
         project.IncubatorId.Should().Be(incubator.Id);

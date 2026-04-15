@@ -2,6 +2,7 @@ using FluentAssertions;
 using Mentoory.Diagnostic.Domain.Aggregates.DiagnosticResponse;
 using Mentoory.Diagnostic.Domain.Aggregates.FormTemplate;
 using Mentoory.Diagnostic.Domain.Aggregates.ProjectForm;
+using Mentoory.Diagnostic.Domain.Aggregates.StageFormAssignment;
 using Mentoory.Diagnostic.Domain.Enums;
 using Mentoory.Diagnostic.Infrastructure.Persistence;
 using Mentoory.Tests.Integration.Fixtures;
@@ -24,14 +25,15 @@ public class DiagnosticResponseRoundTripTests : IntegrationTestBase
     {
         Guid responseExternalId;
         long projectFormId;
+        long stageFormAssignmentId;
 
-        // Create form
+        // Create form + stage assignment
         using (var scope = CreateScope())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<DiagnosticDbContext>();
 
             var template = FormTemplate.Create("Template", null, null, DateTime.UtcNow);
-            var q = template.AddQuestion(1, "Q1", QuestionType.SingleSelect, StageApplicability.Both, 1, null, false);
+            var q = template.AddQuestion(1, "Q1", QuestionType.SingleSelect, 1, null, false);
             q.AddAnswerOption("A", 5.0m, SwotClassification.Strength, OdsrOrientation.Offensive, 1);
             dbContext.FormTemplates.Add(template);
             await dbContext.SaveChangesAsync();
@@ -40,6 +42,12 @@ public class DiagnosticResponseRoundTripTests : IntegrationTestBase
             dbContext.ProjectForms.Add(form);
             await dbContext.SaveChangesAsync();
             projectFormId = form.Id;
+
+            var questionIds = form.Questions.Select(fq => fq.Id).ToList();
+            var assignment = StageFormAssignment.Create(10, 1, 1, form.Id, questionIds, DateTime.UtcNow);
+            dbContext.StageFormAssignments.Add(assignment);
+            await dbContext.SaveChangesAsync();
+            stageFormAssignmentId = assignment.Id;
         }
 
         // Submit response
@@ -51,7 +59,7 @@ public class DiagnosticResponseRoundTripTests : IntegrationTestBase
                 .FirstAsync(f => f.Id == projectFormId);
 
             var response = DiagnosticResponse.Create(
-                form.Id, 10, 1, 100, EvaluationStage.Initial, DateTime.UtcNow);
+                form.Id, 10, 1, 100, stageFormAssignmentId, DateTime.UtcNow);
 
             var questionId = form.Questions.First().Id;
             response.AddResponse(questionId, "My answer", null, null, DateTime.UtcNow);
@@ -83,13 +91,13 @@ public class DiagnosticResponseRoundTripTests : IntegrationTestBase
     {
         Guid responseExternalId;
 
-        // Setup — create form + response
+        // Setup — create form + assignment + response
         using (var scope = CreateScope())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<DiagnosticDbContext>();
 
             var template = FormTemplate.Create("Template", null, null, DateTime.UtcNow);
-            template.AddQuestion(1, "Q1", QuestionType.Text, StageApplicability.Both, 1, null, false);
+            template.AddQuestion(1, "Q1", QuestionType.Text, 1, null, false);
             dbContext.FormTemplates.Add(template);
             await dbContext.SaveChangesAsync();
 
@@ -100,7 +108,11 @@ public class DiagnosticResponseRoundTripTests : IntegrationTestBase
             var questionId = (await dbContext.ProjectForms.Include(f => f.Questions).FirstAsync(f => f.Id == form.Id))
                 .Questions.First().Id;
 
-            var response = DiagnosticResponse.Create(form.Id, 10, 1, 100, EvaluationStage.Initial, DateTime.UtcNow);
+            var assignment = StageFormAssignment.Create(10, 1, 1, form.Id, new[] { questionId }, DateTime.UtcNow);
+            dbContext.StageFormAssignments.Add(assignment);
+            await dbContext.SaveChangesAsync();
+
+            var response = DiagnosticResponse.Create(form.Id, 10, 1, 100, assignment.Id, DateTime.UtcNow);
             response.AddResponse(questionId, "Original", null, null, DateTime.UtcNow);
             dbContext.DiagnosticResponses.Add(response);
             await dbContext.SaveChangesAsync();
@@ -149,7 +161,7 @@ public class DiagnosticResponseRoundTripTests : IntegrationTestBase
             var dbContext = scope.ServiceProvider.GetRequiredService<DiagnosticDbContext>();
 
             var template = FormTemplate.Create("Template", null, null, DateTime.UtcNow);
-            var q = template.AddQuestion(1, "Q1", QuestionType.MultiSelect, StageApplicability.Both, 1, null, false);
+            var q = template.AddQuestion(1, "Q1", QuestionType.MultiSelect, 1, null, false);
             q.AddAnswerOption("A", 5.0m, SwotClassification.Strength, OdsrOrientation.Offensive, 1);
             q.AddAnswerOption("B", 3.0m, SwotClassification.Weakness, OdsrOrientation.Defensive, 2);
             dbContext.FormTemplates.Add(template);
@@ -162,12 +174,16 @@ public class DiagnosticResponseRoundTripTests : IntegrationTestBase
             var questionId = (await dbContext.ProjectForms.Include(f => f.Questions).FirstAsync(f => f.Id == form.Id))
                 .Questions.First().Id;
 
+            var assignment = StageFormAssignment.Create(10, 1, 1, form.Id, new[] { questionId }, DateTime.UtcNow);
+            dbContext.StageFormAssignments.Add(assignment);
+            await dbContext.SaveChangesAsync();
+
             var optionIds = (await dbContext.ProjectForms
                 .Include(f => f.Questions).ThenInclude(q2 => q2.AnswerOptions)
                 .FirstAsync(f => f.Id == form.Id))
                 .Questions.First().AnswerOptions.Select(ao => ao.Id).ToList();
 
-            var response = DiagnosticResponse.Create(form.Id, 10, 1, 100, EvaluationStage.Initial, DateTime.UtcNow);
+            var response = DiagnosticResponse.Create(form.Id, 10, 1, 100, assignment.Id, DateTime.UtcNow);
             response.AddResponse(questionId, null, null, optionIds, DateTime.UtcNow);
             response.MarkAsCompleted(DateTime.UtcNow);
             dbContext.DiagnosticResponses.Add(response);

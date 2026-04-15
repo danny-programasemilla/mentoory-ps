@@ -1,0 +1,235 @@
+@model Mentoory.Web.Areas.Coordination.Models.PipelineViewModel
+@{
+    ViewData["Title"] = "Etapas del Proyecto";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Etapas: @Model.ProjectName</h2>
+    @if (Model.CurrentStageState != "Completed")
+    {
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-success d-none" id="btnSaveOrder">
+                <i class="ti ti-device-floppy me-1"></i>Guardar Orden
+            </button>
+            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addStageModal">
+                <i class="ti ti-plus me-1"></i>Agregar Etapa
+            </button>
+            <form asp-action="Advance" method="post">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-primary"
+                        onclick="return confirm('¿Está seguro de avanzar a la siguiente etapa?')">
+                    <i class="ti ti-player-skip-forward me-1"></i>Avanzar Etapa
+                </button>
+            </form>
+        </div>
+    }
+</div>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @successMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] is string errorMessage)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @errorMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+}
+
+@if (TempData["WarningMessage"] is string warningMessage)
+{
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        @warningMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="pipeline-grid" id="pipelineList" data-reorder-url="@Url.Action("Reorder", "ProjectPipeline", new { area = "Coordination" })">
+            @foreach (var stage in Model.Stages)
+            {
+                <div class="pipeline-row" data-stage-id="@stage.ExternalId">
+                    <span class="cursor-grab text-muted" title="Arrastrar para reordenar">
+                        <i class="ti ti-grip-vertical"></i>
+                    </span>
+
+                    <span class="@GetStatusDotClass(stage.State)">
+                        <i class="ti ti-point-filled"></i> @GetStateLabel(stage.State)
+                    </span>
+
+                    <span class="badge bg-secondary-lt">@GetStageTypeLabel(stage.StageType)</span>
+
+                    <strong class="stage-display-name">@stage.DisplayName</strong>
+
+                    <span class="text-muted pipeline-form-info">
+                        @if (stage.StageType == "Diagnosis")
+                        {
+                            if (stage.AssignedFormNames.Count > 0)
+                            {
+                                @string.Join(", ", stage.AssignedFormNames)
+                            }
+                            else
+                            {
+                                <em class="text-muted">Sin formulario</em>
+                            }
+                        }
+                    </span>
+
+                    <span class="text-nowrap">
+                        @if (stage.StartedAtUtc.HasValue)
+                        {
+                            <small class="text-muted">
+                                <i class="ti ti-calendar me-1"></i>@stage.StartedAtUtc.Value.ToString("dd/MM/yyyy")
+                            </small>
+                        }
+                        @if (stage.CompletedAtUtc.HasValue)
+                        {
+                            <small class="text-muted">
+                                &mdash; @stage.CompletedAtUtc.Value.ToString("dd/MM/yyyy")
+                            </small>
+                        }
+                    </span>
+
+                    <div class="d-flex gap-1 justify-content-end">
+                        @if (stage.StageType != "Registration" && stage.StageType != "Closure")
+                        {
+                            @if (stage.StageType == "Diagnosis")
+                            {
+                                <a asp-area="Coordination"
+                                   asp-controller="Diagnostics"
+                                   asp-action="StageConfig"
+                                   asp-route-stageExternalId="@stage.ExternalId"
+                                   class="btn btn-sm btn-outline-info"
+                                   title="Configurar diagnóstico">
+                                    <i class="ti ti-stethoscope"></i>
+                                </a>
+                            }
+
+                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                                    onclick="showRenameModal('@stage.ExternalId', '@stage.DisplayName')"
+                                    title="Renombrar">
+                                <i class="ti ti-pencil"></i>
+                            </button>
+
+                            <form asp-action="RemoveStage" asp-route-stageExternalId="@stage.ExternalId" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                        onclick="return confirm('¿Está seguro de eliminar esta etapa?')"
+                                        title="Eliminar">
+                                    <i class="ti ti-trash"></i>
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Add Stage Modal -->
+<div class="modal fade" id="addStageModal" tabindex="-1" aria-labelledby="addStageModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="AddStage" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addStageModalLabel">Agregar Etapa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="StageType" class="form-label">Tipo de Etapa</label>
+                        <select name="StageType" id="StageType" class="form-select" required>
+                            <option value="">Seleccionar...</option>
+                            <option value="Diagnosis">Diagnóstico</option>
+                            <option value="Mentorship">Mentoría</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="Position" class="form-label">Posición</label>
+                        <input type="number" name="Position" id="Position" class="form-control"
+                               min="1" max="@(Model.Stages.Count - 1)" value="1" required />
+                        <small class="form-text text-muted">Entre 1 y @(Model.Stages.Count - 1) (excluyendo Registro y Cierre)</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Agregar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Rename Stage Modal -->
+<div class="modal fade" id="renameStageModal" tabindex="-1" aria-labelledby="renameStageModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="renameForm" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title" id="renameStageModalLabel">Renombrar Etapa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="DisplayName" class="form-label">Nombre</label>
+                        <input type="text" name="DisplayName" id="renameDisplayName" class="form-control"
+                               maxlength="200" required />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Renombrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetStatusDotClass(string state) => state switch
+    {
+        "InProgress" => "status-dot status-dot--in-progress",
+        "Completed" => "status-dot status-dot--completed",
+        _ => "status-dot status-dot--pending"
+    };
+
+    string GetStateLabel(string state) => state switch
+    {
+        "NotStarted" => "Pendiente",
+        "InProgress" => "En Progreso",
+        "Completed" => "Completada",
+        _ => state
+    };
+
+    string GetStageTypeLabel(string stageType) => stageType switch
+    {
+        "Registration" => "Registro",
+        "Diagnosis" => "Diagnóstico",
+        "Mentorship" => "Mentoría",
+        "Closure" => "Cierre",
+        _ => stageType
+    };
+}
+
+@section Scripts {
+    <script src="~/js/pipeline-editor.js"></script>
+    <script>
+        var renameBaseUrl = '@Url.Action("Rename", "ProjectPipeline", new { area = "Coordination", stageExternalId = Guid.Empty })';
+        function showRenameModal(stageId, currentName) {
+            document.getElementById('renameDisplayName').value = currentName;
+            var placeholder = '@Guid.Empty';
+            document.getElementById('renameForm').action = renameBaseUrl.replace(placeholder, stageId);
+            var modal = new bootstrap.Modal(document.getElementById('renameStageModal'));
+            modal.show();
+        }
+    </script>
+}

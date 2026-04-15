@@ -10,6 +10,8 @@ using Mentoory.Tenant.Application;
 using Mentoory.Tenant.Infrastructure;
 using Mentoory.Diagnostic.Application;
 using Mentoory.Diagnostic.Infrastructure;
+using Mentoory.Notification.Application;
+using Mentoory.Notification.Infrastructure;
 using Mentoory.Shared.Application.Audit;
 using Mentoory.Shared.Application.Behaviors;
 using Mentoory.Shared.Application.Interfaces;
@@ -17,6 +19,8 @@ using Mentoory.Shared.Application.TimeProvider;
 using Mentoory.Shared.Infrastructure.Audit;
 using Mentoory.Shared.Infrastructure.Behaviors;
 using Mentoory.Shared.Infrastructure.Persistence;
+using Mentoory.Shared.Application.Notifications;
+using Mentoory.Shared.Infrastructure.Notifications;
 using Mentoory.Shared.Infrastructure.Services;
 using Mentoory.Web.Infrastructure.Authentication;
 using Mentoory.Web.Infrastructure.Authorization;
@@ -43,6 +47,7 @@ builder.Services.AddMediatR(cfg =>
 builder.Services.AddScoped<IDbContextFactory, DbContextFactory>();
 
 builder.Services.AddSingleton<ITimeProvider, DefaultSystemTimeProvider>();
+builder.Services.AddSingleton<IEmailLayoutWrapper, EmailLayoutWrapper>();
 
 builder.Services.AddScoped<MediatRExecutor>();
 
@@ -60,6 +65,8 @@ builder.Services.AddTenantApplication();
 builder.AddTenantInfrastructure();
 builder.Services.AddDiagnosticApplication();
 builder.AddDiagnosticInfrastructure();
+builder.Services.AddNotificationApplication();
+builder.AddNotificationInfrastructure();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

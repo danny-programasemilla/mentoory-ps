@@ -2,6 +2,10 @@
     <ItemGroup>
         <PackageReference Include="Aspire.Microsoft.EntityFrameworkCore.SqlServer"/>
         <PackageReference Include="MediatR"/>
+        <PackageReference Include="RazorLight"/>
+    </ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Include="Templates\*.cshtml"/>
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Mentoory.Tenant.Domain\Mentoory.Tenant.Domain.csproj"/>

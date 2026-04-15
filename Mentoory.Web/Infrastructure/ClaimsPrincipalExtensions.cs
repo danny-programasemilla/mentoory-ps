@@ -35,4 +35,14 @@ public static class ClaimsPrincipalExtensions
         var id = user.GetActiveIncubatorId();
         return id > 0 ? id : null;
     }
+
+    public static bool HasValidProjectContext(this ClaimsPrincipal user)
+    {
+        return user.GetActiveProjectId().HasValue;
+    }
+
+    public static string? GetActiveProjectName(this ClaimsPrincipal user)
+    {
+        return user.FindFirst("ActiveProjectName")?.Value;
+    }
 }
