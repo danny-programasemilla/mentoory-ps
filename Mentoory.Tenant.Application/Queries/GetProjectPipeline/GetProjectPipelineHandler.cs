@@ -25,6 +25,7 @@ public partial class GetProjectPipelineHandler(
         var stages = project.Stages
             .OrderBy(s => s.Position)
             .Select(s => new PipelineStageDto(
+                s.Id,
                 s.ExternalId,
                 s.StageType.ToString(),
                 s.State.ToString(),

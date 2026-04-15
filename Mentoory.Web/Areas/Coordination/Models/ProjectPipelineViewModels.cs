@@ -22,6 +22,7 @@ public sealed class StageViewModel
     public DateTime? PlannedEndDate { get; set; }
     public DateTime? StartedAtUtc { get; set; }
     public DateTime? CompletedAtUtc { get; set; }
+    public List<string> AssignedFormNames { get; set; } = new();
 }
 
 public sealed class AddStageViewModel

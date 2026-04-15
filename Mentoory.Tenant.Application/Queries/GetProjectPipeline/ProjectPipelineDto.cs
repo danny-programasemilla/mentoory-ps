@@ -7,6 +7,7 @@ public sealed record ProjectPipelineDto(
     IReadOnlyList<PipelineStageDto> Stages);
 
 public sealed record PipelineStageDto(
+    long StageId,
     Guid ExternalId,
     string StageType,
     string State,

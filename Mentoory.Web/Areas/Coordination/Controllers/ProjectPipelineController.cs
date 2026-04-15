@@ -1,3 +1,4 @@
+using Mentoory.Diagnostic.Application.Queries.GetStageFormNames;
 using Mentoory.Tenant.Application.Commands.AddProjectStage;
 using Mentoory.Tenant.Application.Commands.AdvanceProjectStage;
 using Mentoory.Tenant.Application.Commands.RemoveProjectStage;
@@ -34,8 +35,24 @@ public class ProjectPipelineController : Controller
             return RedirectToAction("Select", "Context", new { area = string.Empty, returnUrl = Request.Path.Value });
         }
 
-        var pipeline = await _executor.SendOrThrowAsync(
+        var pipelineTask = _executor.SendOrThrowAsync(
             new GetProjectPipelineQuery(projectId.Value), ct);
+        var formNamesTask = _executor.SendOrThrowAsync(
+            new GetStageFormNamesQuery(projectId.Value), ct);
+
+        await Task.WhenAll(pipelineTask, formNamesTask);
+
+        var pipeline = pipelineTask.Result;
+        var formNames = formNamesTask.Result;
+
+        var stageIdToFormNames = new Dictionary<Guid, List<string>>();
+        foreach (var stage in pipeline.Stages)
+        {
+            if (formNames.FormNamesByStageId.TryGetValue(stage.StageId, out var names))
+            {
+                stageIdToFormNames[stage.ExternalId] = names.ToList();
+            }
+        }
 
         var viewModel = new PipelineViewModel
         {
@@ -53,6 +70,7 @@ public class ProjectPipelineController : Controller
                 PlannedEndDate = s.PlannedEndDate,
                 StartedAtUtc = s.StartedAtUtc,
                 CompletedAtUtc = s.CompletedAtUtc,
+                AssignedFormNames = stageIdToFormNames.GetValueOrDefault(s.ExternalId, []),
             }).ToList(),
         };
 
