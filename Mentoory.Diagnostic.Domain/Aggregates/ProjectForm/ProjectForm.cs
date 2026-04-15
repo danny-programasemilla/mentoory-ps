@@ -73,13 +73,12 @@ public class ProjectForm : Entity, IAggregateRoot
         long topicId,
         string questionText,
         QuestionType questionType,
-        StageApplicability stageApplicability,
         int sortOrder,
         string? blockGroup,
         bool isOptional)
     {
         var question = Question.Create(
-            topicId, questionText, questionType, stageApplicability, sortOrder, blockGroup, isOptional);
+            topicId, questionText, questionType, sortOrder, blockGroup, isOptional);
         _questions.Add(question);
         return question;
     }

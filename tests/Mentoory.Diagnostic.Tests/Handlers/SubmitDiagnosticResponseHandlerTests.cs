@@ -1,8 +1,7 @@
 using FluentAssertions;
 using Mentoory.Diagnostic.Application.Commands.SubmitDiagnosticResponse;
 using Mentoory.Diagnostic.Domain.Aggregates.DiagnosticResponse;
-using Mentoory.Diagnostic.Domain.Aggregates.ProjectForm;
-using Mentoory.Diagnostic.Domain.Enums;
+using Mentoory.Diagnostic.Domain.Aggregates.StageFormAssignment;
 using Mentoory.Diagnostic.Domain.Repositories;
 using Mentoory.Shared.Application;
 using Mentoory.Shared.Application.IntegrationEvents;
@@ -17,9 +16,9 @@ namespace Mentoory.Diagnostic.Tests.Handlers;
 public class SubmitDiagnosticResponseHandlerTests
 {
     private static readonly DateTime UtcNow = new(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc);
-    private static readonly Guid FormExternalId = Guid.NewGuid();
+    private static readonly Guid AssignmentExternalId = Guid.NewGuid();
 
-    private readonly Mock<IProjectFormRepository> _formRepo = new();
+    private readonly Mock<IStageFormAssignmentRepository> _assignmentRepo = new();
     private readonly Mock<IDiagnosticResponseRepository> _responseRepo = new();
     private readonly Mock<ITimeProvider> _timeProvider = new();
     private readonly Mock<IIntegrationEventService> _eventService = new();
@@ -33,7 +32,7 @@ public class SubmitDiagnosticResponseHandlerTests
         _responseRepo.Setup(r => r.UnitOfWork).Returns(_unitOfWork.Object);
 
         _handler = new SubmitDiagnosticResponseHandler(
-            _formRepo.Object,
+            _assignmentRepo.Object,
             _responseRepo.Object,
             _timeProvider.Object,
             _eventService.Object,
@@ -43,13 +42,16 @@ public class SubmitDiagnosticResponseHandlerTests
     [Fact]
     public async Task Handle_WithValidCommand_ShouldCreateAndPersist()
     {
-        var form = ProjectForm.Create("Test Form", 10, 1, UtcNow);
-        _formRepo
-            .Setup(r => r.GetByExternalIdAsync(FormExternalId, 10L, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(form);
+        var assignment = StageFormAssignment.Create(
+            projectId: 10, incubatorId: 1, projectStageId: 1, projectFormId: 1,
+            selectedQuestionIds: new List<long> { 1, 2 }, utcNow: UtcNow);
+
+        _assignmentRepo
+            .Setup(r => r.GetByExternalIdAsync(AssignmentExternalId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(assignment);
 
         var command = new SubmitDiagnosticResponseCommand(
-            FormExternalId, 10, 1, 100, EvaluationStage.Initial,
+            AssignmentExternalId, 10, 1, 100,
             new List<ResponseItem>
             {
                 new(1, "Answer 1", null, null),
@@ -67,14 +69,14 @@ public class SubmitDiagnosticResponseHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WithNonExistentForm_ShouldReturnFailure()
+    public async Task Handle_WithNonExistentAssignment_ShouldReturnFailure()
     {
-        _formRepo
-            .Setup(r => r.GetByExternalIdAsync(FormExternalId, 10L, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((ProjectForm?)null);
+        _assignmentRepo
+            .Setup(r => r.GetByExternalIdAsync(AssignmentExternalId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((StageFormAssignment?)null);
 
         var command = new SubmitDiagnosticResponseCommand(
-            FormExternalId, 10, 1, 100, EvaluationStage.Initial,
+            AssignmentExternalId, 10, 1, 100,
             new List<ResponseItem> { new(1, "A", null, null) });
 
         var result = await _handler.Handle(command, CancellationToken.None);

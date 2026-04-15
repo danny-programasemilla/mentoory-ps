@@ -103,10 +103,16 @@ public class TenantDbContext : SharedAbstractDbContext
         {
             entity.ToTable("ProjectStages", "tenant");
             entity.HasKey(e => e.Id);
+            entity.Property(e => e.ExternalId).IsRequired();
+            entity.HasIndex(e => e.ExternalId).IsUnique();
             entity.Property(e => e.StageType).IsRequired().HasConversion<byte>();
             entity.Property(e => e.State).IsRequired().HasConversion<byte>().HasDefaultValue(StageState.NotStarted);
+            entity.Property(e => e.Position).IsRequired();
+            entity.Property(e => e.DisplayName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.PlannedStartDate);
+            entity.Property(e => e.PlannedEndDate);
             entity.Property<long>("ProjectId").IsRequired();
-            entity.HasIndex("ProjectId", nameof(ProjectStage.StageType)).IsUnique();
+            entity.HasIndex("ProjectId", nameof(ProjectStage.Position)).IsUnique();
         });
     }
 

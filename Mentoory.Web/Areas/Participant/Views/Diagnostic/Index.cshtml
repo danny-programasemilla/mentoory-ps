@@ -1,134 +1,86 @@
-@model Mentoory.Web.Areas.Participant.Models.DiagnosticFormViewModel
+@model Mentoory.Web.Areas.Participant.Models.DiagnosticLandingViewModel
 @{
-    ViewData["Title"] = "Diagnóstico";
-    var totalQuestions = Model.Questions.Count;
+    ViewData["Title"] = "Diagnósticos";
 }
 
 <div class="mb-4">
-    <h2>Diagnóstico: @Model.FormName</h2>
-    <p class="text-secondary">Etapa de evaluación: <strong>@(Model.EvaluationStage == "Initial" ? "Inicial" : "Final")</strong></p>
+    <h2>Mis Diagnósticos</h2>
+    <p class="text-secondary">Estado de formularios diagnósticos asignados</p>
 </div>
 
-@if (totalQuestions > 0)
+@if (TempData["SuccessMessage"] is string successMessage)
 {
-    <div class="card mb-4">
-        <div class="card-body py-3">
-            <ul class="steps steps-counter">
-                @for (var s = 0; s < totalQuestions; s++)
-                {
-                    <li class="step-item">Pregunta @(s + 1)</li>
-                }
-            </ul>
-        </div>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @successMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
     </div>
 }
 
-<form asp-action="Submit" method="post">
-    @Html.AntiForgeryToken()
-    <input type="hidden" name="FormExternalId" value="@Model.FormExternalId" />
-    <input type="hidden" name="EvaluationStage" value="@(Model.EvaluationStage == "Initial" ? 0 : 1)" />
+@if (TempData["WarningMessage"] is string warningMessage)
+{
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        @warningMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+}
 
-    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
-
-    @if (Model.Questions.Count == 0)
-    {
-        <div class="empty">
-            <div class="empty-icon">
-                <i class="ti ti-list" style="font-size: 3rem;"></i>
-            </div>
-            <p class="empty-title">Sin preguntas disponibles</p>
-            <p class="empty-subtitle text-secondary">
-                No hay preguntas disponibles en este formulario.
-            </p>
+@if (Model.Assignments.Count == 0)
+{
+    <div class="empty">
+        <div class="empty-icon">
+            <i class="ti ti-clipboard-check" style="font-size: 3rem;"></i>
         </div>
-    }
-
-    @for (var i = 0; i < Model.Questions.Count; i++)
-    {
-        var question = Model.Questions[i];
-        <div class="card mb-3">
-            <div class="card-header">
-                <div class="d-flex justify-content-between align-items-center w-100">
-                    <h3 class="card-title">
-                        <span class="badge bg-secondary me-2">@(i + 1)</span> @question.QuestionText
-                    </h3>
-                    @if (question.IsOptional)
-                    {
-                        <span class="badge bg-warning">Opcional</span>
-                    }
-                </div>
-            </div>
-            <div class="card-body">
-                <input type="hidden" name="Responses[@i].QuestionId" value="@question.QuestionId" />
-
-                @if (question.QuestionType == "Text")
-                {
-                    <textarea name="Responses[@i].TextValue" class="form-control" rows="3"
-                              placeholder="Escriba su respuesta..."></textarea>
-                }
-                else if (question.QuestionType == "Numeric")
-                {
-                    <input type="number" name="Responses[@i].NumericValue" class="form-control"
-                           step="0.01" placeholder="Ingrese un valor numérico" />
-                }
-                else if (question.QuestionType == "SingleSelect")
-                {
-                    @foreach (var option in question.AnswerOptions.OrderBy(a => a.SortOrder))
-                    {
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="radio"
-                                   name="Responses[@i].SelectedOptionIds[0]" value="@option.AnswerOptionId"
-                                   id="option-@option.AnswerOptionId" />
-                            <label class="form-check-label" for="option-@option.AnswerOptionId">
-                                @option.OptionText
-                            </label>
+        <p class="empty-title">Sin diagnósticos asignados</p>
+        <p class="empty-subtitle text-secondary">
+            No hay formularios diagnósticos asignados para este proyecto.
+        </p>
+    </div>
+}
+else
+{
+    <div class="row row-cards">
+        @foreach (var assignment in Model.Assignments)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            @if (assignment.IsCompleted)
+                            {
+                                <span class="badge bg-green me-2">Completado</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-yellow me-2">Pendiente</span>
+                            }
                         </div>
-                    }
-                }
-                else if (question.QuestionType == "MultiSelect")
-                {
-                    var checkIndex = 0;
-                    @foreach (var option in question.AnswerOptions.OrderBy(a => a.SortOrder))
-                    {
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox"
-                                   name="Responses[@i].SelectedOptionIds[@checkIndex]" value="@option.AnswerOptionId"
-                                   id="option-@option.AnswerOptionId" />
-                            <label class="form-check-label" for="option-@option.AnswerOptionId">
-                                @option.OptionText
-                            </label>
-                        </div>
-                        checkIndex++;
-                    }
-                }
+                        <h3 class="card-title">@assignment.FormName</h3>
+                        <p class="text-muted">@assignment.QuestionCount preguntas</p>
 
-                @if (question.FollowUpQuestions.Any())
-                {
-                    <div class="hr-text">Preguntas de seguimiento</div>
-                    <ul class="list-unstyled ms-3">
-                        @foreach (var followUp in question.FollowUpQuestions)
+                        @if (assignment.CompletedAtUtc.HasValue)
                         {
-                            <li class="text-secondary"><i class="ti ti-info-circle me-1"></i>@followUp.QuestionText</li>
+                            <p class="text-muted mb-0">
+                                <small><i class="ti ti-check me-1"></i>Completado: @assignment.CompletedAtUtc.Value.ToString("dd/MM/yyyy HH:mm")</small>
+                            </p>
                         }
-                    </ul>
-                }
-            </div>
-        </div>
-    }
-
-    @if (Model.Questions.Count > 0)
-    {
-        <div class="card">
-            <div class="card-footer">
-                <div class="btn-list justify-content-end">
-                    <a href="/" class="btn btn-ghost-secondary">
-                        <i class="ti ti-x me-1"></i>Cancelar
-                    </a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="ti ti-send me-1"></i>Enviar Diagnóstico
-                    </button>
+                    </div>
+                    <div class="card-footer">
+                        @if (!assignment.IsCompleted)
+                        {
+                            <a asp-action="Fill" asp-route-assignmentExternalId="@assignment.AssignmentExternalId"
+                               class="btn btn-primary w-100">
+                                <i class="ti ti-pencil me-1"></i>Completar
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="btn btn-ghost-success w-100 disabled">
+                                <i class="ti ti-check me-1"></i>Completado
+                            </span>
+                        }
+                    </div>
                 </div>
             </div>
-        </div>
-    }
-</form>
+        }
+    </div>
+}

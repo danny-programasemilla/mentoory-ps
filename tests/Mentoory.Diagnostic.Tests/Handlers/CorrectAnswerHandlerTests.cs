@@ -1,7 +1,6 @@
 using FluentAssertions;
 using Mentoory.Diagnostic.Application.Commands.CorrectAnswer;
 using Mentoory.Diagnostic.Domain.Aggregates.DiagnosticResponse;
-using Mentoory.Diagnostic.Domain.Enums;
 using Mentoory.Diagnostic.Domain.Repositories;
 using Mentoory.Shared.Application;
 using Mentoory.Shared.Application.IntegrationEvents;
@@ -77,7 +76,7 @@ public class CorrectAnswerHandlerTests
 
     private static DiagnosticResponse CreateCompletedResponse()
     {
-        var response = DiagnosticResponse.Create(1, 10, 1, 100, EvaluationStage.Initial, UtcNow);
+        var response = DiagnosticResponse.Create(1, 10, 1, 100, 1L, UtcNow);
         response.AddResponse(1, "Original", null, null, UtcNow);
         return response;
     }

@@ -31,7 +31,7 @@ public class DiagnosticResponseRoundTripTests : IntegrationTestBase
             var dbContext = scope.ServiceProvider.GetRequiredService<DiagnosticDbContext>();
 
             var template = FormTemplate.Create("Template", null, null, DateTime.UtcNow);
-            var q = template.AddQuestion(1, "Q1", QuestionType.SingleSelect, StageApplicability.Both, 1, null, false);
+            var q = template.AddQuestion(1, "Q1", QuestionType.SingleSelect, 1, null, false);
             q.AddAnswerOption("A", 5.0m, SwotClassification.Strength, OdsrOrientation.Offensive, 1);
             dbContext.FormTemplates.Add(template);
             await dbContext.SaveChangesAsync();
@@ -51,7 +51,7 @@ public class DiagnosticResponseRoundTripTests : IntegrationTestBase
                 .FirstAsync(f => f.Id == projectFormId);
 
             var response = DiagnosticResponse.Create(
-                form.Id, 10, 1, 100, EvaluationStage.Initial, DateTime.UtcNow);
+                form.Id, 10, 1, 100, 1, DateTime.UtcNow);
 
             var questionId = form.Questions.First().Id;
             response.AddResponse(questionId, "My answer", null, null, DateTime.UtcNow);
@@ -89,7 +89,7 @@ public class DiagnosticResponseRoundTripTests : IntegrationTestBase
             var dbContext = scope.ServiceProvider.GetRequiredService<DiagnosticDbContext>();
 
             var template = FormTemplate.Create("Template", null, null, DateTime.UtcNow);
-            template.AddQuestion(1, "Q1", QuestionType.Text, StageApplicability.Both, 1, null, false);
+            template.AddQuestion(1, "Q1", QuestionType.Text, 1, null, false);
             dbContext.FormTemplates.Add(template);
             await dbContext.SaveChangesAsync();
 
@@ -100,7 +100,7 @@ public class DiagnosticResponseRoundTripTests : IntegrationTestBase
             var questionId = (await dbContext.ProjectForms.Include(f => f.Questions).FirstAsync(f => f.Id == form.Id))
                 .Questions.First().Id;
 
-            var response = DiagnosticResponse.Create(form.Id, 10, 1, 100, EvaluationStage.Initial, DateTime.UtcNow);
+            var response = DiagnosticResponse.Create(form.Id, 10, 1, 100, 1, DateTime.UtcNow);
             response.AddResponse(questionId, "Original", null, null, DateTime.UtcNow);
             dbContext.DiagnosticResponses.Add(response);
             await dbContext.SaveChangesAsync();
@@ -149,7 +149,7 @@ public class DiagnosticResponseRoundTripTests : IntegrationTestBase
             var dbContext = scope.ServiceProvider.GetRequiredService<DiagnosticDbContext>();
 
             var template = FormTemplate.Create("Template", null, null, DateTime.UtcNow);
-            var q = template.AddQuestion(1, "Q1", QuestionType.MultiSelect, StageApplicability.Both, 1, null, false);
+            var q = template.AddQuestion(1, "Q1", QuestionType.MultiSelect, 1, null, false);
             q.AddAnswerOption("A", 5.0m, SwotClassification.Strength, OdsrOrientation.Offensive, 1);
             q.AddAnswerOption("B", 3.0m, SwotClassification.Weakness, OdsrOrientation.Defensive, 2);
             dbContext.FormTemplates.Add(template);
@@ -167,7 +167,7 @@ public class DiagnosticResponseRoundTripTests : IntegrationTestBase
                 .FirstAsync(f => f.Id == form.Id))
                 .Questions.First().AnswerOptions.Select(ao => ao.Id).ToList();
 
-            var response = DiagnosticResponse.Create(form.Id, 10, 1, 100, EvaluationStage.Initial, DateTime.UtcNow);
+            var response = DiagnosticResponse.Create(form.Id, 10, 1, 100, 1, DateTime.UtcNow);
             response.AddResponse(questionId, null, null, optionIds, DateTime.UtcNow);
             response.MarkAsCompleted(DateTime.UtcNow);
             dbContext.DiagnosticResponses.Add(response);

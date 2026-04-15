@@ -13,7 +13,7 @@ namespace Mentoory.Diagnostic.Application.Commands.SubmitDiagnosticResponse;
 /// </summary>
 public partial class SubmitDiagnosticResponseHandler : BaseCommandHandler<SubmitDiagnosticResponseCommand>
 {
-    private readonly IProjectFormRepository _projectFormRepository;
+    private readonly IStageFormAssignmentRepository _stageFormAssignmentRepository;
     private readonly IDiagnosticResponseRepository _diagnosticResponseRepository;
     private readonly ITimeProvider _timeProvider;
     private readonly IIntegrationEventService _eventService;
@@ -22,19 +22,14 @@ public partial class SubmitDiagnosticResponseHandler : BaseCommandHandler<Submit
     /// <summary>
     /// Initializes a new instance of the <see cref="SubmitDiagnosticResponseHandler"/> class.
     /// </summary>
-    /// <param name="projectFormRepository">The project form repository to validate the form exists.</param>
-    /// <param name="diagnosticResponseRepository">The diagnostic response repository for persistence operations.</param>
-    /// <param name="timeProvider">The time provider for obtaining current UTC time.</param>
-    /// <param name="eventService">The integration event service for publishing events.</param>
-    /// <param name="logger">The logger instance.</param>
     public SubmitDiagnosticResponseHandler(
-        IProjectFormRepository projectFormRepository,
+        IStageFormAssignmentRepository stageFormAssignmentRepository,
         IDiagnosticResponseRepository diagnosticResponseRepository,
         ITimeProvider timeProvider,
         IIntegrationEventService eventService,
         ILogger<SubmitDiagnosticResponseHandler> logger)
     {
-        _projectFormRepository = projectFormRepository;
+        _stageFormAssignmentRepository = stageFormAssignmentRepository;
         _diagnosticResponseRepository = diagnosticResponseRepository;
         _timeProvider = timeProvider;
         _eventService = eventService;
@@ -44,23 +39,24 @@ public partial class SubmitDiagnosticResponseHandler : BaseCommandHandler<Submit
     /// <inheritdoc />
     public override async Task<Result> Handle(SubmitDiagnosticResponseCommand request, CancellationToken cancellationToken)
     {
-        var projectForm = await _projectFormRepository.GetByExternalIdAsync(
-            request.ProjectFormExternalId, request.ProjectId, cancellationToken);
+        var assignment = await _stageFormAssignmentRepository.GetByExternalIdAsync(
+            request.StageFormAssignmentExternalId, cancellationToken);
 
-        if (projectForm is null)
+        if (assignment is null || !assignment.IsActive)
         {
-            return Failure(ResultErrorCodes.GenericError,
-                ("ProjectForm", "El formulario del proyecto no fue encontrado o no pertenece al proyecto activo."));
+            return Failure(
+                ResultErrorCodes.GenericError,
+                ("StageFormAssignment", "La asignación de formulario no fue encontrada o está inactiva."));
         }
 
         var utcNow = _timeProvider.UtcNow;
 
         var diagnosticResponse = Domain.Aggregates.DiagnosticResponse.DiagnosticResponse.Create(
-            projectForm.Id,
+            assignment.ProjectFormId,
             request.ProjectId,
             request.IncubatorId,
             request.EntrepreneurUserId,
-            request.EvaluationStage,
+            assignment.Id,
             utcNow);
 
         foreach (var item in request.Responses)
@@ -78,16 +74,17 @@ public partial class SubmitDiagnosticResponseHandler : BaseCommandHandler<Submit
         _diagnosticResponseRepository.Add(diagnosticResponse);
         await _diagnosticResponseRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
 
-        LogDiagnosticSubmitted(diagnosticResponse.ExternalId, projectForm.ExternalId);
+        LogDiagnosticSubmitted(diagnosticResponse.ExternalId, assignment.ExternalId);
 
         await _eventService.PublishAsync(
             new DiagnosticCompletedEvent(
                 diagnosticResponse.Id,
-                projectForm.Id,
+                assignment.ProjectFormId,
                 request.ProjectId,
                 request.IncubatorId,
                 request.EntrepreneurUserId,
-                request.EvaluationStage,
+                assignment.Id,
+                assignment.ProjectStageId,
                 utcNow),
             cancellationToken);
 
@@ -97,6 +94,6 @@ public partial class SubmitDiagnosticResponseHandler : BaseCommandHandler<Submit
     /// <summary>
     /// Logs when a diagnostic response is successfully submitted.
     /// </summary>
-    [LoggerMessage(Level = LogLevel.Information, Message = "Diagnostic response {DiagnosticExternalId} submitted for project form {ProjectFormExternalId}")]
-    partial void LogDiagnosticSubmitted(Guid diagnosticExternalId, Guid projectFormExternalId);
+    [LoggerMessage(Level = LogLevel.Information, Message = "Diagnostic response {DiagnosticExternalId} submitted for assignment {AssignmentExternalId}")]
+    partial void LogDiagnosticSubmitted(Guid diagnosticExternalId, Guid assignmentExternalId);
 }

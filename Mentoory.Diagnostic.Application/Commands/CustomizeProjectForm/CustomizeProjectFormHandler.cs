@@ -52,7 +52,6 @@ public partial class CustomizeProjectFormHandler : BaseCommandHandler<CustomizeP
                     qd.TopicId,
                     qd.QuestionText,
                     qd.QuestionType,
-                    qd.StageApplicability,
                     qd.SortOrder,
                     qd.BlockGroup,
                     qd.IsOptional);

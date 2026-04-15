@@ -1,4 +1,3 @@
-using Mentoory.Diagnostic.Domain.Enums;
 using Mentoory.Shared.Application.IntegrationEvents;
 
 namespace Mentoory.Diagnostic.Application.IntegrationEvents;
@@ -11,7 +10,8 @@ namespace Mentoory.Diagnostic.Application.IntegrationEvents;
 /// <param name="ProjectId">The internal ID of the associated project.</param>
 /// <param name="IncubatorId">The internal ID of the incubator that owns the project.</param>
 /// <param name="EntrepreneurUserId">The internal ID of the entrepreneur who submitted the response.</param>
-/// <param name="EvaluationStage">The evaluation stage of the diagnostic.</param>
+/// <param name="StageFormAssignmentId">The internal ID of the stage form assignment.</param>
+/// <param name="ProjectStageId">The internal ID of the project stage.</param>
 /// <param name="OccurredOnUtc">The UTC timestamp when the event occurred.</param>
 public sealed record DiagnosticCompletedEvent(
     long DiagnosticResponseId,
@@ -19,5 +19,6 @@ public sealed record DiagnosticCompletedEvent(
     long ProjectId,
     long IncubatorId,
     long EntrepreneurUserId,
-    EvaluationStage EvaluationStage,
+    long StageFormAssignmentId,
+    long ProjectStageId,
     DateTime OccurredOnUtc) : IntegrationEvent(OccurredOnUtc);

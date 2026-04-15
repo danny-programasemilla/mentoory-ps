@@ -283,6 +283,111 @@ ELSE
 
 
 -- ==========================================================================================
+-- SECTION 3a: Project Stages (5-stage default pipeline per project)
+-- ==========================================================================================
+-- StageType: 0 = Registration, 1 = Diagnosis, 2 = Mentorship, 3 = Closure
+-- StageState: 0 = NotStarted, 1 = InProgress, 2 = Completed
+
+-- Helper variables for Diagnosis stages (needed by StageFormAssignments later)
+DECLARE @P1_DiagStage1Id BIGINT, @P1_DiagStage2Id BIGINT;
+DECLARE @P3_DiagStage1Id BIGINT;
+
+-- ------------------------------------------------------------------------------------------
+-- Stages for Project 1: Proyecto Innovación
+-- ------------------------------------------------------------------------------------------
+IF NOT EXISTS (SELECT 1 FROM [tenant].[ProjectStages] WHERE [ProjectId] = @Project1Id)
+BEGIN
+    INSERT INTO [tenant].[ProjectStages] ([ProjectId], [ExternalId], [StageType], [State], [Position], [DisplayName], [StartedAtUtc])
+    VALUES (@Project1Id, NEWID(), 0, 1, 0, N'Registro', @Now);
+
+    INSERT INTO [tenant].[ProjectStages] ([ProjectId], [ExternalId], [StageType], [State], [Position], [DisplayName])
+    VALUES (@Project1Id, NEWID(), 1, 0, 1, N'Diagnóstico 1');
+    SET @P1_DiagStage1Id = SCOPE_IDENTITY();
+
+    INSERT INTO [tenant].[ProjectStages] ([ProjectId], [ExternalId], [StageType], [State], [Position], [DisplayName])
+    VALUES (@Project1Id, NEWID(), 2, 0, 2, N'Mentoría');
+
+    INSERT INTO [tenant].[ProjectStages] ([ProjectId], [ExternalId], [StageType], [State], [Position], [DisplayName])
+    VALUES (@Project1Id, NEWID(), 1, 0, 3, N'Diagnóstico 2');
+    SET @P1_DiagStage2Id = SCOPE_IDENTITY();
+
+    INSERT INTO [tenant].[ProjectStages] ([ProjectId], [ExternalId], [StageType], [State], [Position], [DisplayName])
+    VALUES (@Project1Id, NEWID(), 3, 0, 4, N'Cierre');
+END
+ELSE
+BEGIN
+    SELECT @P1_DiagStage1Id = [Id] FROM [tenant].[ProjectStages] WHERE [ProjectId] = @Project1Id AND [Position] = 1;
+    SELECT @P1_DiagStage2Id = [Id] FROM [tenant].[ProjectStages] WHERE [ProjectId] = @Project1Id AND [Position] = 3;
+END
+
+-- ------------------------------------------------------------------------------------------
+-- Stages for Project 2: Proyecto Sostenibilidad
+-- ------------------------------------------------------------------------------------------
+IF NOT EXISTS (SELECT 1 FROM [tenant].[ProjectStages] WHERE [ProjectId] = @Project2Id)
+BEGIN
+    INSERT INTO [tenant].[ProjectStages] ([ProjectId], [ExternalId], [StageType], [State], [Position], [DisplayName], [StartedAtUtc])
+    VALUES (@Project2Id, NEWID(), 0, 1, 0, N'Registro', @Now);
+
+    INSERT INTO [tenant].[ProjectStages] ([ProjectId], [ExternalId], [StageType], [State], [Position], [DisplayName])
+    VALUES (@Project2Id, NEWID(), 1, 0, 1, N'Diagnóstico 1');
+
+    INSERT INTO [tenant].[ProjectStages] ([ProjectId], [ExternalId], [StageType], [State], [Position], [DisplayName])
+    VALUES (@Project2Id, NEWID(), 2, 0, 2, N'Mentoría');
+
+    INSERT INTO [tenant].[ProjectStages] ([ProjectId], [ExternalId], [StageType], [State], [Position], [DisplayName])
+    VALUES (@Project2Id, NEWID(), 1, 0, 3, N'Diagnóstico 2');
+
+    INSERT INTO [tenant].[ProjectStages] ([ProjectId], [ExternalId], [StageType], [State], [Position], [DisplayName])
+    VALUES (@Project2Id, NEWID(), 3, 0, 4, N'Cierre');
+END
+
+-- ------------------------------------------------------------------------------------------
+-- Stages for Project 3: Proyecto Digital
+-- ------------------------------------------------------------------------------------------
+IF NOT EXISTS (SELECT 1 FROM [tenant].[ProjectStages] WHERE [ProjectId] = @Project3Id)
+BEGIN
+    INSERT INTO [tenant].[ProjectStages] ([ProjectId], [ExternalId], [StageType], [State], [Position], [DisplayName], [StartedAtUtc])
+    VALUES (@Project3Id, NEWID(), 0, 1, 0, N'Registro', @Now);
+
+    INSERT INTO [tenant].[ProjectStages] ([ProjectId], [ExternalId], [StageType], [State], [Position], [DisplayName])
+    VALUES (@Project3Id, NEWID(), 1, 0, 1, N'Diagnóstico 1');
+    SET @P3_DiagStage1Id = SCOPE_IDENTITY();
+
+    INSERT INTO [tenant].[ProjectStages] ([ProjectId], [ExternalId], [StageType], [State], [Position], [DisplayName])
+    VALUES (@Project3Id, NEWID(), 2, 0, 2, N'Mentoría');
+
+    INSERT INTO [tenant].[ProjectStages] ([ProjectId], [ExternalId], [StageType], [State], [Position], [DisplayName])
+    VALUES (@Project3Id, NEWID(), 1, 0, 3, N'Diagnóstico 2');
+
+    INSERT INTO [tenant].[ProjectStages] ([ProjectId], [ExternalId], [StageType], [State], [Position], [DisplayName])
+    VALUES (@Project3Id, NEWID(), 3, 0, 4, N'Cierre');
+END
+ELSE
+    SELECT @P3_DiagStage1Id = [Id] FROM [tenant].[ProjectStages] WHERE [ProjectId] = @Project3Id AND [Position] = 1;
+
+-- ------------------------------------------------------------------------------------------
+-- Stages for Project 4: Proyecto Comunitario
+-- ------------------------------------------------------------------------------------------
+IF NOT EXISTS (SELECT 1 FROM [tenant].[ProjectStages] WHERE [ProjectId] = @Project4Id)
+BEGIN
+    INSERT INTO [tenant].[ProjectStages] ([ProjectId], [ExternalId], [StageType], [State], [Position], [DisplayName], [StartedAtUtc])
+    VALUES (@Project4Id, NEWID(), 0, 1, 0, N'Registro', @Now);
+
+    INSERT INTO [tenant].[ProjectStages] ([ProjectId], [ExternalId], [StageType], [State], [Position], [DisplayName])
+    VALUES (@Project4Id, NEWID(), 1, 0, 1, N'Diagnóstico 1');
+
+    INSERT INTO [tenant].[ProjectStages] ([ProjectId], [ExternalId], [StageType], [State], [Position], [DisplayName])
+    VALUES (@Project4Id, NEWID(), 2, 0, 2, N'Mentoría');
+
+    INSERT INTO [tenant].[ProjectStages] ([ProjectId], [ExternalId], [StageType], [State], [Position], [DisplayName])
+    VALUES (@Project4Id, NEWID(), 1, 0, 3, N'Diagnóstico 2');
+
+    INSERT INTO [tenant].[ProjectStages] ([ProjectId], [ExternalId], [StageType], [State], [Position], [DisplayName])
+    VALUES (@Project4Id, NEWID(), 3, 0, 4, N'Cierre');
+END
+
+
+-- ==========================================================================================
 -- SECTION 4: Role Assignments
 -- ==========================================================================================
 -- Uses MERGE to be idempotent. The unique filtered index
@@ -533,13 +638,13 @@ BEGIN
     DECLARE @QT1_1 BIGINT, @QT1_2 BIGINT, @QT1_3 BIGINT, @QT1_4 BIGINT, @QT1_5 BIGINT, @QT1_6 BIGINT;
 
     -- Q1: Text question — Business model description
-    INSERT INTO [diagnostic].[QuestionTemplates] ([FormTemplateId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
-    VALUES (@FormTemplate1Id, 1, N'Describa brevemente su modelo de negocio y propuesta de valor', 0, 0, 1, N'Modelo de Negocio', 0);
+    INSERT INTO [diagnostic].[QuestionTemplates] ([FormTemplateId], [TopicId], [QuestionText], [QuestionType], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (@FormTemplate1Id, 1, N'Describa brevemente su modelo de negocio y propuesta de valor', 0, 1, N'Modelo de Negocio', 0);
     SET @QT1_1 = SCOPE_IDENTITY();
 
     -- Q2: SingleSelect — Team maturity
-    INSERT INTO [diagnostic].[QuestionTemplates] ([FormTemplateId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
-    VALUES (@FormTemplate1Id, 2, N'¿Cuál es el nivel de experiencia del equipo fundador en el sector?', 2, 0, 2, N'Equipo', 0);
+    INSERT INTO [diagnostic].[QuestionTemplates] ([FormTemplateId], [TopicId], [QuestionText], [QuestionType], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (@FormTemplate1Id, 2, N'¿Cuál es el nivel de experiencia del equipo fundador en el sector?', 2, 2, N'Equipo', 0);
     SET @QT1_2 = SCOPE_IDENTITY();
 
     -- AnswerOptions for Q2
@@ -551,13 +656,13 @@ BEGIN
         (@QT1_2, N'Más de 5 años de experiencia especializada',    4.00, 1, 0, 4);  -- Strength
 
     -- Q3: Numeric — Number of potential clients identified
-    INSERT INTO [diagnostic].[QuestionTemplates] ([FormTemplateId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
-    VALUES (@FormTemplate1Id, 3, N'¿Cuántos clientes potenciales ha identificado en su mercado objetivo?', 1, 0, 3, N'Mercado', 0);
+    INSERT INTO [diagnostic].[QuestionTemplates] ([FormTemplateId], [TopicId], [QuestionText], [QuestionType], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (@FormTemplate1Id, 3, N'¿Cuántos clientes potenciales ha identificado en su mercado objetivo?', 1, 3, N'Mercado', 0);
     SET @QT1_3 = SCOPE_IDENTITY();
 
     -- Q4: SingleSelect — Revenue model clarity
-    INSERT INTO [diagnostic].[QuestionTemplates] ([FormTemplateId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
-    VALUES (@FormTemplate1Id, 4, N'¿Tiene definido un modelo de ingresos claro?', 2, 0, 4, N'Finanzas', 0);
+    INSERT INTO [diagnostic].[QuestionTemplates] ([FormTemplateId], [TopicId], [QuestionText], [QuestionType], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (@FormTemplate1Id, 4, N'¿Tiene definido un modelo de ingresos claro?', 2, 4, N'Finanzas', 0);
     SET @QT1_4 = SCOPE_IDENTITY();
 
     -- AnswerOptions for Q4
@@ -569,8 +674,8 @@ BEGIN
         (@QT1_4, N'Modelo validado con ingresos reales',           4.00, 1, 0, 4);  -- Strength
 
     -- Q5: SingleSelect — Competitive advantage
-    INSERT INTO [diagnostic].[QuestionTemplates] ([FormTemplateId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
-    VALUES (@FormTemplate1Id, 3, N'¿Cuál es su principal ventaja competitiva frente a alternativas existentes?', 2, 0, 5, N'Mercado', 0);
+    INSERT INTO [diagnostic].[QuestionTemplates] ([FormTemplateId], [TopicId], [QuestionText], [QuestionType], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (@FormTemplate1Id, 3, N'¿Cuál es su principal ventaja competitiva frente a alternativas existentes?', 2, 5, N'Mercado', 0);
     SET @QT1_5 = SCOPE_IDENTITY();
 
     -- AnswerOptions for Q5
@@ -582,8 +687,8 @@ BEGIN
         (@QT1_5, N'Acceso exclusivo a recursos o mercado',          4.00, 1, 0, 4);  -- Strength
 
     -- Q6: Text question — Biggest challenge (optional)
-    INSERT INTO [diagnostic].[QuestionTemplates] ([FormTemplateId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
-    VALUES (@FormTemplate1Id, 1, N'¿Cuál es el mayor desafío que enfrenta actualmente su emprendimiento?', 0, 0, 6, N'Modelo de Negocio', 1);
+    INSERT INTO [diagnostic].[QuestionTemplates] ([FormTemplateId], [TopicId], [QuestionText], [QuestionType], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (@FormTemplate1Id, 1, N'¿Cuál es el mayor desafío que enfrenta actualmente su emprendimiento?', 0, 6, N'Modelo de Negocio', 1);
     SET @QT1_6 = SCOPE_IDENTITY();
 END
 
@@ -595,8 +700,8 @@ BEGIN
     DECLARE @QT2_1 BIGINT, @QT2_2 BIGINT, @QT2_3 BIGINT, @QT2_4 BIGINT, @QT2_5 BIGINT;
 
     -- Q1: SingleSelect — Social impact scope
-    INSERT INTO [diagnostic].[QuestionTemplates] ([FormTemplateId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
-    VALUES (@FormTemplate2Id, 5, N'¿Cuál es el alcance del impacto social de su emprendimiento?', 2, 0, 1, N'Impacto Social', 0);
+    INSERT INTO [diagnostic].[QuestionTemplates] ([FormTemplateId], [TopicId], [QuestionText], [QuestionType], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (@FormTemplate2Id, 5, N'¿Cuál es el alcance del impacto social de su emprendimiento?', 2, 1, N'Impacto Social', 0);
     SET @QT2_1 = SCOPE_IDENTITY();
 
     -- AnswerOptions for Q1
@@ -608,13 +713,13 @@ BEGIN
         (@QT2_1, N'Impacto internacional',                         4.00, 1, 0, 4);  -- Strength
 
     -- Q2: Numeric — Beneficiaries count
-    INSERT INTO [diagnostic].[QuestionTemplates] ([FormTemplateId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
-    VALUES (@FormTemplate2Id, 5, N'¿Cuántos beneficiarios directos tiene o proyecta tener en el primer año?', 1, 0, 2, N'Impacto Social', 0);
+    INSERT INTO [diagnostic].[QuestionTemplates] ([FormTemplateId], [TopicId], [QuestionText], [QuestionType], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (@FormTemplate2Id, 5, N'¿Cuántos beneficiarios directos tiene o proyecta tener en el primer año?', 1, 2, N'Impacto Social', 0);
     SET @QT2_2 = SCOPE_IDENTITY();
 
     -- Q3: SingleSelect — Environmental sustainability
-    INSERT INTO [diagnostic].[QuestionTemplates] ([FormTemplateId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
-    VALUES (@FormTemplate2Id, 5, N'¿Su emprendimiento incorpora prácticas de sostenibilidad ambiental?', 2, 0, 3, N'Sostenibilidad', 0);
+    INSERT INTO [diagnostic].[QuestionTemplates] ([FormTemplateId], [TopicId], [QuestionText], [QuestionType], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (@FormTemplate2Id, 5, N'¿Su emprendimiento incorpora prácticas de sostenibilidad ambiental?', 2, 3, N'Sostenibilidad', 0);
     SET @QT2_3 = SCOPE_IDENTITY();
 
     -- AnswerOptions for Q3
@@ -626,13 +731,13 @@ BEGIN
         (@QT2_3, N'Están integradas en el modelo de negocio',       4.00, 1, 0, 4);  -- Strength
 
     -- Q4: Text — Impact measurement description
-    INSERT INTO [diagnostic].[QuestionTemplates] ([FormTemplateId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
-    VALUES (@FormTemplate2Id, 5, N'Describa cómo mide o planea medir el impacto de su emprendimiento', 0, 0, 4, N'Medición', 0);
+    INSERT INTO [diagnostic].[QuestionTemplates] ([FormTemplateId], [TopicId], [QuestionText], [QuestionType], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (@FormTemplate2Id, 5, N'Describa cómo mide o planea medir el impacto de su emprendimiento', 0, 4, N'Medición', 0);
     SET @QT2_4 = SCOPE_IDENTITY();
 
     -- Q5: SingleSelect — Job creation
-    INSERT INTO [diagnostic].[QuestionTemplates] ([FormTemplateId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
-    VALUES (@FormTemplate2Id, 5, N'¿Cuántos empleos directos ha generado o proyecta generar?', 2, 1, 5, N'Impacto Económico', 0);
+    INSERT INTO [diagnostic].[QuestionTemplates] ([FormTemplateId], [TopicId], [QuestionText], [QuestionType], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (@FormTemplate2Id, 5, N'¿Cuántos empleos directos ha generado o proyecta generar?', 2, 5, N'Impacto Económico', 0);
     SET @QT2_5 = SCOPE_IDENTITY();
 
     -- AnswerOptions for Q5
@@ -706,12 +811,12 @@ IF NOT EXISTS (SELECT 1 FROM [diagnostic].[Questions] WHERE [ProjectFormId] = @P
 BEGIN
     DECLARE @PF1_Q1 BIGINT, @PF1_Q2 BIGINT, @PF1_Q3 BIGINT, @PF1_Q4 BIGINT, @PF1_Q5 BIGINT, @PF1_Q6 BIGINT;
 
-    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
-    VALUES (NEWID(), @ProjectForm1Id, 1, N'Describa brevemente su modelo de negocio y propuesta de valor', 0, 0, 1, N'Modelo de Negocio', 0);
+    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (NEWID(), @ProjectForm1Id, 1, N'Describa brevemente su modelo de negocio y propuesta de valor', 0, 1, N'Modelo de Negocio', 0);
     SET @PF1_Q1 = SCOPE_IDENTITY();
 
-    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
-    VALUES (NEWID(), @ProjectForm1Id, 2, N'¿Cuál es el nivel de experiencia del equipo fundador en el sector?', 2, 0, 2, N'Equipo', 0);
+    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (NEWID(), @ProjectForm1Id, 2, N'¿Cuál es el nivel de experiencia del equipo fundador en el sector?', 2, 2, N'Equipo', 0);
     SET @PF1_Q2 = SCOPE_IDENTITY();
 
     INSERT INTO [diagnostic].[AnswerOptions] ([QuestionId], [OptionText], [Score], [SwotClassification], [OdsrOrientation], [SortOrder])
@@ -721,12 +826,12 @@ BEGIN
         (@PF1_Q2, N'3-5 años de experiencia en el sector',          3.00, 1, 0, 3),
         (@PF1_Q2, N'Más de 5 años de experiencia especializada',    4.00, 1, 0, 4);
 
-    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
-    VALUES (NEWID(), @ProjectForm1Id, 3, N'¿Cuántos clientes potenciales ha identificado en su mercado objetivo?', 1, 0, 3, N'Mercado', 0);
+    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (NEWID(), @ProjectForm1Id, 3, N'¿Cuántos clientes potenciales ha identificado en su mercado objetivo?', 1, 3, N'Mercado', 0);
     SET @PF1_Q3 = SCOPE_IDENTITY();
 
-    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
-    VALUES (NEWID(), @ProjectForm1Id, 4, N'¿Tiene definido un modelo de ingresos claro?', 2, 0, 4, N'Finanzas', 0);
+    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (NEWID(), @ProjectForm1Id, 4, N'¿Tiene definido un modelo de ingresos claro?', 2, 4, N'Finanzas', 0);
     SET @PF1_Q4 = SCOPE_IDENTITY();
 
     INSERT INTO [diagnostic].[AnswerOptions] ([QuestionId], [OptionText], [Score], [SwotClassification], [OdsrOrientation], [SortOrder])
@@ -736,8 +841,8 @@ BEGIN
         (@PF1_Q4, N'Modelo definido con proyecciones iniciales',    3.00, 3, 0, 3),
         (@PF1_Q4, N'Modelo validado con ingresos reales',           4.00, 1, 0, 4);
 
-    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
-    VALUES (NEWID(), @ProjectForm1Id, 3, N'¿Cuál es su principal ventaja competitiva frente a alternativas existentes?', 2, 0, 5, N'Mercado', 0);
+    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (NEWID(), @ProjectForm1Id, 3, N'¿Cuál es su principal ventaja competitiva frente a alternativas existentes?', 2, 5, N'Mercado', 0);
     SET @PF1_Q5 = SCOPE_IDENTITY();
 
     INSERT INTO [diagnostic].[AnswerOptions] ([QuestionId], [OptionText], [Score], [SwotClassification], [OdsrOrientation], [SortOrder])
@@ -747,8 +852,8 @@ BEGIN
         (@PF1_Q5, N'Tecnología o innovación diferenciadora',         3.00, 1, 0, 3),
         (@PF1_Q5, N'Acceso exclusivo a recursos o mercado',          4.00, 1, 0, 4);
 
-    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
-    VALUES (NEWID(), @ProjectForm1Id, 1, N'¿Cuál es el mayor desafío que enfrenta actualmente su emprendimiento?', 0, 0, 6, N'Modelo de Negocio', 1);
+    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (NEWID(), @ProjectForm1Id, 1, N'¿Cuál es el mayor desafío que enfrenta actualmente su emprendimiento?', 0, 6, N'Modelo de Negocio', 1);
     SET @PF1_Q6 = SCOPE_IDENTITY();
 END
 
@@ -759,8 +864,8 @@ IF NOT EXISTS (SELECT 1 FROM [diagnostic].[Questions] WHERE [ProjectFormId] = @P
 BEGIN
     DECLARE @PF2_Q1 BIGINT, @PF2_Q2 BIGINT, @PF2_Q3 BIGINT, @PF2_Q4 BIGINT, @PF2_Q5 BIGINT;
 
-    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
-    VALUES (NEWID(), @ProjectForm2Id, 5, N'¿Cuál es el alcance del impacto social de su emprendimiento?', 2, 0, 1, N'Impacto Social', 0);
+    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (NEWID(), @ProjectForm2Id, 5, N'¿Cuál es el alcance del impacto social de su emprendimiento?', 2, 1, N'Impacto Social', 0);
     SET @PF2_Q1 = SCOPE_IDENTITY();
 
     INSERT INTO [diagnostic].[AnswerOptions] ([QuestionId], [OptionText], [Score], [SwotClassification], [OdsrOrientation], [SortOrder])
@@ -770,12 +875,12 @@ BEGIN
         (@PF2_Q1, N'Impacto nacional',                              3.00, 1, 0, 3),
         (@PF2_Q1, N'Impacto internacional',                         4.00, 1, 0, 4);
 
-    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
-    VALUES (NEWID(), @ProjectForm2Id, 5, N'¿Cuántos beneficiarios directos tiene o proyecta tener en el primer año?', 1, 0, 2, N'Impacto Social', 0);
+    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (NEWID(), @ProjectForm2Id, 5, N'¿Cuántos beneficiarios directos tiene o proyecta tener en el primer año?', 1, 2, N'Impacto Social', 0);
     SET @PF2_Q2 = SCOPE_IDENTITY();
 
-    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
-    VALUES (NEWID(), @ProjectForm2Id, 5, N'¿Su emprendimiento incorpora prácticas de sostenibilidad ambiental?', 2, 0, 3, N'Sostenibilidad', 0);
+    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (NEWID(), @ProjectForm2Id, 5, N'¿Su emprendimiento incorpora prácticas de sostenibilidad ambiental?', 2, 3, N'Sostenibilidad', 0);
     SET @PF2_Q3 = SCOPE_IDENTITY();
 
     INSERT INTO [diagnostic].[AnswerOptions] ([QuestionId], [OptionText], [Score], [SwotClassification], [OdsrOrientation], [SortOrder])
@@ -785,12 +890,12 @@ BEGIN
         (@PF2_Q3, N'Se implementan parcialmente',                    3.00, 1, 0, 3),
         (@PF2_Q3, N'Están integradas en el modelo de negocio',       4.00, 1, 0, 4);
 
-    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
-    VALUES (NEWID(), @ProjectForm2Id, 5, N'Describa cómo mide o planea medir el impacto de su emprendimiento', 0, 0, 4, N'Medición', 0);
+    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (NEWID(), @ProjectForm2Id, 5, N'Describa cómo mide o planea medir el impacto de su emprendimiento', 0, 4, N'Medición', 0);
     SET @PF2_Q4 = SCOPE_IDENTITY();
 
-    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
-    VALUES (NEWID(), @ProjectForm2Id, 5, N'¿Cuántos empleos directos ha generado o proyecta generar?', 2, 1, 5, N'Impacto Económico', 0);
+    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (NEWID(), @ProjectForm2Id, 5, N'¿Cuántos empleos directos ha generado o proyecta generar?', 2, 5, N'Impacto Económico', 0);
     SET @PF2_Q5 = SCOPE_IDENTITY();
 
     INSERT INTO [diagnostic].[AnswerOptions] ([QuestionId], [OptionText], [Score], [SwotClassification], [OdsrOrientation], [SortOrder])
@@ -808,12 +913,12 @@ IF NOT EXISTS (SELECT 1 FROM [diagnostic].[Questions] WHERE [ProjectFormId] = @P
 BEGIN
     DECLARE @PF3_Q1 BIGINT, @PF3_Q2 BIGINT, @PF3_Q3 BIGINT, @PF3_Q4 BIGINT, @PF3_Q5 BIGINT, @PF3_Q6 BIGINT;
 
-    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
-    VALUES (NEWID(), @ProjectForm3Id, 1, N'Describa brevemente su modelo de negocio y propuesta de valor', 0, 0, 1, N'Modelo de Negocio', 0);
+    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (NEWID(), @ProjectForm3Id, 1, N'Describa brevemente su modelo de negocio y propuesta de valor', 0, 1, N'Modelo de Negocio', 0);
     SET @PF3_Q1 = SCOPE_IDENTITY();
 
-    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
-    VALUES (NEWID(), @ProjectForm3Id, 2, N'¿Cuál es el nivel de experiencia del equipo fundador en el sector?', 2, 0, 2, N'Equipo', 0);
+    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (NEWID(), @ProjectForm3Id, 2, N'¿Cuál es el nivel de experiencia del equipo fundador en el sector?', 2, 2, N'Equipo', 0);
     SET @PF3_Q2 = SCOPE_IDENTITY();
 
     INSERT INTO [diagnostic].[AnswerOptions] ([QuestionId], [OptionText], [Score], [SwotClassification], [OdsrOrientation], [SortOrder])
@@ -823,12 +928,12 @@ BEGIN
         (@PF3_Q2, N'3-5 años de experiencia en el sector',          3.00, 1, 0, 3),
         (@PF3_Q2, N'Más de 5 años de experiencia especializada',    4.00, 1, 0, 4);
 
-    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
-    VALUES (NEWID(), @ProjectForm3Id, 3, N'¿Cuántos clientes potenciales ha identificado en su mercado objetivo?', 1, 0, 3, N'Mercado', 0);
+    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (NEWID(), @ProjectForm3Id, 3, N'¿Cuántos clientes potenciales ha identificado en su mercado objetivo?', 1, 3, N'Mercado', 0);
     SET @PF3_Q3 = SCOPE_IDENTITY();
 
-    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
-    VALUES (NEWID(), @ProjectForm3Id, 4, N'¿Tiene definido un modelo de ingresos claro?', 2, 0, 4, N'Finanzas', 0);
+    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (NEWID(), @ProjectForm3Id, 4, N'¿Tiene definido un modelo de ingresos claro?', 2, 4, N'Finanzas', 0);
     SET @PF3_Q4 = SCOPE_IDENTITY();
 
     INSERT INTO [diagnostic].[AnswerOptions] ([QuestionId], [OptionText], [Score], [SwotClassification], [OdsrOrientation], [SortOrder])
@@ -838,8 +943,8 @@ BEGIN
         (@PF3_Q4, N'Modelo definido con proyecciones iniciales',    3.00, 3, 0, 3),
         (@PF3_Q4, N'Modelo validado con ingresos reales',           4.00, 1, 0, 4);
 
-    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
-    VALUES (NEWID(), @ProjectForm3Id, 3, N'¿Cuál es su principal ventaja competitiva frente a alternativas existentes?', 2, 0, 5, N'Mercado', 0);
+    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (NEWID(), @ProjectForm3Id, 3, N'¿Cuál es su principal ventaja competitiva frente a alternativas existentes?', 2, 5, N'Mercado', 0);
     SET @PF3_Q5 = SCOPE_IDENTITY();
 
     INSERT INTO [diagnostic].[AnswerOptions] ([QuestionId], [OptionText], [Score], [SwotClassification], [OdsrOrientation], [SortOrder])
@@ -849,34 +954,74 @@ BEGIN
         (@PF3_Q5, N'Tecnología o innovación diferenciadora',         3.00, 1, 0, 3),
         (@PF3_Q5, N'Acceso exclusivo a recursos o mercado',          4.00, 1, 0, 4);
 
-    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
-    VALUES (NEWID(), @ProjectForm3Id, 1, N'¿Cuál es el mayor desafío que enfrenta actualmente su emprendimiento?', 0, 0, 6, N'Modelo de Negocio', 1);
+    INSERT INTO [diagnostic].[Questions] ([ExternalId], [ProjectFormId], [TopicId], [QuestionText], [QuestionType], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (NEWID(), @ProjectForm3Id, 1, N'¿Cuál es el mayor desafío que enfrenta actualmente su emprendimiento?', 0, 6, N'Modelo de Negocio', 1);
     SET @PF3_Q6 = SCOPE_IDENTITY();
 END
 
 
 -- ==========================================================================================
--- SECTION 9: Diagnostic Responses (sample, without QuestionResponses)
+-- SECTION 8a: Stage Form Assignments (link forms to diagnosis stages)
 -- ==========================================================================================
--- EvaluationStage: 0 = Initial, 1 = Final
--- Unique constraint: (ProjectFormId, EntrepreneurUserId, EvaluationStage)
+
+DECLARE @SFA_P1_Form1 BIGINT;  -- ProjectForm1 -> Project1 Diagnosis 1
+DECLARE @SFA_P3_Form3 BIGINT;  -- ProjectForm3 -> Project3 Diagnosis 1
 
 -- ------------------------------------------------------------------------------------------
--- DiagnosticResponse 1: Entrepreneur 1 -> ProjectForm 1 (Initial stage)
+-- StageFormAssignment: ProjectForm 1 (Diagnóstico Inicial) -> Project 1, Diagnosis stage 1
 -- ------------------------------------------------------------------------------------------
-IF NOT EXISTS (SELECT 1 FROM [diagnostic].[DiagnosticResponses] WHERE [ProjectFormId] = @ProjectForm1Id AND [EntrepreneurUserId] = @Entrep1Id AND [EvaluationStage] = 0)
+IF NOT EXISTS (SELECT 1 FROM [diagnostic].[StageFormAssignments] WHERE [ProjectFormId] = @ProjectForm1Id AND [ProjectStageId] = @P1_DiagStage1Id)
 BEGIN
-    INSERT INTO [diagnostic].[DiagnosticResponses] ([ExternalId], [ProjectFormId], [ProjectId], [IncubatorId], [EntrepreneurUserId], [EvaluationStage], [IsCompleted], [CompletedAtUtc], [CreatedAtUtc])
-    VALUES (NEWID(), @ProjectForm1Id, @Project1Id, @Incubator1Id, @Entrep1Id, 0, 0, NULL, @Now);
+    INSERT INTO [diagnostic].[StageFormAssignments] ([ExternalId], [ProjectId], [IncubatorId], [ProjectStageId], [ProjectFormId], [IsActive], [CreatedAtUtc])
+    VALUES (NEWID(), @Project1Id, @Incubator1Id, @P1_DiagStage1Id, @ProjectForm1Id, 1, @Now);
+    SET @SFA_P1_Form1 = SCOPE_IDENTITY();
+END
+ELSE
+    SELECT @SFA_P1_Form1 = [Id] FROM [diagnostic].[StageFormAssignments] WHERE [ProjectFormId] = @ProjectForm1Id AND [ProjectStageId] = @P1_DiagStage1Id;
+
+-- ------------------------------------------------------------------------------------------
+-- StageFormAssignment: ProjectForm 2 (Diagnóstico de Impacto) -> Project 1, Diagnosis stage 2
+-- ------------------------------------------------------------------------------------------
+IF NOT EXISTS (SELECT 1 FROM [diagnostic].[StageFormAssignments] WHERE [ProjectFormId] = @ProjectForm2Id AND [ProjectStageId] = @P1_DiagStage2Id)
+BEGIN
+    INSERT INTO [diagnostic].[StageFormAssignments] ([ExternalId], [ProjectId], [IncubatorId], [ProjectStageId], [ProjectFormId], [IsActive], [CreatedAtUtc])
+    VALUES (NEWID(), @Project1Id, @Incubator1Id, @P1_DiagStage2Id, @ProjectForm2Id, 1, @Now);
 END
 
 -- ------------------------------------------------------------------------------------------
--- DiagnosticResponse 2: Entrepreneur 2 -> ProjectForm 3 (Initial stage)
+-- StageFormAssignment: ProjectForm 3 (Diagnóstico Inicial) -> Project 3, Diagnosis stage 1
 -- ------------------------------------------------------------------------------------------
-IF NOT EXISTS (SELECT 1 FROM [diagnostic].[DiagnosticResponses] WHERE [ProjectFormId] = @ProjectForm3Id AND [EntrepreneurUserId] = @Entrep2Id AND [EvaluationStage] = 0)
+IF NOT EXISTS (SELECT 1 FROM [diagnostic].[StageFormAssignments] WHERE [ProjectFormId] = @ProjectForm3Id AND [ProjectStageId] = @P3_DiagStage1Id)
 BEGIN
-    INSERT INTO [diagnostic].[DiagnosticResponses] ([ExternalId], [ProjectFormId], [ProjectId], [IncubatorId], [EntrepreneurUserId], [EvaluationStage], [IsCompleted], [CompletedAtUtc], [CreatedAtUtc])
-    VALUES (NEWID(), @ProjectForm3Id, @Project3Id, @Incubator2Id, @Entrep2Id, 0, 0, NULL, @Now);
+    INSERT INTO [diagnostic].[StageFormAssignments] ([ExternalId], [ProjectId], [IncubatorId], [ProjectStageId], [ProjectFormId], [IsActive], [CreatedAtUtc])
+    VALUES (NEWID(), @Project3Id, @Incubator2Id, @P3_DiagStage1Id, @ProjectForm3Id, 1, @Now);
+    SET @SFA_P3_Form3 = SCOPE_IDENTITY();
+END
+ELSE
+    SELECT @SFA_P3_Form3 = [Id] FROM [diagnostic].[StageFormAssignments] WHERE [ProjectFormId] = @ProjectForm3Id AND [ProjectStageId] = @P3_DiagStage1Id;
+
+
+-- ==========================================================================================
+-- SECTION 9: Diagnostic Responses (sample, without QuestionResponses)
+-- ==========================================================================================
+-- Unique constraint: (StageFormAssignmentId, EntrepreneurUserId)
+
+-- ------------------------------------------------------------------------------------------
+-- DiagnosticResponse 1: Entrepreneur 1 -> ProjectForm 1 via StageFormAssignment
+-- ------------------------------------------------------------------------------------------
+IF NOT EXISTS (SELECT 1 FROM [diagnostic].[DiagnosticResponses] WHERE [StageFormAssignmentId] = @SFA_P1_Form1 AND [EntrepreneurUserId] = @Entrep1Id)
+BEGIN
+    INSERT INTO [diagnostic].[DiagnosticResponses] ([ExternalId], [ProjectFormId], [ProjectId], [IncubatorId], [EntrepreneurUserId], [StageFormAssignmentId], [IsCompleted], [CompletedAtUtc], [CreatedAtUtc])
+    VALUES (NEWID(), @ProjectForm1Id, @Project1Id, @Incubator1Id, @Entrep1Id, @SFA_P1_Form1, 0, NULL, @Now);
+END
+
+-- ------------------------------------------------------------------------------------------
+-- DiagnosticResponse 2: Entrepreneur 2 -> ProjectForm 3 via StageFormAssignment
+-- ------------------------------------------------------------------------------------------
+IF NOT EXISTS (SELECT 1 FROM [diagnostic].[DiagnosticResponses] WHERE [StageFormAssignmentId] = @SFA_P3_Form3 AND [EntrepreneurUserId] = @Entrep2Id)
+BEGIN
+    INSERT INTO [diagnostic].[DiagnosticResponses] ([ExternalId], [ProjectFormId], [ProjectId], [IncubatorId], [EntrepreneurUserId], [StageFormAssignmentId], [IsCompleted], [CompletedAtUtc], [CreatedAtUtc])
+    VALUES (NEWID(), @ProjectForm3Id, @Project3Id, @Incubator2Id, @Entrep2Id, @SFA_P3_Form3, 0, NULL, @Now);
 END
 
 

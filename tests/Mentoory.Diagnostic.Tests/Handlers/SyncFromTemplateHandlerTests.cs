@@ -41,7 +41,7 @@ public class SyncFromTemplateHandlerTests
         form.EnablePartialSync();
 
         // Add new question to template
-        template.AddQuestion(3, "Pregunta 3", QuestionType.Numeric, StageApplicability.Final, 3, null, false);
+        template.AddQuestion(3, "Pregunta 3", QuestionType.Numeric, 3, null, false);
 
         _formRepo
             .Setup(r => r.GetByExternalIdWithQuestionsAsync(FormExternalId, It.IsAny<CancellationToken>()))
@@ -106,8 +106,8 @@ public class SyncFromTemplateHandlerTests
     private static FormTemplate CreateTemplate()
     {
         var template = FormTemplate.Create("Template", null, null, UtcNow);
-        template.AddQuestion(1, "Q1", QuestionType.SingleSelect, StageApplicability.Both, 1, null, false);
-        template.AddQuestion(2, "Q2", QuestionType.Text, StageApplicability.Initial, 2, null, true);
+        template.AddQuestion(1, "Q1", QuestionType.SingleSelect, 1, null, false);
+        template.AddQuestion(2, "Q2", QuestionType.Text, 2, null, true);
         return template;
     }
 }

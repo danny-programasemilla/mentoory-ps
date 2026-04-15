@@ -29,8 +29,8 @@ public class FormTemplateRoundTripTests : IntegrationTestBase
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<DiagnosticDbContext>();
             var template = FormTemplate.Create("Diagnóstico Empresarial", "Evaluación completa", "Premium", DateTime.UtcNow);
-            var q1 = template.AddQuestion(1, "¿Cuál es su experiencia?", QuestionType.Text, StageApplicability.Both, 1, null, false);
-            var q2 = template.AddQuestion(2, "Nivel de madurez", QuestionType.SingleSelect, StageApplicability.Initial, 2, "Madurez", false);
+            var q1 = template.AddQuestion(1, "¿Cuál es su experiencia?", QuestionType.Text, 1, null, false);
+            var q2 = template.AddQuestion(2, "Nivel de madurez", QuestionType.SingleSelect, 2, "Madurez", false);
             q2.AddAnswerOption("Alto", 5.0m, SwotClassification.Strength, OdsrOrientation.Offensive, 1);
             q2.AddAnswerOption("Medio", 3.0m, SwotClassification.Opportunity, OdsrOrientation.Reorientation, 2);
 

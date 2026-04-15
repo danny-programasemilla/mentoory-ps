@@ -6,8 +6,7 @@
 
 <div class="mb-4">
     <h2>Corrección de Respuestas</h2>
-    <p class="text-secondary">Etapa: <strong>@(Model?.EvaluationStage.ToString() ?? "—")</strong>
-        — Estado: @(Model?.IsCompleted == true ? "Completado" : "En progreso")</p>
+    <p class="text-secondary">Estado: @(Model?.IsCompleted == true ? "Completado" : "En progreso")</p>
 </div>
 
 @if (TempData["SuccessMessage"] is string successMessage)

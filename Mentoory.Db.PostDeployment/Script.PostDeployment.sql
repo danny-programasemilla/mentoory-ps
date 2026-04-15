@@ -39,4 +39,12 @@ PRINT '[018.SeedProjectPublicFlag.sql] Starting';
 :r ./018.SeedProjectPublicFlag.sql
 PRINT '[018.SeedProjectPublicFlag.sql] Finished';
 
+PRINT '[019.MigrateStageTypes.sql] Starting';
+:r ./019.MigrateStageTypes.sql
+PRINT '[019.MigrateStageTypes.sql] Finished';
+
+PRINT '[020.SeedNewPermissions.sql] Starting';
+:r ./020.SeedNewPermissions.sql
+PRINT '[020.SeedNewPermissions.sql] Finished';
+
 PRINT '[Script.PostDeployment.sql] Finished';

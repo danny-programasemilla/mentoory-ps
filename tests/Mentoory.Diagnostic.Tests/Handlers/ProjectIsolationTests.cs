@@ -5,7 +5,7 @@ using Mentoory.Diagnostic.Application.Queries.GetDiagnosticResponse;
 using Mentoory.Diagnostic.Application.Queries.GetProjectForm;
 using Mentoory.Diagnostic.Domain.Aggregates.DiagnosticResponse;
 using Mentoory.Diagnostic.Domain.Aggregates.ProjectForm;
-using Mentoory.Diagnostic.Domain.Enums;
+using Mentoory.Diagnostic.Domain.Aggregates.StageFormAssignment;
 using Mentoory.Diagnostic.Domain.Repositories;
 using Mentoory.Shared.Application;
 using Mentoory.Shared.Application.IntegrationEvents;
@@ -88,11 +88,11 @@ public class ProjectIsolationTests
         result.Value.Should().BeNull();
     }
 
-    // T034: SubmitDiagnosticResponseHandler rejects when form belongs to different project
+    // T034: SubmitDiagnosticResponseHandler rejects when assignment is not found
     [Fact]
-    public async Task SubmitDiagnosticResponseHandler_WhenFormNotInProject_ReturnsFailure()
+    public async Task SubmitDiagnosticResponseHandler_WhenAssignmentNotFound_ReturnsFailure()
     {
-        var formRepo = new Mock<IProjectFormRepository>();
+        var assignmentRepo = new Mock<IStageFormAssignmentRepository>();
         var responseRepo = new Mock<IDiagnosticResponseRepository>();
         var timeProvider = new Mock<ITimeProvider>();
         var eventService = new Mock<IIntegrationEventService>();
@@ -102,23 +102,23 @@ public class ProjectIsolationTests
         unitOfWork.Setup(u => u.SaveEntitiesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
         responseRepo.Setup(r => r.UnitOfWork).Returns(unitOfWork.Object);
 
-        var formExternalId = Guid.NewGuid();
+        var assignmentExternalId = Guid.NewGuid();
         const long wrongProjectId = 999;
 
-        // Form does not belong to wrongProjectId, so project-scoped lookup returns null
-        formRepo
-            .Setup(r => r.GetByExternalIdAsync(formExternalId, wrongProjectId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((ProjectForm?)null);
+        // Assignment not found, so lookup returns null
+        assignmentRepo
+            .Setup(r => r.GetByExternalIdAsync(assignmentExternalId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((StageFormAssignment?)null);
 
         var handler = new SubmitDiagnosticResponseHandler(
-            formRepo.Object,
+            assignmentRepo.Object,
             responseRepo.Object,
             timeProvider.Object,
             eventService.Object,
             Mock.Of<ILogger<SubmitDiagnosticResponseHandler>>());
 
         var command = new SubmitDiagnosticResponseCommand(
-            formExternalId, wrongProjectId, 1, 100, EvaluationStage.Initial, []);
+            assignmentExternalId, wrongProjectId, 1, 100, []);
 
         var result = await handler.Handle(command, CancellationToken.None);
 

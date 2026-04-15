@@ -27,7 +27,9 @@ public static class MenuConfiguration
 
         new MenuGroup("Coordinación", "ti ti-list-check", new[] { "ProjectCoordinator", "Mentor", "IncubatorAdmin", "GlobalAdmin" }, new MenuItem[]
         {
+            new("Etapas", "/Coordination/ProjectPipeline", "ti ti-route"),
             new("Diagnósticos", "/Coordination/Diagnostics", "ti ti-clipboard-check"),
+            new("Resultados", "/Coordination/DiagnosticResults", "ti ti-chart-arrows"),
         }),
 
         new MenuGroup("Participante", "ti ti-school", new[] { "Entrepreneur", "Mentor", "ProjectCoordinator", "IncubatorAdmin", "GlobalAdmin" }, new MenuItem[]

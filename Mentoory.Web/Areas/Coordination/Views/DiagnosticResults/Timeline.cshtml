@@ -1,0 +1,82 @@
+@model Mentoory.Web.Areas.Coordination.Models.TimelineViewModel
+@{
+    ViewData["Title"] = "Línea de Tiempo Diagnóstica";
+}
+
+<div class="mb-4">
+    <h2>Línea de Tiempo Diagnóstica</h2>
+    <p class="text-secondary">Historial de diagnósticos completados</p>
+</div>
+
+@if (Model.Entries.Count == 0)
+{
+    <div class="empty">
+        <div class="empty-icon"><i class="ti ti-chart-line" style="font-size: 3rem;"></i></div>
+        <p class="empty-title">Sin diagnósticos completados</p>
+        <p class="empty-subtitle text-secondary">Este emprendedor no ha completado ningún diagnóstico.</p>
+    </div>
+}
+else
+{
+    @if (Model.Entries.Count >= 2)
+    {
+        <div class="alert alert-info mb-4">
+            <i class="ti ti-info-circle me-1"></i>
+            Seleccione dos diagnósticos para comparar resultados.
+        </div>
+
+        <form asp-action="Compare" method="get" id="compareForm" class="mb-3">
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary" id="compareBtn" disabled>
+                    <i class="ti ti-arrows-diff me-1"></i>Comparar Seleccionados
+                </button>
+            </div>
+        </form>
+    }
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table">
+                <thead>
+                    <tr>
+                        @if (Model.Entries.Count >= 2)
+                        {
+                            <th class="w-1">Seleccionar</th>
+                        }
+                        <th>Formulario</th>
+                        <th>Respuestas</th>
+                        <th>Fecha de Completado</th>
+                        <th class="w-1">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var entry in Model.Entries)
+                    {
+                        <tr>
+                            @if (Model.Entries.Count >= 2)
+                            {
+                                <td>
+                                    <input type="checkbox" class="form-check-input compare-checkbox"
+                                           value="@entry.ResponseExternalId" />
+                                </td>
+                            }
+                            <td>@entry.FormName</td>
+                            <td>@entry.ResponseCount preguntas</td>
+                            <td>@entry.CompletedAtUtc.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                <a asp-action="Detail" asp-route-responseExternalId="@entry.ResponseExternalId"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="ti ti-eye me-1"></i>Ver
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script src="~/js/diagnostic-comparison.js"></script>
+}

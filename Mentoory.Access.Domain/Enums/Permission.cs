@@ -18,12 +18,15 @@ public enum Permission
     ManageKnowledge = 301,
     ManageLifecycle = 302,
     ManageProjectParticipants = 303,
+    ManageProjectPipeline = 304,
+    AssignDiagnosticForms = 305,
 
     // Mentoring
     ManageMentoringPlans = 400,
     ManageSessions = 401,
     ManageAssignments = 402,
     CorrectAnswers = 403,
+    ViewDiagnosticComparison = 404,
 
     // Participant
     CompleteDiagnostic = 500,

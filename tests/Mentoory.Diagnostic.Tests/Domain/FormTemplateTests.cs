@@ -45,7 +45,6 @@ public class FormTemplateTests
             topicId: 1,
             questionText: "¿Cuál es su experiencia?",
             questionType: QuestionType.Text,
-            stageApplicability: StageApplicability.Both,
             sortOrder: 1,
             blockGroup: null,
             isOptional: false);
@@ -81,7 +80,7 @@ public class FormTemplateTests
     public void AddAnswerOption_ShouldAddToQuestion()
     {
         var template = FormTemplate.Create("Template", null, null, UtcNow);
-        var question = template.AddQuestion(1, "Test?", QuestionType.SingleSelect, StageApplicability.Initial, 1, null, false);
+        var question = template.AddQuestion(1, "Test?", QuestionType.SingleSelect, 1, null, false);
 
         var option = question.AddAnswerOption("Opción A", 5.0m, SwotClassification.Strength, OdsrOrientation.Offensive, 1);
 
