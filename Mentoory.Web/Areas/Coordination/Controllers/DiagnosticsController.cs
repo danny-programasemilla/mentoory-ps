@@ -8,6 +8,7 @@ using Mentoory.Diagnostic.Application.Queries.ListFormTemplates;
 using Mentoory.Diagnostic.Application.Queries.ListProjectForms;
 using Mentoory.Diagnostic.Application.Queries.ListStageFormAssignments;
 using Mentoory.Shared.Application.DataTables;
+using Mentoory.Tenant.Application.Queries.GetProjectStageInternalId;
 using Mentoory.Web.Areas.Coordination.Models;
 using Mentoory.Web.Infrastructure;
 using Mentoory.Web.Models;
@@ -121,8 +122,8 @@ public class DiagnosticsController : Controller
         return View(form);
     }
 
-    [HttpGet("StageConfig/{stageId:long}")]
-    public async Task<IActionResult> StageConfig(long stageId, CancellationToken ct)
+    [HttpGet("StageConfig/{stageExternalId:guid}")]
+    public async Task<IActionResult> StageConfig(Guid stageExternalId, CancellationToken ct)
     {
         var projectId = User.GetActiveProjectId();
         if (!projectId.HasValue)
@@ -131,14 +132,20 @@ public class DiagnosticsController : Controller
             return RedirectToAction("Select", "Context", new { area = string.Empty, returnUrl = Request.Path.Value });
         }
 
+        var stageId = await ResolveStageIdAsync(projectId.Value, stageExternalId, ct);
+        if (!stageId.HasValue)
+        {
+            return NotFound();
+        }
+
         var assignments = await _executor.SendOrThrowAsync(
-            new ListStageFormAssignmentsQuery(stageId), ct);
+            new ListStageFormAssignmentsQuery(stageId.Value), ct);
 
         await PopulateFormsViewBag(projectId.Value, ct);
 
         var viewModel = new StageConfigViewModel
         {
-            ProjectStageId = stageId,
+            ProjectStageExternalId = stageExternalId,
             Assignments = assignments.Select(a => new AssignedFormViewModel
             {
                 ExternalId = a.ExternalId,
@@ -152,9 +159,9 @@ public class DiagnosticsController : Controller
         return View(viewModel);
     }
 
-    [HttpPost("StageConfig/{stageId:long}/Assign")]
+    [HttpPost("StageConfig/{stageExternalId:guid}/Assign")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> AssignForm(long stageId, [FromForm] Guid formExternalId, CancellationToken ct)
+    public async Task<IActionResult> AssignForm(Guid stageExternalId, [FromForm] Guid formExternalId, CancellationToken ct)
     {
         var projectId = User.GetActiveProjectId();
         var incubatorId = User.GetActiveIncubatorId();
@@ -163,18 +170,24 @@ public class DiagnosticsController : Controller
             return BadRequest();
         }
 
+        var stageId = await ResolveStageIdAsync(projectId.Value, stageExternalId, ct);
+        if (!stageId.HasValue)
+        {
+            return NotFound();
+        }
+
         var result = await _executor.SendAndLogIfFailureAsync(
-            new AssignFormToStageCommand(projectId.Value, incubatorId, stageId, formExternalId), ct);
+            new AssignFormToStageCommand(projectId.Value, incubatorId, stageId.Value, formExternalId), ct);
 
         TempData[result.IsSuccess ? "SuccessMessage" : "ErrorMessage"] =
             result.IsSuccess ? "Formulario asignado exitosamente." : "Error al asignar el formulario.";
 
-        return RedirectToAction(nameof(StageConfig), new { stageId });
+        return RedirectToAction(nameof(StageConfig), new { stageExternalId });
     }
 
     [HttpPost("StageConfig/RemoveAssignment/{assignmentExternalId:guid}")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> RemoveAssignment(Guid assignmentExternalId, [FromForm] long stageId, CancellationToken ct)
+    public async Task<IActionResult> RemoveAssignment(Guid assignmentExternalId, [FromForm] Guid stageExternalId, CancellationToken ct)
     {
         var result = await _executor.SendAndLogIfFailureAsync(
             new RemoveFormFromStageCommand(assignmentExternalId), ct);
@@ -182,7 +195,7 @@ public class DiagnosticsController : Controller
         TempData[result.IsSuccess ? "SuccessMessage" : "ErrorMessage"] =
             result.IsSuccess ? "Asignación eliminada exitosamente." : "Error al eliminar la asignación.";
 
-        return RedirectToAction(nameof(StageConfig), new { stageId });
+        return RedirectToAction(nameof(StageConfig), new { stageExternalId });
     }
 
     [HttpGet("QuestionSelection/{assignmentExternalId:guid}")]
@@ -228,6 +241,14 @@ public class DiagnosticsController : Controller
             result.IsSuccess ? "Selección de preguntas actualizada." : "Error al actualizar la selección.";
 
         return RedirectToAction(nameof(QuestionSelection), new { assignmentExternalId });
+    }
+
+    private async Task<long?> ResolveStageIdAsync(long projectId, Guid stageExternalId, CancellationToken ct)
+    {
+        var result = await _executor.SendAndLogIfFailureAsync(
+            new GetProjectStageInternalIdQuery(projectId, stageExternalId), ct);
+
+        return result.IsSuccess ? result.Value : null;
     }
 
     private async Task PopulateFormsViewBag(long projectId, CancellationToken ct)

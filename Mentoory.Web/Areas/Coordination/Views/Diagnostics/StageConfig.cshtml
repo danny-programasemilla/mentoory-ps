@@ -61,7 +61,7 @@ else
                                     </a>
                                     <form asp-action="RemoveAssignment" asp-route-assignmentExternalId="@assignment.ExternalId" method="post" class="d-inline">
                                         @Html.AntiForgeryToken()
-                                        <input type="hidden" name="stageId" value="@Model.ProjectStageId" />
+                                        <input type="hidden" name="stageExternalId" value="@Model.ProjectStageExternalId" />
                                         <button type="submit" class="btn btn-sm btn-outline-danger"
                                                 onclick="return confirm('¿Está seguro de eliminar esta asignación?')"
                                                 title="Eliminar asignación">
@@ -88,7 +88,7 @@ else
 <div class="modal fade" id="assignFormModal" tabindex="-1" aria-labelledby="assignFormModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form asp-action="AssignForm" asp-route-stageId="@Model.ProjectStageId" method="post">
+            <form asp-action="AssignForm" asp-route-stageExternalId="@Model.ProjectStageExternalId" method="post">
                 @Html.AntiForgeryToken()
                 <div class="modal-header">
                     <h5 class="modal-title" id="assignFormModalLabel">Asignar Formulario</h5>

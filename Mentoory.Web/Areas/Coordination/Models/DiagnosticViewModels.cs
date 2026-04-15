@@ -25,7 +25,7 @@ public sealed class FormOptionViewModel
 
 public sealed class StageConfigViewModel
 {
-    public long ProjectStageId { get; set; }
+    public Guid ProjectStageExternalId { get; set; }
     public List<AssignedFormViewModel> Assignments { get; set; } = new();
 }
 

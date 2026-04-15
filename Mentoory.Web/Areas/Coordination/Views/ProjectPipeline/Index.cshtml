@@ -79,6 +79,18 @@
                     <div class="ms-auto d-flex gap-1">
                         @if (stage.StageType != "Registration" && stage.StageType != "Closure")
                         {
+                            @if (stage.StageType == "Diagnosis")
+                            {
+                                <a asp-area="Coordination"
+                                   asp-controller="Diagnostics"
+                                   asp-action="StageConfig"
+                                   asp-route-stageExternalId="@stage.ExternalId"
+                                   class="btn btn-sm btn-outline-info"
+                                   title="Configurar diagnóstico">
+                                    <i class="ti ti-stethoscope"></i>
+                                </a>
+                            }
+
                             <button type="button" class="btn btn-sm btn-outline-secondary"
                                     onclick="showRenameModal('@stage.ExternalId', '@stage.DisplayName')"
                                     title="Renombrar">
