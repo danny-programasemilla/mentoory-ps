@@ -17,7 +17,6 @@ public class Question : Entity
     public long TopicId { get; private set; }
     public string QuestionText { get; private set; } = null!;
     public QuestionType QuestionType { get; private set; }
-    public StageApplicability StageApplicability { get; private set; }
     public int SortOrder { get; private set; }
     public string? BlockGroup { get; private set; }
     public bool IsOptional { get; private set; }
@@ -29,7 +28,6 @@ public class Question : Entity
         long topicId,
         string questionText,
         QuestionType questionType,
-        StageApplicability stageApplicability,
         int sortOrder,
         string? blockGroup,
         bool isOptional)
@@ -40,7 +38,6 @@ public class Question : Entity
             TopicId = topicId,
             QuestionText = questionText,
             QuestionType = questionType,
-            StageApplicability = stageApplicability,
             SortOrder = sortOrder,
             BlockGroup = blockGroup,
             IsOptional = isOptional,
@@ -55,7 +52,6 @@ public class Question : Entity
             TopicId = template.TopicId,
             QuestionText = template.QuestionText,
             QuestionType = template.QuestionType,
-            StageApplicability = template.StageApplicability,
             SortOrder = template.SortOrder,
             BlockGroup = template.BlockGroup,
             IsOptional = template.IsOptional,

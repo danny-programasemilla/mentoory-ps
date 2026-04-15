@@ -1,6 +1,5 @@
 using FluentAssertions;
 using Mentoory.Diagnostic.Domain.Aggregates.DiagnosticResponse;
-using Mentoory.Diagnostic.Domain.Enums;
 using Xunit;
 
 namespace Mentoory.Diagnostic.Tests.Domain;
@@ -68,7 +67,7 @@ public class AnswerCorrectionTests
     [Fact]
     public void CorrectAnswer_WithSelectedOptions_ShouldRecordPreviousSelections()
     {
-        var response = DiagnosticResponse.Create(1, 10, 1, 100, EvaluationStage.Initial, UtcNow);
+        var response = DiagnosticResponse.Create(1, 10, 1, 100, 1L, UtcNow);
         response.AddResponse(1, null, null, new List<long> { 10, 20 }, UtcNow);
         var qr = response.QuestionResponses.First();
 
@@ -81,7 +80,7 @@ public class AnswerCorrectionTests
 
     private static DiagnosticResponse CreateResponseWithAnswer()
     {
-        var response = DiagnosticResponse.Create(1, 10, 1, 100, EvaluationStage.Initial, UtcNow);
+        var response = DiagnosticResponse.Create(1, 10, 1, 100, 1L, UtcNow);
         response.AddResponse(1, "Original answer", null, null, UtcNow);
         return response;
     }

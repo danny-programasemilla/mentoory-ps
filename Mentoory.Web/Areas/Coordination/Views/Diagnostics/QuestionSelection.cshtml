@@ -1,0 +1,83 @@
+@model Mentoory.Web.Areas.Coordination.Models.QuestionSelectionViewModel
+@{
+    ViewData["Title"] = "Selección de Preguntas";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2>Selección de Preguntas</h2>
+        <p class="text-muted">Formulario: <strong>@Model.FormName</strong></p>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @successMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] is string errorMessage)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @errorMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+}
+
+<form asp-action="QuestionSelection" asp-route-assignmentExternalId="@Model.AssignmentExternalId" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>
+                <strong>@Model.Questions.Count(q => q.IsSelected)</strong> de <strong>@Model.Questions.Count</strong> preguntas seleccionadas
+            </span>
+            <div>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="selectAll">Seleccionar todas</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAll">Deseleccionar todas</button>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="list-group list-group-flush">
+                @foreach (var question in Model.Questions)
+                {
+                    <label class="list-group-item d-flex align-items-center gap-3" style="cursor: pointer;">
+                        <input type="checkbox" name="selectedQuestionIds" value="@question.QuestionId"
+                               class="form-check-input question-checkbox"
+                               @(question.IsSelected ? "checked" : "") />
+                        <div>
+                            <div>@question.QuestionText</div>
+                            <small class="text-muted">@GetQuestionTypeLabel(question.QuestionType)</small>
+                        </div>
+                    </label>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between mt-3">
+        <a href="javascript:history.back()" class="btn btn-secondary">
+            <i class="ti ti-arrow-left me-1"></i>Volver
+        </a>
+        <button type="submit" class="btn btn-primary">
+            <i class="ti ti-check me-1"></i>Guardar Selección
+        </button>
+    </div>
+</form>
+
+@functions {
+    string GetQuestionTypeLabel(string type) => type switch
+    {
+        "Text" => "Texto libre",
+        "Numeric" => "Numérico",
+        "SingleSelect" => "Selección única",
+        "MultiSelect" => "Selección múltiple",
+        _ => type
+    };
+}
+
+@section Scripts {
+    <script src="~/js/question-selection.js"></script>
+}

@@ -1,0 +1,108 @@
+@model Mentoory.Web.Areas.Participant.Models.DiagnosticFormViewModel
+@{
+    ViewData["Title"] = "Completar Diagnóstico";
+    var totalQuestions = Model.Questions.Count;
+}
+
+<div class="mb-4">
+    <h2>Diagnóstico: @Model.FormName</h2>
+    <p class="text-secondary">Complete las preguntas del formulario diagnóstico</p>
+</div>
+
+@if (TempData["ErrorMessage"] is string errorMessage)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @errorMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+}
+
+@if (totalQuestions > 0)
+{
+    <div class="card mb-4">
+        <div class="card-body py-3">
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" style="width: 0%" id="progressBar">0%</div>
+            </div>
+        </div>
+    </div>
+}
+
+<form asp-action="Submit" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="FormExternalId" value="@Model.FormExternalId" />
+    <input type="hidden" name="StageFormAssignmentExternalId" value="@Model.StageFormAssignmentExternalId" />
+
+    @for (var i = 0; i < Model.Questions.Count; i++)
+    {
+        var question = Model.Questions[i];
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <span class="badge bg-secondary me-2">@(i + 1)</span> @question.QuestionText
+                </h3>
+            </div>
+            <div class="card-body">
+                <input type="hidden" name="Responses[@i].QuestionId" value="@question.QuestionId" />
+
+                @if (question.QuestionType == "Text")
+                {
+                    <textarea name="Responses[@i].TextValue" class="form-control" rows="3"
+                              placeholder="Escriba su respuesta..."></textarea>
+                }
+                else if (question.QuestionType == "Numeric")
+                {
+                    <input type="number" name="Responses[@i].NumericValue" class="form-control"
+                           step="0.01" placeholder="Ingrese un valor numérico" />
+                }
+                else if (question.QuestionType == "SingleSelect")
+                {
+                    @foreach (var option in question.AnswerOptions.OrderBy(a => a.SortOrder))
+                    {
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio"
+                                   name="Responses[@i].SelectedOptionIds[0]" value="@option.AnswerOptionId"
+                                   id="option-@option.AnswerOptionId" />
+                            <label class="form-check-label" for="option-@option.AnswerOptionId">
+                                @option.OptionText
+                            </label>
+                        </div>
+                    }
+                }
+                else if (question.QuestionType == "MultiSelect")
+                {
+                    var checkIndex = 0;
+                    @foreach (var option in question.AnswerOptions.OrderBy(a => a.SortOrder))
+                    {
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox"
+                                   name="Responses[@i].SelectedOptionIds[@checkIndex]" value="@option.AnswerOptionId"
+                                   id="option-@option.AnswerOptionId" />
+                            <label class="form-check-label" for="option-@option.AnswerOptionId">
+                                @option.OptionText
+                            </label>
+                        </div>
+                        checkIndex++;
+                    }
+                }
+            </div>
+        </div>
+    }
+
+    @if (Model.Questions.Count > 0)
+    {
+        <div class="card">
+            <div class="card-footer">
+                <div class="btn-list justify-content-end">
+                    <a asp-action="Index" class="btn btn-ghost-secondary">
+                        <i class="ti ti-x me-1"></i>Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary"
+                            onclick="return confirm('¿Está seguro de enviar el diagnóstico? No podrá modificar sus respuestas.')">
+                        <i class="ti ti-send me-1"></i>Enviar Diagnóstico
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+</form>

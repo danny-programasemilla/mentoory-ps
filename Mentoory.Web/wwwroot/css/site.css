@@ -6,3 +6,63 @@
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+/* Pipeline grid layout */
+.pipeline-grid {
+  display: grid;
+  grid-template-columns: 24px 120px 100px 1fr 1fr auto auto;
+}
+
+.pipeline-row {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
+  border-bottom: 1px solid var(--tblr-border-color);
+}
+
+.pipeline-row:last-child {
+  border-bottom: none;
+}
+
+.pipeline-row > * {
+  padding: 0.5rem 0.25rem;
+}
+
+.pipeline-row:hover {
+  background-color: rgba(var(--tblr-primary-rgb), 0.02);
+}
+
+.pipeline-row.opacity-50 {
+  opacity: 0.5;
+}
+
+.pipeline-row.border-primary {
+  border-bottom-color: var(--tblr-primary) !important;
+}
+
+.pipeline-form-info {
+  font-size: 0.8125rem;
+}
+
+/* Status dot indicators */
+.status-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+.status-dot--pending {
+  color: var(--tblr-secondary);
+}
+
+.status-dot--in-progress {
+  color: var(--tblr-blue);
+  font-weight: 600;
+}
+
+.status-dot--completed {
+  color: var(--tblr-green);
+}

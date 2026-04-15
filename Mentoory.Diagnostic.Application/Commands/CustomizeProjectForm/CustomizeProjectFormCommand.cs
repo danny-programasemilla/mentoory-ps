@@ -20,7 +20,6 @@ public sealed record QuestionData(
     long TopicId,
     string QuestionText,
     QuestionType QuestionType,
-    StageApplicability StageApplicability,
     int SortOrder,
     string? BlockGroup,
     bool IsOptional);

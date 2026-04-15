@@ -74,7 +74,7 @@ public class CloneFormTemplateHandlerTests
     private static FormTemplate CreateTemplate()
     {
         var template = FormTemplate.Create("Template", "Desc", null, UtcNow);
-        template.AddQuestion(1, "Q1", QuestionType.SingleSelect, StageApplicability.Both, 1, null, false);
+        template.AddQuestion(1, "Q1", QuestionType.SingleSelect, 1, null, false);
         return template;
     }
 }

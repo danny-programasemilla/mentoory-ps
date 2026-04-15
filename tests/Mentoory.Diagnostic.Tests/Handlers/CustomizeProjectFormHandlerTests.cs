@@ -41,7 +41,7 @@ public class CustomizeProjectFormHandlerTests
         var command = new CustomizeProjectFormCommand(
             FormExternalId,
             CustomizeAction.AddQuestion,
-            new QuestionData(1, "New Q", QuestionType.Text, StageApplicability.Both, 1, null, false),
+            new QuestionData(1, "New Q", QuestionType.Text, 1, null, false),
             null,
             null);
 
@@ -77,7 +77,7 @@ public class CustomizeProjectFormHandlerTests
 
         var command = new CustomizeProjectFormCommand(
             FormExternalId, CustomizeAction.AddQuestion,
-            new QuestionData(1, "Q", QuestionType.Text, StageApplicability.Both, 1, null, false),
+            new QuestionData(1, "Q", QuestionType.Text, 1, null, false),
             null, null);
 
         var result = await _handler.Handle(command, CancellationToken.None);

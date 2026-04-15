@@ -62,13 +62,12 @@ public class FormTemplate : Entity, IAggregateRoot
         long topicId,
         string questionText,
         Enums.QuestionType questionType,
-        Enums.StageApplicability stageApplicability,
         int sortOrder,
         string? blockGroup,
         bool isOptional)
     {
         var question = QuestionTemplate.Create(
-            topicId, questionText, questionType, stageApplicability, sortOrder, blockGroup, isOptional);
+            topicId, questionText, questionType, sortOrder, blockGroup, isOptional);
         _questions.Add(question);
         return question;
     }

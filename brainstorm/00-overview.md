@@ -1,6 +1,6 @@
 # Brainstorm Overview
 
-Last updated: 2026-04-13
+Last updated: 2026-04-14 (session 08)
 
 ## Sessions
 
@@ -8,10 +8,13 @@ Last updated: 2026-04-13
 |---|------|-------|--------|------|
 | 01 | 2026-04-11 | context-selector-ux | spec-created | 008 |
 | 02 | 2026-04-13 | tabler-template-migration | spec-created | 009 |
+| 02 | 2026-04-12 | user-registration | spec-created | 009 |
 | 03 | 2026-04-13 | design-system-ux-polish | spec-created | 010, 011 |
 | 04 | 2026-04-13 | notification-email-delivery | spec-created | 011 |
 | 05 | 2026-04-13 | table-polish | spec-created | 012 |
 | 06 | 2026-04-13 | table-filtering | spec-created | 013 |
+| 07 | 2026-04-14 | diagnosis-stage-pipeline | spec-created | 014 |
+| 08 | 2026-04-14 | pipeline-editor-ux-polish | spec-created | 015 |
 
 ## Open Threads
 - GlobalAdmin incubator dropdown may need search/filter at scale (from #01)
@@ -32,6 +35,10 @@ Last updated: 2026-04-13
 - IP geolocation for login alerts — deferred to future spec (from #04)
 - Password reset email migration from Access to Notification domain — future spec (from #04)
 - Admin dashboard for notification monitoring — future spec (from #04)
+- Pipeline editor: drag-and-drop vs up/down arrows for v1? (from #07)
+- Stage advancement warning: per-entrepreneur completion stats vs simple count? (from #07)
+- "Guardar Orden" button position: header bar vs floating/sticky (from #08)
+- Tabler filled-circle icon availability for status dots (from #08)
 
 ## Parked Ideas
 (none)

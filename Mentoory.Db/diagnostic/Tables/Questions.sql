@@ -6,7 +6,6 @@ CREATE TABLE [diagnostic].[Questions]
     [TopicId] BIGINT NOT NULL,
     [QuestionText] NVARCHAR(2000) NOT NULL,
     [QuestionType] TINYINT NOT NULL,
-    [StageApplicability] TINYINT NOT NULL,
     [SortOrder] INT NOT NULL,
     [BlockGroup] NVARCHAR(100) NULL,
     [IsOptional] BIT NOT NULL DEFAULT 0,

@@ -1,4 +1,3 @@
-using Mentoory.Diagnostic.Domain.Enums;
 using Mentoory.Shared.Application.MediatR;
 
 namespace Mentoory.Diagnostic.Application.Commands.SubmitDiagnosticResponse;
@@ -17,18 +16,16 @@ public sealed record ResponseItem(
     List<long>? SelectedOptionIds);
 
 /// <summary>
-/// Represents a command to submit a complete diagnostic response for a project form.
+/// Represents a command to submit a complete diagnostic response for a stage form assignment.
 /// </summary>
-/// <param name="ProjectFormExternalId">The external identifier of the project form being responded to.</param>
+/// <param name="StageFormAssignmentExternalId">The external identifier of the stage form assignment.</param>
 /// <param name="ProjectId">The project associated with this diagnostic.</param>
 /// <param name="IncubatorId">The incubator that owns the project.</param>
 /// <param name="EntrepreneurUserId">The user submitting the diagnostic response.</param>
-/// <param name="EvaluationStage">The evaluation stage (Initial or Final).</param>
 /// <param name="Responses">The list of question responses.</param>
 public sealed record SubmitDiagnosticResponseCommand(
-    Guid ProjectFormExternalId,
+    Guid StageFormAssignmentExternalId,
     long ProjectId,
     long IncubatorId,
     long EntrepreneurUserId,
-    EvaluationStage EvaluationStage,
     List<ResponseItem> Responses) : IBaseRequest;

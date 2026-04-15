@@ -5,6 +5,14 @@ namespace Mentoory.Tenant.Domain.Aggregates.Project;
 
 public class Project : Entity, IAggregateRoot
 {
+    private static readonly Dictionary<StageType, string> StageBaseNames = new()
+    {
+        { StageType.Registration, "Registro" },
+        { StageType.Diagnosis, "Diagnóstico" },
+        { StageType.Mentorship, "Mentoría" },
+        { StageType.Closure, "Cierre" },
+    };
+
     private readonly List<ProjectStage> _stages = new();
     private readonly List<ProjectParticipant> _participants = new();
     private readonly List<MentorAssignment> _mentorAssignments = new();
@@ -56,14 +64,122 @@ public class Project : Entity, IAggregateRoot
             UpdatedAtUtc = utcNow,
         };
 
-        // Initialize all 7 stages
-        foreach (StageType stageType in Enum.GetValues<StageType>())
-        {
-            var state = stageType == StageType.Registration ? StageState.InProgress : StageState.NotStarted;
-            project._stages.Add(ProjectStage.Create(stageType, state, stageType == StageType.Registration ? utcNow : null));
-        }
+        // Default 5-stage pipeline: Registration → Diagnosis → Mentorship → Diagnosis → Closure
+        project._stages.Add(ProjectStage.Create(StageType.Registration, StageState.InProgress, 0, "Registro", utcNow));
+        project._stages.Add(ProjectStage.Create(StageType.Diagnosis, StageState.NotStarted, 1, "Diagnóstico 1", null));
+        project._stages.Add(ProjectStage.Create(StageType.Mentorship, StageState.NotStarted, 2, "Mentoría", null));
+        project._stages.Add(ProjectStage.Create(StageType.Diagnosis, StageState.NotStarted, 3, "Diagnóstico 2", null));
+        project._stages.Add(ProjectStage.Create(StageType.Closure, StageState.NotStarted, 4, "Cierre", null));
 
         return project;
+    }
+
+    public ProjectStage AddStage(StageType stageType, int position, DateTime utcNow)
+    {
+        if (stageType == StageType.Registration || stageType == StageType.Closure)
+        {
+            throw new InvalidOperationException("Cannot add Registration or Closure stages manually.");
+        }
+
+        if (position < 1 || position >= _stages.Count)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(position),
+                "Stage must be inserted between first and last position.");
+        }
+
+        // Shift positions of subsequent stages
+        foreach (var stage in _stages.Where(s => s.Position >= position))
+        {
+            stage.SetPosition(stage.Position + 1);
+        }
+
+        var displayName = GenerateDisplayName(stageType);
+        var newStage = ProjectStage.Create(stageType, StageState.NotStarted, position, displayName, null);
+        _stages.Add(newStage);
+        UpdatedAtUtc = utcNow;
+
+        RegenerateDisplayNames();
+
+        return newStage;
+    }
+
+    public void RemoveStage(long stageId, DateTime utcNow)
+    {
+        var stage = _stages.SingleOrDefault(s => s.Id == stageId)
+            ?? throw new InvalidOperationException("Stage not found.");
+
+        if (stage.StageType == StageType.Registration || stage.StageType == StageType.Closure)
+        {
+            throw new InvalidOperationException("Cannot remove Registration or Closure stages.");
+        }
+
+        if (_stages.Count <= 2)
+        {
+            throw new InvalidOperationException("Pipeline must have at least Registration and Closure stages.");
+        }
+
+        var removedPosition = stage.Position;
+        _stages.Remove(stage);
+
+        // Shift positions of subsequent stages
+        foreach (var s in _stages.Where(s => s.Position > removedPosition))
+        {
+            s.SetPosition(s.Position - 1);
+        }
+
+        UpdatedAtUtc = utcNow;
+        RegenerateDisplayNames();
+    }
+
+    public void ReorderStages(IReadOnlyList<long> orderedStageIds, DateTime utcNow)
+    {
+        if (orderedStageIds.Count != _stages.Count)
+        {
+            throw new ArgumentException("Must provide exactly one ID per stage.", nameof(orderedStageIds));
+        }
+
+        var stageMap = _stages.ToDictionary(s => s.Id);
+
+        foreach (var id in orderedStageIds)
+        {
+            if (!stageMap.ContainsKey(id))
+            {
+                throw new ArgumentException($"Stage ID {id} not found in pipeline.", nameof(orderedStageIds));
+            }
+        }
+
+        // Validate boundary constraints
+        var firstId = orderedStageIds[0];
+        var lastId = orderedStageIds[^1];
+
+        if (stageMap[firstId].StageType != StageType.Registration)
+        {
+            throw new InvalidOperationException("First stage must be Registration.");
+        }
+
+        if (stageMap[lastId].StageType != StageType.Closure)
+        {
+            throw new InvalidOperationException("Last stage must be Closure.");
+        }
+
+        // Apply new positions
+        for (var i = 0; i < orderedStageIds.Count; i++)
+        {
+            stageMap[orderedStageIds[i]].SetPosition(i);
+        }
+
+        UpdatedAtUtc = utcNow;
+        RegenerateDisplayNames();
+    }
+
+    public void RenameStage(long stageId, string displayName, DateTime utcNow)
+    {
+        var stage = _stages.SingleOrDefault(s => s.Id == stageId)
+            ?? throw new InvalidOperationException("Stage not found.");
+
+        stage.Rename(displayName);
+        UpdatedAtUtc = utcNow;
     }
 
     public void AdvanceStage(long advancedByUserId, DateTime utcNow)
@@ -73,24 +189,25 @@ public class Project : Entity, IAggregateRoot
             throw new InvalidOperationException("Current stage must be in progress to advance.");
         }
 
-        // Complete current stage
-        var currentStage = _stages.Single(s => s.StageType == CurrentStageType);
-        currentStage.Complete(utcNow);
-        CurrentStageState = StageState.Completed;
+        var orderedStages = _stages.OrderBy(s => s.Position).ToList();
+        var currentStage = orderedStages.FirstOrDefault(s => s.State == StageState.InProgress)
+            ?? throw new InvalidOperationException("No stage is currently in progress.");
 
-        // Find next stage
-        var nextStageType = (StageType)((int)CurrentStageType + 1);
-        if (!Enum.IsDefined(nextStageType))
+        currentStage.Complete(utcNow);
+
+        var currentIndex = orderedStages.IndexOf(currentStage);
+        if (currentIndex >= orderedStages.Count - 1)
         {
-            // Already at final stage (Closure)
+            // Last stage (Closure) completed
+            CurrentStageState = StageState.Completed;
             UpdatedAtUtc = utcNow;
             return;
         }
 
         // Start next stage
-        var nextStage = _stages.Single(s => s.StageType == nextStageType);
+        var nextStage = orderedStages[currentIndex + 1];
         nextStage.Start(advancedByUserId, utcNow);
-        CurrentStageType = nextStageType;
+        CurrentStageType = nextStage.StageType;
         CurrentStageState = StageState.InProgress;
         UpdatedAtUtc = utcNow;
     }
@@ -117,5 +234,39 @@ public class Project : Entity, IAggregateRoot
         _mentorAssignments.Add(assignment);
         UpdatedAtUtc = utcNow;
         return assignment;
+    }
+
+    private string GenerateDisplayName(StageType stageType)
+    {
+        return StageBaseNames.TryGetValue(stageType, out var baseName) ? baseName : stageType.ToString();
+    }
+
+    private void RegenerateDisplayNames()
+    {
+        var orderedStages = _stages.OrderBy(s => s.Position).ToList();
+
+        var typeGroups = orderedStages
+            .GroupBy(s => s.StageType)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        foreach (var (stageType, stages) in typeGroups)
+        {
+            if (!StageBaseNames.TryGetValue(stageType, out var baseName))
+            {
+                continue;
+            }
+
+            if (stages.Count == 1)
+            {
+                stages[0].Rename(baseName);
+            }
+            else
+            {
+                for (var i = 0; i < stages.Count; i++)
+                {
+                    stages[i].Rename($"{baseName} {i + 1}");
+                }
+            }
+        }
     }
 }

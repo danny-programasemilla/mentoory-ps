@@ -5,8 +5,8 @@ namespace Mentoory.Web.Areas.Participant.Models;
 public sealed class DiagnosticFormViewModel
 {
     public Guid FormExternalId { get; set; }
+    public Guid StageFormAssignmentExternalId { get; set; }
     public string FormName { get; set; } = null!;
-    public string EvaluationStage { get; set; } = null!;
     public List<QuestionViewModel> Questions { get; set; } = new();
 }
 
@@ -39,9 +39,9 @@ public sealed class SubmitDiagnosticViewModel
 {
     public Guid FormExternalId { get; set; }
 
-    [Display(Name = "Etapa de Evaluación")]
-    [Required(ErrorMessage = "La etapa de evaluación es requerida.")]
-    public int EvaluationStage { get; set; }
+    [Display(Name = "Asignación de Formulario")]
+    [Required(ErrorMessage = "La asignación de formulario es requerida.")]
+    public Guid StageFormAssignmentExternalId { get; set; }
 
     public List<ResponseItemViewModel> Responses { get; set; } = new();
 }
@@ -52,4 +52,19 @@ public sealed class ResponseItemViewModel
     public string? TextValue { get; set; }
     public decimal? NumericValue { get; set; }
     public List<long>? SelectedOptionIds { get; set; }
+}
+
+public sealed class DiagnosticLandingViewModel
+{
+    public List<DiagnosticStageFormViewModel> Assignments { get; set; } = new();
+}
+
+public sealed class DiagnosticStageFormViewModel
+{
+    public Guid AssignmentExternalId { get; set; }
+    public long ProjectStageId { get; set; }
+    public string FormName { get; set; } = null!;
+    public int QuestionCount { get; set; }
+    public bool IsCompleted { get; set; }
+    public DateTime? CompletedAtUtc { get; set; }
 }

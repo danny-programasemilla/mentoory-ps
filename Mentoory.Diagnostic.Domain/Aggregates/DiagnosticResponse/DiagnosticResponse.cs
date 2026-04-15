@@ -1,4 +1,3 @@
-using Mentoory.Diagnostic.Domain.Enums;
 using Mentoory.Shared.Domain.SeedWork;
 
 namespace Mentoory.Diagnostic.Domain.Aggregates.DiagnosticResponse;
@@ -16,7 +15,7 @@ public class DiagnosticResponse : Entity, IAggregateRoot
     public long ProjectId { get; private set; }
     public long IncubatorId { get; private set; }
     public long EntrepreneurUserId { get; private set; }
-    public EvaluationStage EvaluationStage { get; private set; }
+    public long StageFormAssignmentId { get; private set; }
     public bool IsCompleted { get; private set; }
     public DateTime? CompletedAtUtc { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
@@ -28,7 +27,7 @@ public class DiagnosticResponse : Entity, IAggregateRoot
         long projectId,
         long incubatorId,
         long entrepreneurUserId,
-        EvaluationStage evaluationStage,
+        long stageFormAssignmentId,
         DateTime utcNow)
     {
         return new DiagnosticResponse
@@ -38,7 +37,7 @@ public class DiagnosticResponse : Entity, IAggregateRoot
             ProjectId = projectId,
             IncubatorId = incubatorId,
             EntrepreneurUserId = entrepreneurUserId,
-            EvaluationStage = evaluationStage,
+            StageFormAssignmentId = stageFormAssignmentId,
             IsCompleted = false,
             CreatedAtUtc = utcNow,
         };
