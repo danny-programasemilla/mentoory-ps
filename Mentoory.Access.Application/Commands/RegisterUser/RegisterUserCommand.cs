@@ -1,3 +1,4 @@
+using Mentoory.Shared.Application.Audit;
 using Mentoory.Shared.Application.MediatR;
 
 namespace Mentoory.Access.Application.Commands.RegisterUser;
@@ -11,6 +12,7 @@ namespace Mentoory.Access.Application.Commands.RegisterUser;
 /// <param name="FirstName">The user's first name.</param>
 /// <param name="LastName">The user's last name.</param>
 /// <param name="Password">The plaintext password to hash and store.</param>
+[Audited(AuditEventTypes.UserRegistered, EntityType = "User")]
 public sealed record RegisterUserCommand(
     string Email,
     string Country,

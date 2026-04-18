@@ -11,6 +11,11 @@ CREATE TABLE [audit].[AuditLog]
     [Details] NVARCHAR(MAX) NULL,
     [IpAddress] NVARCHAR(45) NULL,
     [OccurredAtUtc] DATETIME2 NOT NULL,
+    [CorrelationId] UNIQUEIDENTIFIER NULL,
+    [Outcome] NVARCHAR(20) NOT NULL CONSTRAINT [DF_AuditLog_Outcome] DEFAULT ('Success'),
+    [ExceptionType] NVARCHAR(200) NULL,
+    [UserEmail] NVARCHAR(256) NULL,
+    [RoleContext] NVARCHAR(50) NULL,
     CONSTRAINT [PK_audit_AuditLog] PRIMARY KEY CLUSTERED ([Id] ASC)
 )
 GO
@@ -25,4 +30,9 @@ GO
 
 CREATE NONCLUSTERED INDEX [IX_AuditLog_EntityType_EntityId]
     ON [audit].[AuditLog] ([EntityType], [EntityId])
+GO
+
+CREATE NONCLUSTERED INDEX [IX_AuditLog_CorrelationId]
+    ON [audit].[AuditLog] ([CorrelationId], [OccurredAtUtc] DESC)
+    WHERE [CorrelationId] IS NOT NULL
 GO

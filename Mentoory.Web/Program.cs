@@ -17,9 +17,12 @@ using Mentoory.Shared.Application.TimeProvider;
 using Mentoory.Shared.Infrastructure.Audit;
 using Mentoory.Shared.Infrastructure.Behaviors;
 using Mentoory.Shared.Infrastructure.Persistence;
+using Mentoory.Shared.Infrastructure.Persistence.Audit;
 using Mentoory.Shared.Infrastructure.Services;
+using Microsoft.EntityFrameworkCore;
 using Mentoory.Web.Infrastructure.Authentication;
 using Mentoory.Web.Infrastructure.Authorization;
+using Mentoory.Web.Infrastructure.Correlation;
 using Mentoory.Web.Infrastructure.Menu;
 using Mentoory.Web.Infrastructure.Persistence;
 using Mentoory.Web.Services;
@@ -37,8 +40,12 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly());
 
     cfg.AddOpenBehavior(typeof(ValidatorBehavior<,>));
+    cfg.AddOpenBehavior(typeof(AuditingBehavior<,>));
     cfg.AddOpenBehavior(typeof(TransactionBehavior<,>));
 });
+
+builder.Services.Configure<AuditOptions>(builder.Configuration.GetSection(AuditOptions.SectionName));
+builder.Services.AddScoped<ICorrelationContext, WebCorrelationContext>();
 
 builder.Services.AddScoped<IDbContextFactory, DbContextFactory>();
 
@@ -115,6 +122,12 @@ builder.Services.AddAntiforgery(options =>
 builder.Services.AddScoped<ITenantContext, TenantContextService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
 
+var auditReadConnectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+builder.Services.AddDbContext<AuditReadDbContext>(opts => opts.UseSqlServer(auditReadConnectionString));
+builder.Services.AddScoped<Mentoory.Shared.Application.Queries.Audit.IAuditLogReadRepository,
+    Mentoory.Shared.Infrastructure.Persistence.Audit.AuditLogReadRepository>();
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IMenuService, MenuService>();
 
@@ -136,6 +149,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseCorrelation();
 app.UseHttpsRedirection();
 app.UseRouting();
 

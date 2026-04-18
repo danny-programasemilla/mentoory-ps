@@ -15,6 +15,7 @@ public static class MenuConfiguration
             new("Incubadoras", "/Platform/Incubators", "ti ti-building"),
             new("Usuarios", "/Platform/Users", "ti ti-users"),
             new("Plantillas", "/Platform/Templates/Diagnostics", "ti ti-file-text"),
+            new("Registro de auditoría", "/Administration/AuditLog", "ti ti-history"),
         }),
 
         new MenuGroup("Administración", "ti ti-users-group", new[] { "IncubatorAdmin", "GlobalAdmin" }, new MenuItem[]

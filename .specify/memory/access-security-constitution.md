@@ -2,24 +2,19 @@
   ============================================================
   SYNC IMPACT REPORT
   ============================================================
-  Version: 1.0.0 (initial ratification)
+  Version: 1.1.0 (minor — additive section on audit obligations)
 
   Added sections:
-    - 1. Executive Summary
-    - 2. Confirmed Model vs Inferred Model
-    - 3. Access & Security Constitution Rules
-    - 4. Domain Scope Model
-    - 5. Role Catalog (with Glossary)
-    - 6. Sustainable Permission Matrix
-    - 7. Security Design Principles
-    - 8. Threat and Failure Analysis
-    - 9. Enforcement Model Recommendations
-    - 10. Secure Feature Design Workflow
-    - 11. Testing and Verification Requirements
-    - 12. Open Questions / Decisions Needed
-    - Appendices (A, B, C)
+    - Audit Trail Obligations (between § 12 and Appendix A)
 
-  Removed sections: (none — first version)
+  Modified sections: (none)
+  Removed sections: (none)
+
+  Rationale: Feature 016-audit-pipeline introduces the
+  AuditingBehavior + [Audited] attribute + architecture-test
+  enforcement. The constitution now names the canonical
+  sensitive-command pattern and points to the test that
+  enforces it.
 
   Follow-up TODOs:
     - Resolve open questions for Mentor, Entrepreneur, Sponsor roles
@@ -30,7 +25,7 @@
 
 # Mentoory Access & Security Constitution
 
-**Version**: 1.0.0 | **Ratified**: 2026-04-08 | **Last Amended**: 2026-04-08  
+**Version**: 1.1.0 | **Ratified**: 2026-04-08 | **Last Amended**: 2026-04-18  
 **Status**: Draft — Pending Stakeholder Ratification  
 **Linked from**: [constitution.md](constitution.md)
 
@@ -1018,6 +1013,58 @@ The following items must be resolved by stakeholders before implementing feature
 - **[OPEN]** Should exports be limited to the active incubator/project context, or can GlobalAdmin export cross-incubator data?
 - **[OPEN]** Are there data fields that must be redacted or anonymized in exports (e.g., entrepreneur personal data)?
 - **[OPEN]** Must export actions be logged as audit events with the full scope of exported data?
+
+## Audit Trail Obligations
+
+### Scope
+
+A **sensitive command** is any MediatR command class whose name matches the pattern:
+
+```
+^(Assign|Approve|Correct|Advance|Login|Register|SetActive).*Command$
+```
+
+This pattern is the canonical definition. The architecture test `Mentoory.Tests.Architecture.AuditCoverageTests` enforces it at build time.
+
+Current categories and their intent:
+
+- `Assign*` — granting access or responsibility (roles, mentors, ...).
+- `Approve*` — endorsing an artifact for progression (plans, advancements, ...).
+- `Correct*` — altering a recorded value after the fact.
+- `Advance*` — transitioning a workflow forward (stages, phases).
+- `Login*` — authentication attempts.
+- `Register*` — user / entity onboarding.
+- `SetActive*` — selecting operational context (tenants, projects, roles).
+
+### Obligation
+
+Every sensitive command MUST be decorated with `[Audited]` (`Mentoory.Shared.Application.Audit.AuditedAttribute`). The architecture test fails CI if the obligation is violated.
+
+- **Default mode** (`AuditMode.Automatic`): the `AuditingBehavior` captures a uniform payload (user, tenant, role, correlation, outcome, redacted command payload).
+- **Escape hatch** (`AuditMode.Manual`): used when the entry needs domain-specific detail (e.g., before/after text from an aggregate). The handler calls `IAuditService.LogAsync` directly and is responsible for its own audit entry.
+
+### Extension procedure
+
+When a new sensitive command category enters the codebase (e.g., `Delete*`, `Revoke*`, `Reset*`):
+
+1. Extend the regex in `Mentoory.Tests.Architecture.AuditCoverageTests` AND this section's scope list, in the same pull request.
+2. Add the new event-type constant to `Mentoory.Shared.Application.Audit.AuditEventTypes`.
+3. Apply `[Audited]` to the new command.
+4. Update this document's version footer per its SemVer policy.
+
+Extending the regex WITHOUT updating this section (or vice versa) constitutes a constitution violation and MUST be rejected in code review.
+
+### Non-obligations
+
+- Query handlers are NOT audited in v1.
+- `ValidationException`s (short-circuited by `ValidatorBehavior`) are NOT audited — they represent input noise, not security events.
+- Audit failures MUST NOT fail the wrapped business command (best-effort semantics preserved from the pre-016 `AuditService`).
+
+### Audience
+
+All contributors writing new commands. Reviewers enforce this at code-review time; CI enforces at build time; the constitution is the canonical reference.
+
+---
 
 ## Appendix A: Permission Matrix (Compact)
 

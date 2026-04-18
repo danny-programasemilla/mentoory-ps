@@ -1,3 +1,4 @@
+using FluentAssertions;
 using MediatR;
 using Mentoory.Access.Application.Commands.LoginUser;
 using Mentoory.Access.Application.Commands.RegisterUser;
@@ -6,6 +7,8 @@ using Mentoory.Access.Domain.Enums;
 using Mentoory.Access.Infrastructure.Persistence;
 using Mentoory.Shared.Application;
 using Mentoory.Shared.Application.Interfaces;
+using Mentoory.Shared.Application.Queries.Audit;
+using Mentoory.Shared.Infrastructure.Persistence.Audit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -103,6 +106,29 @@ public abstract class IntegrationTestBase : IAsyncLifetime
 
         var loginResult = await SendAsync(new LoginUserCommand(email, password, "127.0.0.1", "TestAgent"));
         return (loginResult, userId);
+    }
+
+    /// <summary>
+    /// Returns the most-recent <c>[audit].[AuditLog]</c> row matching the given event type
+    /// (and optionally user email) and asserts it exists. Use this to confirm an audited
+    /// command has been captured by the pipeline.
+    /// </summary>
+    protected async Task<AuditLogReadEntity> AssertAuditLoggedAsync(
+        string expectedEventType,
+        string? userEmail = null)
+    {
+        using var scope = CreateScope();
+        var ctx = scope.ServiceProvider.GetRequiredService<AuditReadDbContext>();
+
+        var query = ctx.AuditLogs.AsNoTracking().Where(r => r.EventType == expectedEventType);
+        if (userEmail is not null)
+        {
+            query = query.Where(r => r.UserEmail == userEmail);
+        }
+
+        var row = await query.OrderByDescending(r => r.OccurredAtUtc).FirstOrDefaultAsync();
+        row.Should().NotBeNull($"expected an audit row with EventType '{expectedEventType}'");
+        return row!;
     }
 
     private async Task SeedSystemConfigurationAsync()
