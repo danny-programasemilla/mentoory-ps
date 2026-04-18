@@ -71,6 +71,8 @@ Today: module is an empty scaffold. No scheduling algorithm, no sessions, no ass
 
 Splitting reduces coordination risk since assignments don't block scheduling.
 
+**Cross-referencing convention:** when Spec A (Scheduling+Sessions) and Spec B (Assignments) are created via `/speckit-specify`, each must list the other in the dependency table of its `brainstorm/00-overview.md` row + an explicit "Related specs" section in its own spec.md, so future planning/implementation agents generate consistent cross-links between the two.
+
 ## Open Design Questions (scheduling engine)
 
 1. **Algorithm type:** rule-based distribution (round-robin across weeks) vs constraint solver (avoid mentor conflicts, respect time-of-day). Given SC-004 (<5s response), rule-based is pragmatic for the first spec.

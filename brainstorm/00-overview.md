@@ -1,6 +1,6 @@
 # Brainstorm Overview
 
-Last updated: 2026-04-18
+Last updated: 2026-04-18 (revised after PR #10 code review)
 
 ## Sessions
 
@@ -30,19 +30,17 @@ Last updated: 2026-04-18
 - Filter panel animation: CSS transitions vs Bootstrap collapse (from #05)
 - URL param namespacing strategy to avoid conflicts with existing query params (from #05)
 - Filter panel layout on tables with 7+ filterable columns (from #05)
-- Audit events: MediatR pipeline behavior via `[Audited]` attribute vs explicit `IAuditService` calls (from #06)
-- Outbox pattern library choice — hand-rolled vs established library (from #06)
-- Authorization rigor approach — `[RequirePermission]` attribute vs pipeline behavior (from #06)
-- `ITenantContext` should also carry `CurrentProjectId`? (from #06)
+- Audit events mechanism: `[Audited]` attribute pipeline behavior vs explicit `IAuditService` calls (from #06; v1 payload is decided — see #10)
+- Authorization rigor mechanism: `[RequirePermission]` attribute vs pipeline behavior (from #06; layering intent is decided — additive to `[Authorize]`)
+- `ITenantContext` should also carry `CurrentProjectId` + `IsGlobalAdminScope`? (from #06)
 - Subscription FormTemplate tier filtering at query vs clone handler (from #06)
 - Sponsor dashboards — which views exactly? (from #06)
 - Scheduling engine (FR-028) — rule-based vs constraint solver (from #06)
 - Answer-correction regenerates plan vs "stale plan" badge UX (from #06)
-- Phase A hardening items bundled vs per-FR specs (from #06)
+- Phase A-α bundling: one PR for R-SEC-1/2/3 + FR-053/056 vs per-FR specs (from #06)
 - Knowledge clone depth (deep vs reference) (from #07)
 - Knowledge partial sync semantics at module/topic/subject/resource levels (from #07)
 - Resource file storage approach — URL only vs blob (from #07)
-- Question `TopicId` binding at clone time — template topic vs cloned topic (from #07)
 - SWOT/ODSR summary algorithm per topic (from #08)
 - Mentoring plan snapshot scope — does it copy topic priority ranges too? (from #08)
 - Mentor/entrepreneur concurrent-edit policy (from #08)
@@ -53,12 +51,21 @@ Last updated: 2026-04-18
 - Session cancellation propagation to notification outbox (from #09)
 - Subscription feature schema: typed vs bag-of-strings (from #10)
 - Subscription override value semantics for booleans + "unlimited" quantitative (from #10)
-- Notification outbox transactional approach — shared DbContext vs separate (from #10)
-- Notification scheduled-dispatch mechanism — hosted service vs library (from #10)
+- Notification scheduled-dispatch mechanism — hosted service vs library (from #10; v1 recommendation: hosted service)
 - Notification template engine — inline vs Razor vs Scriban (from #10)
-- Audit pipeline behavior — attribute-based vs explicit calls (from #10)
-- Audit before/after state capture strategy (from #10)
+- Audit pipeline mechanism — attribute-based vs explicit calls (from #10; v1 payload scope is decided)
 - Cross-cutting ship order: Subscription first vs Audit first (from #10)
+
+## Decisions Ratified During Review
+
+Decisions that were open during the initial roadmap (#06) and resolved via the PR #10 code-review loop. See the individual seed docs for full rationale.
+
+- **Outbox pattern** (#10): `SaveChangesInterceptor` per module DbContext, same-transaction outbox writes. Dual-write rejected.
+- **Audit v1 scope** (#10): command type + payload (redacted) + user/tenant/project/role context + correlation + outcome. Entity diffs out of scope.
+- **Topic identity in Question** (#07): project-form questions reference cloned topics; template questions reference template topics.
+- **Authorization layering** (#06): `CheckPermission` is ADDITIVE to `[Authorize]` role guards, not a replacement.
+- **Tenant query filters** (#06): GlobalAdmin-aware filters with bypass, NOT blanket `OnModelCreating` filters.
+- **Phase placement of tests and `AsNoTracking` audit** (#06): tests ship with each feature; `AsNoTracking` compliance is a Phase A gate.
 
 ## Parked Ideas
 

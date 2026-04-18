@@ -79,13 +79,17 @@ Subscription, Notification, and Audit share characteristics that make them suita
 - Scheduled notifications: Quartz.NET-lite or hand-rolled cron (constitution prefers minimalism — prefer hand-rolled hosted service for the first spec)
 - Preferences UI: stub with defaults; per-role + per-context preferences
 
+### Decided v1 Patterns
+
+- **Outbox — `SaveChangesInterceptor` per module DbContext:** each module's DbContext registers a `SaveChangesInterceptor` that detects outbox-worthy events (domain events emitted by aggregates) and writes outbox entries **within the same transaction** as the triggering handler's `SaveChanges`. Outbox table lives in a shared `[notification]` schema. A single hosted background service polls and dispatches. **Dual-write across independent DbContexts is explicitly rejected** — it is not atomic and cannot be made durable without distributed transactions, which the stack does not support. Shared-DbContext approaches are also rejected because they break module boundaries.
+
 ### Open Questions
-1. Outbox pattern: share transaction with triggering handler (shared DbContext), or separate DB write with eventual consistency? Shared is simplest, shared is vulnerable if DbContexts are per-module.
-2. Scheduled dispatch: hosted background service polling the outbox on interval, vs an explicit scheduler library?
-3. Dedup key strategy: `(eventType, entityId, recipientId)` — sufficient? Does not cover cases like "weekly agenda on Monday" that fires at cadence, not per-event.
-4. Preferences granularity: per-role-per-context (spec says both) creates a combinatorial space. Store defaults + overrides?
-5. Template rendering: inline strings, Razor views, or a template engine (Scriban, etc.)?
-6. Email delivery failure semantics: retries + backoff + dead-letter?
+
+1. Scheduled dispatch: hosted background service polling the outbox on interval, vs an explicit scheduler library? (v1 recommendation: hand-rolled hosted service polling at a configurable interval; library adoption is a later optimization.)
+2. Dedup key strategy: `(eventType, entityId, recipientId)` — sufficient? Does not cover cases like "weekly agenda on Monday" that fires at cadence, not per-event. Need a second key shape for cadence-based notifications.
+3. Preferences granularity: per-role-per-context (spec says both) creates a combinatorial space. Store defaults + overrides?
+4. Template rendering: inline strings, Razor views, or a template engine (Scriban, etc.)?
+5. Email delivery failure semantics: retries + backoff + dead-letter?
 
 ### Integration Seams
 - Subscribes to domain events from all modules (MediatR notifications)
@@ -127,12 +131,17 @@ Subscription, Notification, and Audit share characteristics that make them suita
 - Architecture test: assert every write handler whose command matches a set of security-sensitive prefixes has `[Audited]`
 - Audit log view in Platform Admin area (read-only table)
 
+### Decided v1 Scope
+
+- **Audit payload for v1:** `AuditingBehavior` captures (a) command type name, (b) command payload serialized with sensitive-field redaction (`Password`, `PasswordHash`, `NationalId`, `VerificationToken`, etc.), (c) active user ID + email, (d) active tenant + project + role context, (e) correlation ID, (f) UTC timestamp from `ITimeProvider`, (g) command outcome (success or failure + exception type if failure).
+- **Entity-level before/after diffs are OUT OF SCOPE for v1.** Fetching the pre-state inside a pipeline behavior requires DbContext coordination that is out of proportion to v1 value. Aggregate state changes remain traceable via domain events if needed.
+- **Audit log is NOT an event store** — it is a denormalized append-only log for read-back. Keep writes simple.
+
 ### Open Questions
-1. **Automatic vs explicit:** pipeline behavior is invisible and easy to forget to audit (developer wonders "where does the audit come from?"). Explicit `IAuditService.LogAsync` inside each handler is verbose but clear. Trade-off.
-2. **Before/after state capture:** requires command handler to fetch the entity first. Pipeline behavior can't easily do this without hooking into the DbContext. Likely captures only command input + metadata; changes in the aggregate are logged as domain events separately.
-3. **Audit log as event store?** No — audit is a denormalized log, not the source of truth. Keep it simple.
-4. **Audit retention:** does the spec imply indefinite retention? Spec says "traceable within 24 hours" (SC-010) — implies available, not necessarily forever. Leave TTL as a future concern.
-5. **Cross-cutting with Notification:** should audit log send a notification to platform admin on sensitive events? Likely no — audit is for read-back, not alerting.
+
+1. **Mechanism — automatic vs explicit:** pipeline behavior via `[Audited]` attribute is invisible and easy to forget; explicit `IAuditService.LogAsync` in each handler is verbose. Trade-off still to resolve; both are compatible with the v1 payload scope.
+2. **Audit retention:** SC-010 says "traceable within 24 hours" — implies available, not necessarily forever. Leave TTL as a future concern.
+3. **Cross-cutting with Notification:** should audit log send a notification to platform admin on sensitive events? Likely no — audit is for read-back, not alerting.
 
 ---
 

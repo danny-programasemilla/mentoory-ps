@@ -79,16 +79,19 @@ Today the module is an empty scaffold: three `.csproj` projects with no code, an
 - Test coverage expectation: unit tests for domain logic + handler tests + ≥1 integration test
 - UI in Spanish; code + docs in English
 
+## Decided During Roadmap Review
+
+- **Topic identity in Question:** Diagnostic questions on a `ProjectForm` reference the **cloned Topic** (per-project); questions on a `FormTemplate` reference the **template Topic**. This means `Question.TopicId` resolution depends on whether the Question lives under a template or a project clone, and the clone operation must rewrite `TopicId` pointers to the newly-cloned topics.
+
 ## Open Design Questions (for the focused brainstorm)
 
 1. **Clone depth:** When cloning a knowledge structure template, do we copy the full tree (Modules → Topics → Subjects → Resources) or reference-and-override? Diagnostic chose deep copy with `SourceTemplateId` for partial sync. Consistency argues for deep copy here too.
 2. **Partial sync semantics:** For Knowledge, what does "partial sync" mean? Add new modules/topics/subjects/resources but don't touch local modifications? At which hierarchy level does the sync operate?
-3. **Topic identity in analytics:** When a topic is cloned, the clone has a new ID. Does the `Question.TopicId` point to the cloned topic or the template topic? Cross-project aggregation implies template topic; per-project mentoring plan implies cloned topic. **Likely answer:** Diagnostic questions in project forms reference the cloned Topic (per-project); templates reference template topics.
-4. **Priority ranges at clone time:** Do cloned topics inherit the template's ranges, or should the coordinator be forced to review/adjust per project? Spec implies configurable per topic; keep them editable post-clone.
-5. **Resource URL vs blob:** For the first spec, are all resources URLs only, or do we allow uploaded files? Uploaded files imply blob storage decisions.
-6. **`FormTemplate.DefaultKnowledgeStructureId` cardinality:** one form template binds to one knowledge structure template (1:1), or can it bind to many? Spec is silent; simplest is 1:1.
-7. **Topic reordering within a module:** needed? Likely yes, for UX.
-8. **Module "learning route" metaphor:** spec calls modules "learning routes" — does this imply sequencing between modules or are they unordered buckets?
+3. **Priority ranges at clone time:** Do cloned topics inherit the template's ranges, or should the coordinator be forced to review/adjust per project? Spec implies configurable per topic; keep them editable post-clone.
+4. **Resource URL vs blob:** For the first spec, are all resources URLs only, or do we allow uploaded files? Uploaded files imply blob storage decisions.
+5. **`FormTemplate.DefaultKnowledgeStructureId` cardinality:** one form template binds to one knowledge structure template (1:1), or can it bind to many? Spec is silent; simplest is 1:1. **Note:** the FK addition to `diagnostic.FormTemplates` lands in the **same SSDT PR** as the Knowledge schema tables — cross-schema changes are atomic per SSDT convention.
+6. **Topic reordering within a module:** needed? Likely yes, for UX.
+7. **Module "learning route" metaphor:** spec calls modules "learning routes" — does this imply sequencing between modules or are they unordered buckets?
 
 ## Success Criteria (from spec 001, scoped to Knowledge)
 
@@ -109,4 +112,3 @@ Today the module is an empty scaffold: three `.csproj` projects with no code, an
 - Clone depth decision (deep vs reference)
 - Partial sync semantics at module/topic/subject/resource levels
 - Resource file storage approach (URL only vs blob)
-- Topic identity binding in Question — clone-time resolution strategy
