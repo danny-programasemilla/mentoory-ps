@@ -282,6 +282,36 @@ ELSE
     SELECT @Project4Id = [Id] FROM [tenant].[Projects] WHERE [Name] = N'Proyecto Comunitario' AND [IncubatorId] = @Incubator2Id;
 
 
+-- ------------------------------------------------------------------------------------------
+-- Project Stages: the domain's Project.Create factory inserts 7 ProjectStage rows per
+-- project (Registration in progress, all others not started). The raw SQL inserts above
+-- bypass the factory, so we materialize the same 7 rows here. Idempotent via the unique
+-- (ProjectId, StageType) index plus a NOT EXISTS guard.
+-- ------------------------------------------------------------------------------------------
+;WITH SeedProjects AS (
+    SELECT @Project1Id AS ProjectId
+    UNION ALL SELECT @Project2Id
+    UNION ALL SELECT @Project3Id
+    UNION ALL SELECT @Project4Id
+), SeedStages AS (
+    SELECT
+        p.ProjectId,
+        s.StageType,
+        CASE WHEN s.StageType = 0 THEN 1 ELSE 0 END AS [State],
+        CASE WHEN s.StageType = 0 THEN @Now ELSE NULL END AS StartedAtUtc
+    FROM SeedProjects p
+    CROSS JOIN (VALUES (0),(1),(2),(3),(4),(5),(6)) s(StageType)
+    WHERE p.ProjectId IS NOT NULL
+)
+INSERT INTO [tenant].[ProjectStages] ([ProjectId], [StageType], [State], [StartedAtUtc])
+SELECT s.ProjectId, s.StageType, s.[State], s.StartedAtUtc
+FROM SeedStages s
+WHERE NOT EXISTS (
+    SELECT 1 FROM [tenant].[ProjectStages] ps
+    WHERE ps.ProjectId = s.ProjectId AND ps.StageType = s.StageType
+);
+
+
 -- ==========================================================================================
 -- SECTION 4: Role Assignments
 -- ==========================================================================================

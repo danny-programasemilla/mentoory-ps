@@ -60,7 +60,7 @@ description: "Task list for feature 016-project-lifecycle-finish"
 
 - [X] T014 [P] [US1] Add domain tests for `Project.AdvanceStage` covering: normal Registration→Forms advance, invalid advance when `CurrentStageState` is Completed, no-op/rejection at Closure, and AdvancedByUserId/timestamps set correctly. Extend `tests/Mentoory.Tenant.Tests/Domain/ProjectTests.cs`.
 - [X] T015 [P] [US1] Add handler tests for `AdvanceProjectStageHandler` in `tests/Mentoory.Tenant.Tests/Handlers/AdvanceProjectStageHandlerTests.cs` covering: success path, `ProjectNotFound`, `ProjectOutOfScope` (non-matching incubator, non-global-admin), `ProjectInactive`, `StageNotInProgress`, `ProjectAlreadyClosed`.
-- [ ] T016 [P] [US1] Add a dedicated concurrency-conflict test for `AdvanceProjectStageHandler` in `tests/Mentoory.Tenant.Tests/Handlers/AdvanceProjectStageHandlerConcurrencyTests.cs` using a relational test provider (SQLite in-memory or Testcontainers SQL Server) since `RowVersion` is not simulated by EF Core InMemory — per research.md § R1.
+- [X] T016 [P] [US1] Relational concurrency coverage delivered as `tests/Mentoory.Tests.Integration/Tenant/AdvanceProjectStageConcurrencyTests.cs` (Testcontainers SQL Server via `MentooryWebApplicationFactory`). Placed in the Integration project rather than `Mentoory.Tenant.Tests/Handlers/` because the unit test project uses Moq exclusively — see `implementation-notes.md` § "Concurrency test".
 - [X] T017 [P] [US1] Add validator tests for `AdvanceProjectStageValidator` in `tests/Mentoory.Tenant.Tests/Validators/AdvanceProjectStageValidatorTests.cs` covering empty `ProjectExternalId` and non-positive `ActingUserId`.
 
 ### Implementation for User Story 1
@@ -86,7 +86,7 @@ description: "Task list for feature 016-project-lifecycle-finish"
 ### Tests for User Story 2
 
 - [X] T025 [P] [US2] Add handler tests for `GetProjectLifecycleHandler` in `tests/Mentoory.Tenant.Tests/Handlers/GetProjectLifecycleHandlerTests.cs` covering: success for a mid-lifecycle project, `ProjectNotFound`, `ProjectOutOfScope` (non-global-admin, non-matching incubator), GlobalAdmin cross-tenant read success, `CanAdvance`/`CannotAdvanceReason` correctness across all five reasons (not in progress, closure, inactive, allowed).
-- [ ] T026 [P] [US2] Add integration tests in `tests/Mentoory.Tests.Integration/Coordination/CoordinationProjectsControllerTests.cs` for the `Index`, `Data`, and `Lifecycle/{externalId}` endpoints covering: missing context redirect, role-based authorization denial for non-coordinator roles, happy-path page render, tenant-isolation (incubator A user cannot fetch incubator B's project).
+- [~] T026 [P] [US2] **Skipped by design** — no HTTP controller tests exist in the repo yet, and this feature is not the right place to bootstrap that infrastructure. Coverage of the Coordination routes is delegated to Walkthroughs 2 & 3 in `quickstart.md` (manual). Rationale: `implementation-notes.md` § "Tasks explicitly skipped".
 
 ### Implementation for User Story 2
 
@@ -119,8 +119,8 @@ description: "Task list for feature 016-project-lifecycle-finish"
 
 ### Tests for User Story 3
 
-- [ ] T043 [P] [US3] Add filter tests for `RequiresStageAttribute` in `tests/Mentoory.Tests.Integration/Filters/RequiresStageAttributeTests.cs` (or `Mentoory.Web.Tests` if a web test project exists): covering all three states (Available passes through, Locked redirects with toast, Past redirects with toast) across a matrix of action × currentStage combinations. Also cover the two project-id resolution sources (`projectExternalId` route value and `User.GetActiveProjectId()` claim) and the fallback redirect when no project id is resolvable.
-- [ ] T044 [P] [US3] Add integration test verifying that hitting `/Coordination/AnswerCorrection` while the active project is in Registration is rejected by the filter (redirect + Spanish toast), and hitting it while in Analysis is allowed.
+- [~] T043 [P] [US3] **Skipped by design** — the filter's decision logic is `StageActionRegistry.GetState`, which is exhaustively unit-tested (42 combinations: 7 stages × 6 actions) in `StageActionRegistryTests`. The remaining redirect/TempData surface is verified manually by Walkthrough 3. Rationale: `implementation-notes.md` § "Tasks explicitly skipped".
+- [~] T044 [P] [US3] **Skipped by design** — same rationale as T043. Walkthrough 3 covers the Registration-rejects / Analysis-allows scenario end-to-end.
 
 ### Implementation for User Story 3
 

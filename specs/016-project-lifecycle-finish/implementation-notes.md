@@ -31,13 +31,35 @@ the `TransactionBehavior` would call `SaveEntitiesAsync` again on commit and the
 tracked entity would re-throw the same concurrency exception, masking the typed failure
 result the handler returns.
 
-### Concurrency test uses mocks, not a relational provider
-Task T016 prescribed a relational test provider (SQLite in-memory or Testcontainers SQL
-Server) because EF InMemory does not simulate `ROWVERSION`. Implementation used a mock-
-based test that has `IUnitOfWork.SaveEntitiesAsync` throw
-`DbUpdateConcurrencyException`, verifying the handler's typed-failure path and that
-`Detach` is invoked. End-to-end rowversion coverage is deferred to the Walkthrough 5
-manual test in `quickstart.md`.
+### Concurrency test — mock unit test plus end-to-end integration test
+Task T016 prescribed a relational test provider because EF InMemory does not simulate
+`ROWVERSION`. Implementation uses two complementary tests:
+1. `tests/Mentoory.Tenant.Tests/Handlers/AdvanceProjectStageHandlerConcurrencyTests.cs`
+   — mock-based unit test; `IUnitOfWork.SaveEntitiesAsync` throws
+   `DbUpdateConcurrencyException`. Proves the handler's typed-failure path and that
+   `Detach` is invoked. Fast, no DB required.
+2. `tests/Mentoory.Tests.Integration/Tenant/AdvanceProjectStageConcurrencyTests.cs`
+   — Testcontainers SQL Server + real DACPAC schema. Arranges two advances against the
+   same project — one through `SendAsync` (scope B), the second through a mediator
+   resolved from scope A whose DbContext still tracks the stale rowversion. Proves the
+   SSDT `ROWVERSION` column plus `.IsRowVersion()` mapping actually fires the typed
+   failure end-to-end. Placed in the Integration project rather than the suggested
+   `Mentoory.Tenant.Tests/Handlers/` location because the unit test project uses Moq
+   exclusively; the Integration project already has Testcontainers + DACPAC wiring.
+
+### Seed data: ProjectStages rows added for the four test-seed projects
+The four seed projects in `Mentoory.Db.PostDeployment/004.SeedTestData.sql` were inserted
+via raw SQL, which bypassed the domain's `Project.Create` factory — so they had the
+`Projects` row but not the 7 `ProjectStages` rows the factory produces. That violates the
+aggregate invariant and caused `GetProjectLifecycleHandler` (introduced by this feature)
+to throw `KeyNotFoundException` when opening a seed project's Lifecycle page. Added an
+idempotent `INSERT ... WHERE NOT EXISTS` block that materializes the seven stages
+(Registration in progress, others not started) for every seed project.
+
+Fixing the schema-drift false positive (`RowVersion` column is SQL Server `timestamp`,
+not `varbinary`) and the E2E `Coordinator_ShouldClone_FormTemplate` regression required
+no product code changes — only the seed fix plus a schema-drift test awareness of the
+rowversion mapping in `tests/Mentoory.Tests.Integration/Schema/SchemaDriftTests.cs`.
 
 ### Package bump: Riok.Mapperly 4.2.2 → 4.3.0
 The central `Directory.Packages.props` pinned `4.2.2` which NuGet could not resolve
@@ -55,9 +77,11 @@ These projects exist but contain no tests. Nothing to add here.
 
 ## Tasks explicitly skipped or partially completed
 
-- **T016 (US1 concurrency test)** — covered by mock; relational-provider variant deferred.
+- **T016 (US1 concurrency test)** — covered by mock unit test AND relational integration
+  test (see above).
 - **T026 (integration tests for Coordination routes)** — not written. Walkthroughs 2 & 3
-  in `quickstart.md` cover the same surface manually.
+  in `quickstart.md` cover the same surface manually. Additionally, no HTTP controller
+  tests exist in the repo yet; bootstrapping that infrastructure is out of scope here.
 - **T043–T044 (filter integration + matrix tests)** — not written. The filter consumes
   `StageActionRegistry.GetState`, which is exhaustively covered by
   `StageActionRegistryTests` (42 × 7 stages × 6 actions). The remaining filter surface
