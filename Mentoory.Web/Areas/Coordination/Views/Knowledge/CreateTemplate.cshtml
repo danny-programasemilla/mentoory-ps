@@ -1,0 +1,51 @@
+@using Mentoory.Web.Areas.Coordination.Models.Knowledge
+@model CreateTemplateViewModel
+@{
+    ViewData["Title"] = "Crear Plantilla de Conocimiento";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <form asp-action="CreateTemplate" method="post">
+            @Html.AntiForgeryToken()
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Crear Plantilla de Conocimiento</h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-secondary mb-3">
+                        Una plantilla es un esqueleto reutilizable de módulos, temas, asignaturas y recursos.
+                        Podrá agregar su contenido luego de crearla.
+                    </p>
+
+                    <div asp-validation-summary="All" class="alert alert-danger"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label required"></label>
+                        <input asp-for="Name" class="form-control" placeholder="Ej.: Plantilla base etapa inicial" autofocus />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label"></label>
+                        <textarea asp-for="Description" class="form-control" rows="4"
+                                  placeholder="Descripción opcional del propósito de la plantilla..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="btn-list justify-content-end">
+                        <a asp-action="Templates" class="btn btn-ghost-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="ti ti-check me-1"></i>Crear plantilla
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

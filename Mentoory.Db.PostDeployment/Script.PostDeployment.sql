@@ -27,6 +27,10 @@ PRINT '[004.SeedTestData.sql] Starting';
 :r ./004.SeedTestData.sql
 PRINT '[004.SeedTestData.sql] Finished';
 
+PRINT '[005.SeedKnowledgeData.sql] Starting';
+:r ./005.SeedKnowledgeData.sql
+PRINT '[005.SeedKnowledgeData.sql] Finished';
+
 PRINT '[016.SeedCountries.sql] Starting';
 :r ./016.SeedCountries.sql
 PRINT '[016.SeedCountries.sql] Finished';

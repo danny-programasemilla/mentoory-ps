@@ -30,6 +30,12 @@ public static class MenuConfiguration
             new("Diagnósticos", "/Coordination/Diagnostics", "ti ti-clipboard-check"),
         }),
 
+        new MenuGroup("Conocimiento", "ti ti-book-2", new[] { "ProjectCoordinator", "IncubatorAdmin", "GlobalAdmin" }, new MenuItem[]
+        {
+            new("Plantillas de conocimiento", "/Coordination/Knowledge/Templates", "ti ti-template", new[] { "GlobalAdmin" }),
+            new("Estructuras del proyecto", "/Coordination/Knowledge/Projects", "ti ti-sitemap", new[] { "ProjectCoordinator", "IncubatorAdmin", "GlobalAdmin" }),
+        }),
+
         new MenuGroup("Participante", "ti ti-school", new[] { "Entrepreneur", "Mentor", "ProjectCoordinator", "IncubatorAdmin", "GlobalAdmin" }, new MenuItem[]
         {
             new("Diagnóstico", "/Participant/Diagnostic", "ti ti-chart-bar"),

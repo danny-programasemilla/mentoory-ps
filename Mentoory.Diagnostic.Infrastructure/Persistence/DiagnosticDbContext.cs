@@ -68,6 +68,16 @@ public class DiagnosticDbContext : SharedAbstractDbContext
             entity.Property(e => e.IsActive).IsRequired().HasDefaultValue(true);
             entity.Property(e => e.CreatedAtUtc).IsRequired();
 
+            // Application-facing Guid binding (the cascade handler resolves the long FK on the fly).
+            entity.Property(e => e.DefaultKnowledgeStructureTemplateExternalId);
+
+            // Shadow FK to knowledge.KnowledgeStructureTemplates(Id); the physical FK constraint
+            // FK_FormTemplates_DefaultKnowledgeStructureTemplate is managed in SSDT. EF treats this
+            // as an opaque nullable long — no navigation property is configured on purpose, to avoid
+            // cross-schema eager loading at the DbContext level (cascade handler loads explicitly
+            // via IKnowledgeStructureTemplateRepository.GetByExternalIdAsync).
+            entity.Property<long?>("DefaultKnowledgeStructureTemplateId");
+
             entity.HasMany(e => e.Questions)
                 .WithOne()
                 .HasForeignKey("FormTemplateId")

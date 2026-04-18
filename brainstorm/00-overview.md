@@ -1,6 +1,6 @@
 # Brainstorm Overview
 
-Last updated: 2026-04-18 (revised after PR #10 code review)
+Last updated: 2026-04-18 (revised after Knowledge module focused brainstorm — spec 016)
 
 ## Sessions
 
@@ -12,7 +12,7 @@ Last updated: 2026-04-18 (revised after PR #10 code review)
 | 04 | 2026-04-13 | table-polish | spec-created | 012 |
 | 05 | 2026-04-13 | table-filtering | spec-created | 013 |
 | 06 | 2026-04-18 | platform-roadmap-gap-analysis | active | - |
-| 07 | 2026-04-18 | knowledge-module | parked | - |
+| 07 | 2026-04-18 | knowledge-module | spec-created (revisited 2026-04-18) | 016 |
 | 08 | 2026-04-18 | mentoring-plan | parked | - |
 | 09 | 2026-04-18 | mentoring-execution | parked | - |
 | 10 | 2026-04-18 | cross-cutting-hardening | parked | - |
@@ -38,9 +38,9 @@ Last updated: 2026-04-18 (revised after PR #10 code review)
 - Scheduling engine (FR-028) — rule-based vs constraint solver (from #06)
 - Answer-correction regenerates plan vs "stale plan" badge UX (from #06)
 - Phase A-α bundling: one PR for R-SEC-1/2/3 + FR-053/056 vs per-FR specs (from #06)
-- Knowledge clone depth (deep vs reference) (from #07)
-- Knowledge partial sync semantics at module/topic/subject/resource levels (from #07)
-- Resource file storage approach — URL only vs blob (from #07)
+- Knowledge `TopicPriorityRangesChanged` outbox upgrade when Mentoring Plan consumer lands (from #07 revisit)
+- Knowledge topic score normalization (0–100 vs raw) — verify against `GetTopicScoreAggregationHandler` during `/speckit-plan` (from #07 revisit)
+- Knowledge concurrent-edit semantics on project clones (from #07 revisit)
 - SWOT/ODSR summary algorithm per topic (from #08)
 - Mentoring plan snapshot scope — does it copy topic priority ranges too? (from #08)
 - Mentor/entrepreneur concurrent-edit policy (from #08)
@@ -69,7 +69,6 @@ Decisions that were open during the initial roadmap (#06) and resolved via the P
 
 ## Parked Ideas
 
-- **Knowledge module (US3)** (#07) — full hierarchical learning content domain. Reason: first focused brainstorm scheduled at start of Phase A hot stream.
 - **Mentoring Plan (US4)** (#08) — diagnostic scoring → priority plan. Reason: depends on Knowledge module; brainstorm at start of Phase B hot stream.
 - **Mentoring Execution (US5)** (#09) — scheduling + sessions + assignments. Reason: depends on Mentoring Plan; consider splitting into two specs. Brainstorm at start of Phase C.
 - **Cross-cutting Subscription + Notification + Audit** (#10) — three independent-but-related warm streams for Phases A–B. Reason: queued as AI-driven warm work alongside hot feature streams.

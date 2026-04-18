@@ -15,6 +15,7 @@ public class FormTemplate : Entity, IAggregateRoot
     public string? Description { get; private set; }
     public string? SubscriptionTier { get; private set; }
     public int Version { get; private set; }
+    public Guid? DefaultKnowledgeStructureTemplateExternalId { get; private set; }
     public bool IsActive { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
 
@@ -45,6 +46,17 @@ public class FormTemplate : Entity, IAggregateRoot
         Name = name;
         Description = description;
         SubscriptionTier = subscriptionTier;
+        Version++;
+    }
+
+    /// <summary>
+    /// Binds (or clears) the default knowledge structure template used by the diagnostic
+    /// cascade to resolve topic-id rewrites when cloning this form into a project.
+    /// Pass <c>null</c> to remove an existing binding.
+    /// </summary>
+    public void SetDefaultKnowledgeStructureTemplate(Guid? externalId)
+    {
+        DefaultKnowledgeStructureTemplateExternalId = externalId;
         Version++;
     }
 

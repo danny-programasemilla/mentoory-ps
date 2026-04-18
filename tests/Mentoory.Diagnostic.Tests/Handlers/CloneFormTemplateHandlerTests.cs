@@ -4,6 +4,7 @@ using Mentoory.Diagnostic.Domain.Aggregates.FormTemplate;
 using Mentoory.Diagnostic.Domain.Aggregates.ProjectForm;
 using Mentoory.Diagnostic.Domain.Enums;
 using Mentoory.Diagnostic.Domain.Repositories;
+using Mentoory.Knowledge.Domain.Repositories;
 using Mentoory.Shared.Application;
 using Mentoory.Shared.Application.TimeProvider;
 using Mentoory.Shared.Domain.SeedWork;
@@ -20,6 +21,8 @@ public class CloneFormTemplateHandlerTests
 
     private readonly Mock<IFormTemplateRepository> _formTemplateRepo = new();
     private readonly Mock<IProjectFormRepository> _projectFormRepo = new();
+    private readonly Mock<IKnowledgeStructureTemplateRepository> _ksTemplateRepo = new();
+    private readonly Mock<IKnowledgeStructureRepository> _ksStructureRepo = new();
     private readonly Mock<ITimeProvider> _timeProvider = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
     private readonly CloneFormTemplateHandler _handler;
@@ -29,10 +32,13 @@ public class CloneFormTemplateHandlerTests
         _timeProvider.Setup(t => t.UtcNow).Returns(UtcNow);
         _unitOfWork.Setup(u => u.SaveEntitiesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
         _projectFormRepo.Setup(r => r.UnitOfWork).Returns(_unitOfWork.Object);
+        _ksStructureRepo.Setup(r => r.UnitOfWork).Returns(_unitOfWork.Object);
 
         _handler = new CloneFormTemplateHandler(
             _formTemplateRepo.Object,
             _projectFormRepo.Object,
+            _ksTemplateRepo.Object,
+            _ksStructureRepo.Object,
             _timeProvider.Object,
             Mock.Of<ILogger<CloneFormTemplateHandler>>());
     }

@@ -20,5 +20,6 @@
     <ItemGroup>
         <ProjectReference Include="..\..\Mentoory.Diagnostic.Domain\Mentoory.Diagnostic.Domain.csproj"/>
         <ProjectReference Include="..\..\Mentoory.Diagnostic.Application\Mentoory.Diagnostic.Application.csproj"/>
+        <ProjectReference Include="..\..\Mentoory.Knowledge.Domain\Mentoory.Knowledge.Domain.csproj"/>
     </ItemGroup>
 </Project>

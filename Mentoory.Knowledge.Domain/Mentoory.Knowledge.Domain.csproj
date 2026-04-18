@@ -1,5 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <ItemGroup>
+        <InternalsVisibleTo Include="Mentoory.Knowledge.Tests"/>
+        <InternalsVisibleTo Include="Mentoory.Knowledge.Application"/>
+        <InternalsVisibleTo Include="Mentoory.Knowledge.Infrastructure"/>
+        <InternalsVisibleTo Include="Mentoory.Tests.Integration"/>
+    </ItemGroup>
+    <ItemGroup>
         <PackageReference Include="MediatR.Contracts"/>
     </ItemGroup>
     <ItemGroup>

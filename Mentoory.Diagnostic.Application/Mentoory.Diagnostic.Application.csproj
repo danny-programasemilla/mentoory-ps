@@ -5,6 +5,7 @@
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Mentoory.Diagnostic.Domain\Mentoory.Diagnostic.Domain.csproj"/>
+        <ProjectReference Include="..\Mentoory.Knowledge.Domain\Mentoory.Knowledge.Domain.csproj"/>
         <ProjectReference Include="..\Mentoory.Shared.Application\Mentoory.Shared.Application.csproj"/>
     </ItemGroup>
 </Project>

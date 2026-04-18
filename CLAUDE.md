@@ -85,6 +85,8 @@ Feature artifacts live in `specs/{###-feature-name}/`. See [`.specify/templates/
 - C# / .NET 10.0 + Razor Views + CSS + JavaScript + Tabler v1.4.0 (Bootstrap 5), DataTables 2.3.4, jQuery, Tabler Icons Webfont (012-table-polish)
 - C# / .NET 10.0 + JavaScript (vanilla, ES5-compatible) + DataTables 2.3.4, jQuery, Tabler v1.4.0 (Bootstrap 5), Tabler Icons Webfont (013-table-filtering)
 - N/A (no schema changes) (013-table-filtering)
+- C# / .NET 10.0 (SDK 10.0.0 pre-release) + ASP.NET Core MVC 10.x, MediatR 14.1, FluentValidation 12.1, Riok.Mapperly 4.x, Entity Framework Core 10.x, MailKit/MimeKit (not used by this spec), Tabler v1.4.0 + Bootstrap 5 (UI) (016-knowledge-module-core)
+- SQL Server (SSDT/DACPAC schema management; no EF migrations). New `knowledge` schema; cross-schema FK additions to `diagnostic.FormTemplates` and `diagnostic.Questions` (016-knowledge-module-core)
 
 ## Code Review Standards
 After completing any implementation, review the code for:
@@ -100,6 +102,6 @@ After completing any implementation, review the code for:
 Run /simplify before presenting code to the user.
 
 ## Recent Changes
+- 016-knowledge-module-core: Added C# / .NET 10.0 (SDK 10.0.0 pre-release) + ASP.NET Core MVC 10.x, MediatR 14.1, FluentValidation 12.1, Riok.Mapperly 4.x, Entity Framework Core 10.x, MailKit/MimeKit (not used by this spec), Tabler v1.4.0 + Bootstrap 5 (UI)
 - 013-table-filtering: Added C# / .NET 10.0 + JavaScript (vanilla, ES5-compatible) + DataTables 2.3.4, jQuery, Tabler v1.4.0 (Bootstrap 5), Tabler Icons Webfont
 - 012-table-polish: Added C# / .NET 10.0 + Razor Views + CSS + JavaScript + Tabler v1.4.0 (Bootstrap 5), DataTables 2.3.4, jQuery, Tabler Icons Webfont
-- 011-dashboard-ui-polish: Added C# / .NET 10.0 + Razor Views + CSS + Tabler v1.4.0 (Bootstrap 5), Tabler Icons Webfont, jQuery, DataTables 2.3.4
