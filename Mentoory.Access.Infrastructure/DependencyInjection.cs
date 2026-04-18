@@ -1,4 +1,5 @@
 using Mentoory.Access.Application.Configuration;
+using Mentoory.Access.Application.Users;
 using Mentoory.Access.Domain.Repositories;
 using Mentoory.Access.Domain.Services;
 using Mentoory.Access.Infrastructure.Persistence;
@@ -49,6 +50,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<ICountryRepository, CountryRepository>();
         builder.Services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
         builder.Services.AddScoped<ISystemConfigurationReader, SystemConfigurationReader>();
+        builder.Services.AddScoped<IUserDirectory, UserDirectory>();
 
         return builder;
     }

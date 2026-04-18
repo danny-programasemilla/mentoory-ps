@@ -1,3 +1,4 @@
+@using Mentoory.Access.Application.StageActions
 @model Mentoory.Tenant.Application.Queries.ListProjects.ProjectDto
 
 @{
@@ -27,7 +28,7 @@
                     </div>
                     <div class="datagrid-item">
                         <div class="datagrid-title">Etapa Actual</div>
-                        <div class="datagrid-content">@Model.CurrentStageType</div>
+                        <div class="datagrid-content">@StageTypeDisplay.ToSpanish(Model.CurrentStageType)</div>
                     </div>
                     <div class="datagrid-item">
                         <div class="datagrid-title">Estado de Etapa</div>

@@ -46,6 +46,8 @@ builder.Services.AddSingleton<ITimeProvider, DefaultSystemTimeProvider>();
 
 builder.Services.AddScoped<MediatRExecutor>();
 
+builder.Services.AddSingleton<Mentoory.Web.Areas.Coordination.Models.LifecycleMapper>();
+
 builder.Services.AddSingleton<IVersionProvider, VersionProvider>();
 
 builder.Services.AddSharedApplication();

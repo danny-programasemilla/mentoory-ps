@@ -12,6 +12,7 @@ CREATE TABLE [tenant].[Projects]
     [IsActive] BIT NOT NULL DEFAULT 1,
     [CreatedAtUtc] DATETIME2 NOT NULL,
     [UpdatedAtUtc] DATETIME2 NOT NULL,
+    [RowVersion] ROWVERSION NOT NULL,
     CONSTRAINT [PK_tenant_Projects] PRIMARY KEY CLUSTERED ([Id] ASC),
     CONSTRAINT [FK_Projects_Incubators] FOREIGN KEY ([IncubatorId]) REFERENCES [tenant].[Incubators] ([Id]),
     CONSTRAINT [UQ_Projects_ExternalId] UNIQUE ([ExternalId])

@@ -1,6 +1,8 @@
+using Mentoory.Access.Application.StageActions;
 using Mentoory.Diagnostic.Application.Commands.CorrectAnswer;
 using Mentoory.Web.Infrastructure;
 using Mentoory.Diagnostic.Application.Queries.GetDiagnosticResponse;
+using Mentoory.Web.Infrastructure.Filters;
 using Mentoory.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +12,7 @@ namespace Mentoory.Web.Areas.Coordination.Controllers;
 [Area("Coordination")]
 [Route("[area]/AnswerCorrection")]
 [Authorize(Roles = "ProjectCoordinator,IncubatorAdmin,GlobalAdmin,Mentor")]
+[RequiresStage(StageGatedAction.AnswerCorrection)]
 public class AnswerCorrectionController : Controller
 {
     private readonly MediatRExecutor _executor;

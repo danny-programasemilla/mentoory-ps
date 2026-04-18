@@ -24,6 +24,7 @@ public class Project : Entity, IAggregateRoot
     public bool IsActive { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
     public DateTime UpdatedAtUtc { get; private set; }
+    public byte[] RowVersion { get; private set; } = null!;
     public IReadOnlyCollection<ProjectStage> Stages => _stages.AsReadOnly();
     public IReadOnlyCollection<ProjectParticipant> Participants => _participants.AsReadOnly();
     public IReadOnlyCollection<MentorAssignment> MentorAssignments => _mentorAssignments.AsReadOnly();
