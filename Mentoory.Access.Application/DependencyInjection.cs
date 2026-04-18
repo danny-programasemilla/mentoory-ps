@@ -1,4 +1,6 @@
 using System.Reflection;
+using Mentoory.Access.Application.Infrastructure;
+using Mentoory.Access.Application.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Mentoory.Access.Application;
@@ -26,6 +28,8 @@ public static class DependencyInjection
         FluentValidation.AssemblyScanner
             .FindValidatorsInAssembly(Assembly.GetExecutingAssembly())
             .ForEach(item => services.AddScoped(item.InterfaceType, item.ValidatorType));
+
+        services.AddScoped<IUserProvisioningService, UserProvisioningService>();
 
         return services;
     }

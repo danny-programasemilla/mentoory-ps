@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Mentoory.Access.Application.Commands.RegisterUser;
+using Mentoory.Access.Application.Validation;
 using Xunit;
 
 namespace Mentoory.Access.Tests.Validators;
@@ -9,7 +10,7 @@ public class RegisterUserValidatorTests
     private readonly RegisterUserValidator _validator = new();
 
     private static RegisterUserCommand ValidCommand => new(
-        "test@example.com", "CO", "123456789", "Juan", "Pérez", "SecureP@ss123!");
+        "jane.doe@example.com", "CO", "9-123-4567", "Juan", "Pérez", "SecureP@ss123!");
 
     [Fact]
     public async Task Valid_Command_Passes()
@@ -83,5 +84,54 @@ public class RegisterUserValidatorTests
         var command = ValidCommand with { FirstName = new string('A', 101) };
         var result = await _validator.ValidateAsync(command);
         result.IsValid.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData("jane.doe@example.com-Password1!")] // full email match
+    [InlineData("Myjane.doePassword1!")] // local-part match (>= 4 chars)
+    [InlineData("Secure9-123-4567Pass!")] // verbatim national-ID match
+    [InlineData("Secure91234567Pass!")] // stripped national-ID match
+    public async Task Password_Containing_Identifying_Data_Fails_With_Shared_Message(string password)
+    {
+        var command = ValidCommand with { Password = password };
+
+        var result = await _validator.ValidateAsync(command);
+
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.PropertyName == "Password"
+            && e.ErrorMessage == PasswordIdentifyingDataRule.Message);
+    }
+
+    [Fact]
+    public async Task Password_With_Below_Threshold_Local_Part_Is_Accepted()
+    {
+        // Local part "abc" is below 4-char threshold → identifying-data check must skip it.
+        // Full-email check still applies, but the password does not contain "abc@x.co".
+        var command = ValidCommand with
+        {
+            Email = "abc@x.co",
+            Password = "CorrectHorseBattery9!",
+        };
+
+        var result = await _validator.ValidateAsync(command);
+
+        result.Errors.Should().NotContain(e => e.PropertyName == "Password"
+            && e.ErrorMessage == PasswordIdentifyingDataRule.Message);
+    }
+
+    [Fact]
+    public async Task Password_With_Below_Threshold_National_Id_Is_Accepted()
+    {
+        // National ID "91" is below 4-char threshold; stripped form also < 4.
+        var command = ValidCommand with
+        {
+            NationalId = "91",
+            Password = "Bicycle91TestingA!",
+        };
+
+        var result = await _validator.ValidateAsync(command);
+
+        result.Errors.Should().NotContain(e => e.PropertyName == "Password"
+            && e.ErrorMessage == PasswordIdentifyingDataRule.Message);
     }
 }

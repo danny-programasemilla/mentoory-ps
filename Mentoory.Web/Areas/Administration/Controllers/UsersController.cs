@@ -1,7 +1,7 @@
+using Mentoory.Access.Application.Commands.AdminEnrollUser;
 using Mentoory.Access.Application.Commands.AdminVerifyEmail;
 using Mentoory.Access.Application.Commands.RegenerateVerificationToken;
 using Mentoory.Access.Application.Commands.RegisterInternalUser;
-using Mentoory.Access.Application.Commands.RegisterUser;
 using Mentoory.Access.Application.Countries.Queries.ListCountries;
 using Mentoory.Access.Application.Queries.ListIncubatorMembers;
 using Mentoory.Web.Areas.Administration.Models;
@@ -68,7 +68,7 @@ public class UsersController : Controller
         }
 
         var result = await _executor.SendAndLogIfFailureAsync(
-            new RegisterUserCommand(
+            new AdminEnrollUserCommand(
                 model.Email,
                 model.Country,
                 model.NationalId,

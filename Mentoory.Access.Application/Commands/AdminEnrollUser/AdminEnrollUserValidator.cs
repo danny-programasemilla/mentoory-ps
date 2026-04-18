@@ -1,18 +1,11 @@
 using FluentValidation;
 using Mentoory.Access.Application.Validation;
 
-namespace Mentoory.Access.Application.Commands.RegisterUser;
+namespace Mentoory.Access.Application.Commands.AdminEnrollUser;
 
-/// <summary>
-/// Validator for the <see cref="RegisterUserCommand"/>.
-/// </summary>
-public class RegisterUserValidator : AbstractValidator<RegisterUserCommand>
+public class AdminEnrollUserValidator : AbstractValidator<AdminEnrollUserCommand>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="RegisterUserValidator"/> class
-    /// and configures validation rules.
-    /// </summary>
-    public RegisterUserValidator()
+    public AdminEnrollUserValidator()
     {
         RuleFor(x => x.Email)
             .NotEmpty().WithMessage("El correo electrónico es requerido.")

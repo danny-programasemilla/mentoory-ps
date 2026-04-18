@@ -96,6 +96,55 @@ public class AdministrationUsersTests
         }
     }
 
+    [Fact]
+    public async Task AdminEnroll_DuplicateEmail_ShowsFieldAttributedError()
+    {
+        var page = await _fixture.CreatePageAsync();
+        try
+        {
+            await LoginAndSelectContextAsync(page, "incadmin1@test.mentoory.com", "Test123!@#");
+
+            var uniqueId = Guid.NewGuid().ToString("N")[..8];
+            var email = $"e2e-admindup-{uniqueId}@test.mentoory.com";
+            var nationalId1 = $"5-{uniqueId[..4]}-{uniqueId[4..8]}";
+            var nationalId2 = $"6-{uniqueId[..4]}-{uniqueId[4..8]}";
+
+            await EnrollUserAsync(page, email, nationalId1, "SecureP@ss12345!");
+            page.Url.Should().Contain("/Administration/Users", "first enrollment should redirect to the users list on success");
+
+            await EnrollUserAsync(page, email, nationalId2, "SecureP@ss12345!");
+
+            page.Url.Should().Contain("/Administration/Users/Enroll",
+                "duplicate admin enrollment must re-render the form, not redirect");
+
+            var pageContent = await page.ContentAsync();
+            pageContent.Should().Contain("Ya existe una cuenta con este correo electrónico",
+                "admin path must surface attributed duplicate-email errors to help resolve conflicts");
+        }
+        finally
+        {
+            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(AdminEnroll_DuplicateEmail_ShowsFieldAttributedError));
+            await page.Context.DisposeAsync();
+        }
+    }
+
+    private async Task EnrollUserAsync(IPage page, string email, string nationalId, string password)
+    {
+        await page.GotoAsync($"{_fixture.BaseUrl}/Administration/Users/Enroll");
+        await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+        await page.FillAsync("input[name='Email']", email);
+        await page.FillAsync("input[name='FirstName']", "Admin");
+        await page.FillAsync("input[name='LastName']", "Enrolled");
+        await page.FillAsync("input[name='Country']", "CO");
+        await page.FillAsync("input[name='NationalId']", nationalId);
+        await page.FillAsync("input[name='Password']", password);
+        await page.FillAsync("input[name='ConfirmPassword']", password);
+
+        await page.ClickAsync("button[type='submit']");
+        await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+    }
+
     private async Task LoginAndSelectContextAsync(IPage page, string email, string password)
     {
         await page.GotoAsync($"{_fixture.BaseUrl}/Access/Login");

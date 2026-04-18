@@ -85,6 +85,8 @@ Feature artifacts live in `specs/{###-feature-name}/`. See [`.specify/templates/
 - C# / .NET 10.0 + Razor Views + CSS + JavaScript + Tabler v1.4.0 (Bootstrap 5), DataTables 2.3.4, jQuery, Tabler Icons Webfont (012-table-polish)
 - C# / .NET 10.0 + JavaScript (vanilla, ES5-compatible) + DataTables 2.3.4, jQuery, Tabler v1.4.0 (Bootstrap 5), Tabler Icons Webfont (013-table-filtering)
 - N/A (no schema changes) (013-table-filtering)
+- C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, MediatR 14.1, FluentValidation 12.1, Mapperly 4.x, EF Core 10.x, Microsoft.Extensions.Logging (source-generated `[LoggerMessage]`) (016-registration-access-hardening)
+- SQL Server (no schema changes — all changes are behavioural at the Application and Web layers) (016-registration-access-hardening)
 
 ## Code Review Standards
 After completing any implementation, review the code for:
@@ -100,6 +102,6 @@ After completing any implementation, review the code for:
 Run /simplify before presenting code to the user.
 
 ## Recent Changes
+- 016-registration-access-hardening: Closed the public-registration enumeration oracle (`RegisterUserHandler` now always returns `Success()` and logs the real outcome); split admin enrollment into a dedicated `AdminEnrollUserCommand` that keeps field-attributed duplicate errors; extracted a shared `IUserProvisioningService`, `MustBeStrongPassword()` and `MustNotContainIdentifyingData()` FluentValidation extensions under `Mentoory.Access.Application/Validation/`.
 - 013-table-filtering: Added C# / .NET 10.0 + JavaScript (vanilla, ES5-compatible) + DataTables 2.3.4, jQuery, Tabler v1.4.0 (Bootstrap 5), Tabler Icons Webfont
 - 012-table-polish: Added C# / .NET 10.0 + Razor Views + CSS + JavaScript + Tabler v1.4.0 (Bootstrap 5), DataTables 2.3.4, jQuery, Tabler Icons Webfont
-- 011-dashboard-ui-polish: Added C# / .NET 10.0 + Razor Views + CSS + Tabler v1.4.0 (Bootstrap 5), Tabler Icons Webfont, jQuery, DataTables 2.3.4

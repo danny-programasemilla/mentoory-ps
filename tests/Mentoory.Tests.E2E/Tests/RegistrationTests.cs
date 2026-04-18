@@ -97,7 +97,9 @@ public class RegistrationTests
 
             var pageContent = await page.ContentAsync();
             pageContent.Should().Contain("Registro Exitoso");
-            pageContent.Should().Contain("Revise su correo electrónico para verificar su cuenta");
+            pageContent.Should().Contain("Revise su correo electrónico para confirmar su cuenta");
+            pageContent.Should().Contain("¿Ya tiene una cuenta? Use la opción de recuperar contraseña",
+                "success copy must hint at password recovery unconditionally so duplicates cannot be distinguished from fresh registrations");
         }
         finally
         {
@@ -107,7 +109,7 @@ public class RegistrationTests
     }
 
     [Fact]
-    public async Task Register_DuplicateEmail_ShowsFieldError()
+    public async Task Register_DuplicateEmail_RedirectsToSuccess_AndDoesNotRevealDuplicate()
     {
         var page = await _fixture.CreatePageAsync();
         try
@@ -116,30 +118,34 @@ public class RegistrationTests
             var email = $"e2e-dupemail-{uniqueId}@test.mentoory.com";
             var nationalId1 = $"1-{uniqueId[..4]}-{uniqueId[4..8]}";
 
-            // Register first user
             await RegisterUserAsync(page, email, nationalId1, "SecurePass123!");
             page.Url.Should().Contain("/Access/Register/Success");
+            var freshPanel = await page.Locator(".card-body.text-center").TextContentAsync();
 
-            // Attempt to register again with same email, different NationalId
             var uniqueId2 = Guid.NewGuid().ToString("N")[..8];
             var nationalId2 = $"2-{uniqueId2[..4]}-{uniqueId2[4..8]}";
             await RegisterUserAsync(page, email, nationalId2, "SecurePass123!");
 
-            page.Url.Should().Contain("/Access/Register");
-            page.Url.Should().NotContain("/Success");
+            page.Url.Should().Contain("/Access/Register/Success",
+                "duplicate-email submissions must land on the same success URL as fresh registrations to close the enumeration oracle");
 
-            var pageContent = await page.ContentAsync();
-            pageContent.Should().Contain("Ya existe una cuenta con este correo electrónico");
+            var duplicateContent = await page.ContentAsync();
+            duplicateContent.Should().NotContain("Ya existe una cuenta con este correo electrónico",
+                "duplicate-email message must never leak to the public path");
+
+            var duplicatePanel = await page.Locator(".card-body.text-center").TextContentAsync();
+            duplicatePanel.Should().Be(freshPanel,
+                "the Success panel text must be identical for fresh and duplicate-email outcomes");
         }
         finally
         {
-            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(Register_DuplicateEmail_ShowsFieldError));
+            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(Register_DuplicateEmail_RedirectsToSuccess_AndDoesNotRevealDuplicate));
             await page.Context.DisposeAsync();
         }
     }
 
     [Fact]
-    public async Task Register_DuplicateNationalId_ShowsFieldError()
+    public async Task Register_DuplicateNationalId_RedirectsToSuccess_AndDoesNotRevealDuplicate()
     {
         var page = await _fixture.CreatePageAsync();
         try
@@ -148,23 +154,24 @@ public class RegistrationTests
             var email1 = $"e2e-dupid1-{uniqueId}@test.mentoory.com";
             var nationalId = $"3-{uniqueId[..4]}-{uniqueId[4..8]}";
 
-            // Register first user
             await RegisterUserAsync(page, email1, nationalId, "SecurePass123!");
             page.Url.Should().Contain("/Access/Register/Success");
+            var freshPanel = await page.Locator(".card-body.text-center").TextContentAsync();
 
-            // Attempt to register again with different email, same NationalId
             var email2 = $"e2e-dupid2-{uniqueId}@test.mentoory.com";
             await RegisterUserAsync(page, email2, nationalId, "SecurePass123!");
 
-            page.Url.Should().Contain("/Access/Register");
-            page.Url.Should().NotContain("/Success");
+            page.Url.Should().Contain("/Access/Register/Success");
 
-            var pageContent = await page.ContentAsync();
-            pageContent.Should().Contain("Ya existe una cuenta con este número de identificación");
+            var duplicateContent = await page.ContentAsync();
+            duplicateContent.Should().NotContain("Ya existe una cuenta con este número de identificación");
+
+            var duplicatePanel = await page.Locator(".card-body.text-center").TextContentAsync();
+            duplicatePanel.Should().Be(freshPanel);
         }
         finally
         {
-            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(Register_DuplicateNationalId_ShowsFieldError));
+            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(Register_DuplicateNationalId_RedirectsToSuccess_AndDoesNotRevealDuplicate));
             await page.Context.DisposeAsync();
         }
     }
@@ -216,8 +223,10 @@ public class RegistrationTests
             await page.ClickAsync("button[type='submit']");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            var pageContent = await page.ContentAsync();
-            pageContent.Should().Contain("Las contraseñas no coinciden");
+            page.Url.Should().NotContain("/Success",
+                "jQuery unobtrusive validation must block submission when passwords do not match");
+            (await page.Locator("input[name='ConfirmPassword'].input-validation-error").CountAsync())
+                .Should().Be(1, "the mismatched ConfirmPassword input must be flagged client-side");
         }
         finally
         {
@@ -248,12 +257,44 @@ public class RegistrationTests
             await page.ClickAsync("button[type='submit']");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            var pageContent = await page.ContentAsync();
-            pageContent.Should().Contain("La contraseña debe tener al menos 12 caracteres");
+            page.Url.Should().NotContain("/Success",
+                "jQuery unobtrusive validation must block submission when the password is below the minimum length");
+            (await page.Locator("input[name='Password'].input-validation-error").CountAsync())
+                .Should().Be(1, "the too-short Password input must be flagged client-side");
         }
         finally
         {
             await _fixture.TakeScreenshotOnFailureAsync(page, nameof(Register_ShortPassword_ShowsValidationError));
+            await page.Context.DisposeAsync();
+        }
+    }
+
+    [Fact]
+    public async Task Register_PasswordContainsEmailLocalPart_ShowsGenericBanner_WithoutFieldAttribution()
+    {
+        var page = await _fixture.CreatePageAsync();
+        try
+        {
+            var uniqueId = Guid.NewGuid().ToString("N")[..8];
+            var email = $"e2e-ident-{uniqueId}@test.mentoory.com";
+            var nationalId = $"4-{uniqueId[..4]}-{uniqueId[4..8]}";
+            var passwordWithEmail = $"MyEmailIs{email}ButStrong1!";
+
+            await RegisterUserAsync(page, email, nationalId, passwordWithEmail);
+
+            page.Url.Should().NotContain("/Success",
+                "a password containing the email must fail FluentValidation and stay on the Register page");
+
+            var bannerText = await page.Locator(".alert.alert-danger").TextContentAsync();
+            bannerText.Should().Contain("No fue posible completar el registro");
+
+            var pageContent = await page.ContentAsync();
+            pageContent.Should().NotContain("correo electrónico ni su número de identificación",
+                "the identifying-data rule message must never be surfaced field-attributed on the public path");
+        }
+        finally
+        {
+            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(Register_PasswordContainsEmailLocalPart_ShowsGenericBanner_WithoutFieldAttribution));
             await page.Context.DisposeAsync();
         }
     }
