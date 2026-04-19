@@ -1,6 +1,6 @@
 # Brainstorm Overview
 
-Last updated: 2026-04-18 (after #11 audit-pipeline brainstorm produced spec 016)
+Last updated: 2026-04-19 (after #12 audit-e2e brainstorm produced spec 017)
 
 ## Sessions
 
@@ -17,6 +17,7 @@ Last updated: 2026-04-18 (after #11 audit-pipeline brainstorm produced spec 016)
 | 09 | 2026-04-18 | mentoring-execution | parked | - |
 | 10 | 2026-04-18 | cross-cutting-hardening | parked | - |
 | 11 | 2026-04-18 | audit-pipeline | spec-created | 016 |
+| 12 | 2026-04-19 | audit-e2e | spec-created | 017 |
 
 ## Open Threads
 
@@ -60,6 +61,11 @@ Last updated: 2026-04-18 (after #11 audit-pipeline brainstorm produced spec 016)
 - Audit retention / TTL policy (from #11)
 - Sensitive-action regex completeness — add `Delete*`, `Revoke*`, `Reset*` stems? (from #11)
 - Priority ordering US3 (correlation) vs US4 (correction detail) in spec 016 (from #11)
+- `RESUME-COMPLETE.md` format — Markdown (current) vs structured JSON for a possible CI gate (from #12)
+- Phase-boundary philosophy: user-story-aligned (current) vs implementation-complexity ramp (from #12)
+- Spanish-copy assertions distributed across P1+P4 vs consolidated into one file (from #12)
+- SC-008 "bootstrap within 5 tool calls" — novel metric, possibly reframe as "reads no files beyond spec + RESUME" (from #12)
+- `PlaywrightFixture` respawn of the `audit` schema is unverified — flagged as P1's first concrete task in FR-016 (from #12)
 
 ## Decisions Ratified During Review
 
@@ -72,6 +78,7 @@ Decisions that were open during earlier sessions and resolved later. See the ind
 - **Tenant query filters** (#06): GlobalAdmin-aware filters with bypass, NOT blanket `OnModelCreating` filters.
 - **Phase placement of tests and `AsNoTracking` audit** (#06): tests ship with each feature; `AsNoTracking` compliance is a Phase A gate.
 - **Audit capture mechanism** (#11): hybrid `[Audited]` attribute + `AuditingBehavior` + `Mode = Manual` escape hatch. Schema extended with typed columns (CorrelationId, Outcome, ExceptionType, UserEmail, RoleContext). Architecture-test enforcement + governance rule in `access-security-constitution.md`. Five shipped commands retrofitted (SetActiveContext, AssignRole, RegisterUser, LoginUser, CorrectAnswer-Manual). IP + correlation read through `ICorrelationContext` / `IRequestContext` abstraction, never `IHttpContextAccessor` directly.
+- **E2E phasing protocol** (#12): four phases mapped to 016 user stories, each ending in a mandatory commit + push + context-clear + resume-prompt handoff. Resume prompts carry duplicated Invariants blocks (intentional redundancy as drift signal). Phase N+1 MUST bootstrap by reading spec + latest RESUME file, pulling latest, and verifying prior phase's green baseline before writing new tests.
 
 ## Parked Ideas
 
