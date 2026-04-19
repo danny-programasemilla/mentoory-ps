@@ -87,6 +87,8 @@ Feature artifacts live in `specs/{###-feature-name}/`. See [`.specify/templates/
 - N/A (no schema changes) (013-table-filtering)
 - C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, MediatR 14.1, FluentValidation 12.1, Mapperly 4.x, EF Core 10.x, Microsoft.Extensions.Logging (source-generated `[LoggerMessage]`) (016-registration-access-hardening)
 - SQL Server (no schema changes — all changes are behavioural at the Application and Web layers) (016-registration-access-hardening)
+- C# / .NET 10.0 (SDK 10.0.0) — tool and all test projects + xUnit 2.x (`TraitAttribute`), `System.Reflection.MetadataLoadContext`, `System.CommandLine` (CLI parsing), MSBuild custom `.targets`, `Microsoft.AspNetCore.Mvc.Testing` (`WebApplicationFactory` — existing), `Testcontainers.MsSql` (existing), `Microsoft.Playwright` (existing) (018-access-security-delivery-quality-gate)
+- N/A for the tool. Integration tests use the existing Testcontainers SQL Server fixture; no new tables, no new seed data. (018-access-security-delivery-quality-gate)
 
 ## Code Review Standards
 After completing any implementation, review the code for:
@@ -102,6 +104,6 @@ After completing any implementation, review the code for:
 Run /simplify before presenting code to the user.
 
 ## Recent Changes
+- 018-access-security-delivery-quality-gate: Added C# / .NET 10.0 (SDK 10.0.0) — tool and all test projects + xUnit 2.x (`TraitAttribute`), `System.Reflection.MetadataLoadContext`, `System.CommandLine` (CLI parsing), MSBuild custom `.targets`, `Microsoft.AspNetCore.Mvc.Testing` (`WebApplicationFactory` — existing), `Testcontainers.MsSql` (existing), `Microsoft.Playwright` (existing)
 - 016-registration-access-hardening: Closed the public-registration enumeration oracle (`RegisterUserHandler` now always returns `Success()` and logs the real outcome); split admin enrollment into a dedicated `AdminEnrollUserCommand` that keeps field-attributed duplicate errors; extracted a shared `IUserProvisioningService`, `MustBeStrongPassword()` and `MustNotContainIdentifyingData()` FluentValidation extensions under `Mentoory.Access.Application/Validation/`.
 - 013-table-filtering: Added C# / .NET 10.0 + JavaScript (vanilla, ES5-compatible) + DataTables 2.3.4, jQuery, Tabler v1.4.0 (Bootstrap 5), Tabler Icons Webfont
-- 012-table-polish: Added C# / .NET 10.0 + Razor Views + CSS + JavaScript + Tabler v1.4.0 (Bootstrap 5), DataTables 2.3.4, jQuery, Tabler Icons Webfont
