@@ -66,7 +66,6 @@ public partial class CloneFormTemplateHandler : BaseCommandHandler<CloneFormTemp
 
         IReadOnlyDictionary<long, long>? topicIdRewriteMap = null;
         KS? cascadedStructure = null;
-        bool cascadeCreatedStructure = false;
 
         if (template.DefaultKnowledgeStructureTemplateExternalId is Guid ksTemplateExternalId)
         {
@@ -82,9 +81,21 @@ public partial class CloneFormTemplateHandler : BaseCommandHandler<CloneFormTemp
                 return cascadeResult.Failure;
             }
 
-            topicIdRewriteMap = cascadeResult.TopicIdRewriteMap;
             cascadedStructure = cascadeResult.Structure;
-            cascadeCreatedStructure = cascadeResult.CreatedStructure;
+
+            // TODO: future hardening — share a DbContextTransaction across both DbContexts for
+            // true cross-module atomicity (per research R3). Acceptable risk for v1 MVP: save
+            // Knowledge first so EF populates IDENTITY columns on any newly-cloned project
+            // topics, then build the rewrite map below with the now-persisted ids. If the
+            // Diagnostic save fails afterwards the knowledge writes will need manual cleanup.
+            if (cascadeResult.CreatedStructure)
+            {
+                await _ksStructureRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
+            }
+
+            // Build the rewrite map AFTER the structure is persisted so project-topic ids are
+            // the real DB-assigned values (not the transient 0 of a fresh entity).
+            topicIdRewriteMap = BuildTopicIdRewriteMap(cascadeResult.FullTreeTemplate!, cascadedStructure!);
         }
 
         Domain.Aggregates.ProjectForm.ProjectForm projectForm;
@@ -101,16 +112,6 @@ public partial class CloneFormTemplateHandler : BaseCommandHandler<CloneFormTemp
         }
 
         _projectFormRepository.Add(projectForm);
-
-        // TODO: future hardening — share a DbContextTransaction across both DbContexts for true
-        // cross-module atomicity (per research R3). Acceptable risk for v1 MVP: if the second
-        // save fails, the first save's writes will need manual reconciliation. Saving Knowledge
-        // first means the Diagnostic clone will never reference a non-existent structure.
-        if (cascadeCreatedStructure)
-        {
-            await _ksStructureRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
-        }
-
         await _projectFormRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
 
         LogFormCloned(projectForm.ExternalId, template.ExternalId);
@@ -185,10 +186,7 @@ public partial class CloneFormTemplateHandler : BaseCommandHandler<CloneFormTemp
             fullTreeTemplate = loaded;
         }
 
-        // Step 4: build the template-topic → project-topic id rewrite map.
-        var rewriteMap = BuildTopicIdRewriteMap(fullTreeTemplate, structure);
-
-        return CascadeResolution.Ok(structure, rewriteMap, createdStructure);
+        return CascadeResolution.Ok(structure, fullTreeTemplate, createdStructure);
     }
 
     private IReadOnlyDictionary<long, long> BuildTopicIdRewriteMap(
@@ -239,18 +237,19 @@ public partial class CloneFormTemplateHandler : BaseCommandHandler<CloneFormTemp
     partial void LogCascadedKnowledgeStructure(Guid structureExternalId, Guid formExternalId);
 
     /// <summary>
-    /// Carries the cascade resolution outcome: either a ready-to-use structure + rewrite map, or a Failure result.
+    /// Carries the cascade resolution outcome: either a ready-to-use structure + full-tree template
+    /// (rewrite map is built by the caller AFTER saving so project-topic ids are DB-populated), or a Failure.
     /// </summary>
     private readonly record struct CascadeResolution(
         KS? Structure,
-        IReadOnlyDictionary<long, long>? TopicIdRewriteMap,
+        KnowledgeStructureTemplate? FullTreeTemplate,
         bool CreatedStructure,
         Result? Failure)
     {
         public static CascadeResolution Ok(
             KS structure,
-            IReadOnlyDictionary<long, long> rewriteMap,
-            bool createdStructure) => new(structure, rewriteMap, createdStructure, null);
+            KnowledgeStructureTemplate fullTreeTemplate,
+            bool createdStructure) => new(structure, fullTreeTemplate, createdStructure, null);
 
         public static CascadeResolution Fail(Result failure) => new(null, null, false, failure);
     }

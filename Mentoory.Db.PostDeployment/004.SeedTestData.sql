@@ -283,6 +283,101 @@ ELSE
 
 
 -- ==========================================================================================
+-- SECTION 3.5: Knowledge topics referenced by test diagnostic questions
+-- ------------------------------------------------------------------------------------------
+-- The FK diagnostic.Questions.TopicId -> knowledge.Topics.Id (spec 016) requires that
+-- Topic Ids 1-5 exist BEFORE Section 8 inserts diagnostic.Questions with those literal
+-- TopicIds. We seed them here (inside this script) so the FK resolves mid-batch.
+-- Parent rows: knowledge.KnowledgeStructures (for Proyecto Innovación) + knowledge.Modules.
+-- SourceTemplateId is NULL here because the sample KnowledgeStructureTemplate is seeded
+-- later in 005.SeedKnowledgeData.sql; the link isn't load-bearing for test data.
+-- Convention: 1=Modelo de Negocio, 2=Equipo, 3=Mercado, 4=Finanzas, 5=Impacto
+-- ==========================================================================================
+
+DECLARE @ProjectStructureExternalId UNIQUEIDENTIFIER = CAST('99999999-9999-9999-9999-999999999901' AS UNIQUEIDENTIFIER);
+DECLARE @ProjectStructureId BIGINT;
+
+IF NOT EXISTS (SELECT 1 FROM [knowledge].[KnowledgeStructures] WHERE [ExternalId] = @ProjectStructureExternalId)
+BEGIN
+    INSERT INTO [knowledge].[KnowledgeStructures] ([ExternalId], [ProjectId], [IncubatorId], [Name], [Description],
+        [SourceTemplateId], [SourceTemplateVersion], [SyncMode], [CreatedAtUtc])
+    VALUES (@ProjectStructureExternalId, @Project1Id, @Incubator1Id,
+        N'Estructura de Conocimiento - Proyecto Innovación',
+        N'Estructura de conocimiento sembrada para alinear con los temas del diagnóstico de prueba.',
+        NULL, NULL, 0, @Now);
+
+    SET @ProjectStructureId = SCOPE_IDENTITY();
+END
+ELSE
+    SELECT @ProjectStructureId = [Id] FROM [knowledge].[KnowledgeStructures] WHERE [ExternalId] = @ProjectStructureExternalId;
+
+DECLARE @ProjectModuleExternalId UNIQUEIDENTIFIER = CAST('99999999-9999-9999-9999-999999999902' AS UNIQUEIDENTIFIER);
+DECLARE @ProjectModuleId BIGINT;
+
+IF NOT EXISTS (SELECT 1 FROM [knowledge].[Modules] WHERE [ExternalId] = @ProjectModuleExternalId)
+BEGIN
+    INSERT INTO [knowledge].[Modules] ([ExternalId], [KnowledgeStructureId], [SourceTemplateModuleExternalId],
+        [Name], [Description], [SortOrder])
+    VALUES (@ProjectModuleExternalId, @ProjectStructureId, NULL,
+        N'Diagnóstico', N'Módulo agrupador de los temas referenciados por el diagnóstico.', 1);
+
+    SET @ProjectModuleId = SCOPE_IDENTITY();
+END
+ELSE
+    SELECT @ProjectModuleId = [Id] FROM [knowledge].[Modules] WHERE [ExternalId] = @ProjectModuleExternalId;
+
+DECLARE @TopicExternalId1 UNIQUEIDENTIFIER = CAST('99999999-9999-9999-9999-999999990001' AS UNIQUEIDENTIFIER);
+DECLARE @TopicExternalId2 UNIQUEIDENTIFIER = CAST('99999999-9999-9999-9999-999999990002' AS UNIQUEIDENTIFIER);
+DECLARE @TopicExternalId3 UNIQUEIDENTIFIER = CAST('99999999-9999-9999-9999-999999990003' AS UNIQUEIDENTIFIER);
+DECLARE @TopicExternalId4 UNIQUEIDENTIFIER = CAST('99999999-9999-9999-9999-999999990004' AS UNIQUEIDENTIFIER);
+DECLARE @TopicExternalId5 UNIQUEIDENTIFIER = CAST('99999999-9999-9999-9999-999999990005' AS UNIQUEIDENTIFIER);
+
+SET IDENTITY_INSERT [knowledge].[Topics] ON;
+
+IF NOT EXISTS (SELECT 1 FROM [knowledge].[Topics] WHERE [Id] = 1)
+    INSERT INTO [knowledge].[Topics] ([Id], [ExternalId], [ModuleId], [SourceTemplateTopicExternalId],
+        [Name], [Description], [SortOrder],
+        [HighRangeMin], [HighRangeMax], [MediumRangeMin], [MediumRangeMax], [LowRangeMin], [LowRangeMax])
+    VALUES (1, @TopicExternalId1, @ProjectModuleId, NULL,
+        N'Modelo de Negocio', N'Tema referenciado por preguntas de diagnóstico.', 1,
+        8.00, 10.00, 5.00, 7.99, 0.00, 4.99);
+
+IF NOT EXISTS (SELECT 1 FROM [knowledge].[Topics] WHERE [Id] = 2)
+    INSERT INTO [knowledge].[Topics] ([Id], [ExternalId], [ModuleId], [SourceTemplateTopicExternalId],
+        [Name], [Description], [SortOrder],
+        [HighRangeMin], [HighRangeMax], [MediumRangeMin], [MediumRangeMax], [LowRangeMin], [LowRangeMax])
+    VALUES (2, @TopicExternalId2, @ProjectModuleId, NULL,
+        N'Equipo', N'Tema referenciado por preguntas de diagnóstico.', 2,
+        8.00, 10.00, 5.00, 7.99, 0.00, 4.99);
+
+IF NOT EXISTS (SELECT 1 FROM [knowledge].[Topics] WHERE [Id] = 3)
+    INSERT INTO [knowledge].[Topics] ([Id], [ExternalId], [ModuleId], [SourceTemplateTopicExternalId],
+        [Name], [Description], [SortOrder],
+        [HighRangeMin], [HighRangeMax], [MediumRangeMin], [MediumRangeMax], [LowRangeMin], [LowRangeMax])
+    VALUES (3, @TopicExternalId3, @ProjectModuleId, NULL,
+        N'Mercado', N'Tema referenciado por preguntas de diagnóstico.', 3,
+        8.00, 10.00, 5.00, 7.99, 0.00, 4.99);
+
+IF NOT EXISTS (SELECT 1 FROM [knowledge].[Topics] WHERE [Id] = 4)
+    INSERT INTO [knowledge].[Topics] ([Id], [ExternalId], [ModuleId], [SourceTemplateTopicExternalId],
+        [Name], [Description], [SortOrder],
+        [HighRangeMin], [HighRangeMax], [MediumRangeMin], [MediumRangeMax], [LowRangeMin], [LowRangeMax])
+    VALUES (4, @TopicExternalId4, @ProjectModuleId, NULL,
+        N'Finanzas', N'Tema referenciado por preguntas de diagnóstico.', 4,
+        8.00, 10.00, 5.00, 7.99, 0.00, 4.99);
+
+IF NOT EXISTS (SELECT 1 FROM [knowledge].[Topics] WHERE [Id] = 5)
+    INSERT INTO [knowledge].[Topics] ([Id], [ExternalId], [ModuleId], [SourceTemplateTopicExternalId],
+        [Name], [Description], [SortOrder],
+        [HighRangeMin], [HighRangeMax], [MediumRangeMin], [MediumRangeMax], [LowRangeMin], [LowRangeMax])
+    VALUES (5, @TopicExternalId5, @ProjectModuleId, NULL,
+        N'Impacto', N'Tema referenciado por preguntas de diagnóstico.', 5,
+        8.00, 10.00, 5.00, 7.99, 0.00, 4.99);
+
+SET IDENTITY_INSERT [knowledge].[Topics] OFF;
+
+
+-- ==========================================================================================
 -- SECTION 4: Role Assignments
 -- ==========================================================================================
 -- Uses MERGE to be idempotent. The unique filtered index

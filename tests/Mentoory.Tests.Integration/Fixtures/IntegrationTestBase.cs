@@ -4,6 +4,7 @@ using Mentoory.Access.Application.Commands.RegisterUser;
 using Mentoory.Access.Domain.Aggregates.SystemConfiguration;
 using Mentoory.Access.Domain.Enums;
 using Mentoory.Access.Infrastructure.Persistence;
+using Mentoory.Knowledge.Infrastructure.Persistence;
 using Mentoory.Shared.Application;
 using Mentoory.Shared.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +27,7 @@ public abstract class IntegrationTestBase : IAsyncLifetime
     {
         await Factory.ResetDatabaseAsync();
         await SeedSystemConfigurationAsync();
+        await SeedKnowledgeTopicsAsync();
     }
 
     public Task DisposeAsync() => Task.CompletedTask;
@@ -103,6 +105,56 @@ public abstract class IntegrationTestBase : IAsyncLifetime
 
         var loginResult = await SendAsync(new LoginUserCommand(email, password, "127.0.0.1", "TestAgent"));
         return (loginResult, userId);
+    }
+
+    /// <summary>
+    /// Re-creates the <c>knowledge.Topics</c> rows with fixed Ids 1-5 that pre-PR-14 Diagnostic
+    /// integration tests (Questions with literal TopicId values) rely on. Respawn wipes the
+    /// knowledge schema between tests, so the DACPAC post-deploy seed is not sufficient on its
+    /// own. Mirrors the production seed in <c>004.SeedTestData.sql § 3.5</c>.
+    /// </summary>
+    private async Task SeedKnowledgeTopicsAsync()
+    {
+        using var scope = CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<KnowledgeDbContext>();
+
+        // Guid literals are static compile-time constants, no injection surface.
+        const string sql = @"
+            IF NOT EXISTS (SELECT 1 FROM [knowledge].[Topics] WHERE [Id] BETWEEN 1 AND 5)
+            BEGIN
+                DECLARE @StructureExternalId UNIQUEIDENTIFIER = CAST('99999999-9999-9999-9999-999999999901' AS UNIQUEIDENTIFIER);
+                DECLARE @ModuleExternalId UNIQUEIDENTIFIER = CAST('99999999-9999-9999-9999-999999999902' AS UNIQUEIDENTIFIER);
+
+                IF NOT EXISTS (SELECT 1 FROM [knowledge].[KnowledgeStructures] WHERE [ExternalId] = @StructureExternalId)
+                BEGIN
+                    -- ProjectId = 999999 is an out-of-band sentinel that test ProjectIds (typically
+                    -- 10-99) never use, so the seed KS isn't counted by cascade reuse queries.
+                    INSERT INTO [knowledge].[KnowledgeStructures] ([ExternalId], [ProjectId], [IncubatorId], [Name], [Description], [SourceTemplateId], [SourceTemplateVersion], [SyncMode], [CreatedAtUtc])
+                    VALUES (@StructureExternalId, 999999, 999999, N'Test KS (FK parent for seeded Topics 1-5)', NULL, NULL, NULL, 0, SYSUTCDATETIME());
+                END
+
+                DECLARE @StructureId BIGINT = (SELECT [Id] FROM [knowledge].[KnowledgeStructures] WHERE [ExternalId] = @StructureExternalId);
+
+                IF NOT EXISTS (SELECT 1 FROM [knowledge].[Modules] WHERE [ExternalId] = @ModuleExternalId)
+                BEGIN
+                    INSERT INTO [knowledge].[Modules] ([ExternalId], [KnowledgeStructureId], [SourceTemplateModuleExternalId], [Name], [Description], [SortOrder])
+                    VALUES (@ModuleExternalId, @StructureId, NULL, N'Diagnostic', NULL, 1);
+                END
+
+                DECLARE @ModuleId BIGINT = (SELECT [Id] FROM [knowledge].[Modules] WHERE [ExternalId] = @ModuleExternalId);
+
+                SET IDENTITY_INSERT [knowledge].[Topics] ON;
+
+                INSERT INTO [knowledge].[Topics] ([Id], [ExternalId], [ModuleId], [Name], [SortOrder]) VALUES (1, NEWID(), @ModuleId, N'Topic 1', 1);
+                INSERT INTO [knowledge].[Topics] ([Id], [ExternalId], [ModuleId], [Name], [SortOrder]) VALUES (2, NEWID(), @ModuleId, N'Topic 2', 2);
+                INSERT INTO [knowledge].[Topics] ([Id], [ExternalId], [ModuleId], [Name], [SortOrder]) VALUES (3, NEWID(), @ModuleId, N'Topic 3', 3);
+                INSERT INTO [knowledge].[Topics] ([Id], [ExternalId], [ModuleId], [Name], [SortOrder]) VALUES (4, NEWID(), @ModuleId, N'Topic 4', 4);
+                INSERT INTO [knowledge].[Topics] ([Id], [ExternalId], [ModuleId], [Name], [SortOrder]) VALUES (5, NEWID(), @ModuleId, N'Topic 5', 5);
+
+                SET IDENTITY_INSERT [knowledge].[Topics] OFF;
+            END";
+
+        await dbContext.Database.ExecuteSqlRawAsync(sql);
     }
 
     private async Task SeedSystemConfigurationAsync()

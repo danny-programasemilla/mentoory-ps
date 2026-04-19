@@ -68,15 +68,13 @@ public class DiagnosticDbContext : SharedAbstractDbContext
             entity.Property(e => e.IsActive).IsRequired().HasDefaultValue(true);
             entity.Property(e => e.CreatedAtUtc).IsRequired();
 
-            // Application-facing Guid binding (the cascade handler resolves the long FK on the fly).
+            // Cross-schema cascade binding (spec 016). Persisted as UNIQUEIDENTIFIER matching the
+            // physical column; the SSDT FK_FormTemplates_DefaultKnowledgeStructureTemplate references
+            // knowledge.KnowledgeStructureTemplates(ExternalId) — which has a unique constraint —
+            // avoiding a redundant BIGINT shadow. No EF navigation is configured on purpose; the
+            // cascade handler loads the target aggregate explicitly via
+            // IKnowledgeStructureTemplateRepository.GetByExternalIdAsync.
             entity.Property(e => e.DefaultKnowledgeStructureTemplateExternalId);
-
-            // Shadow FK to knowledge.KnowledgeStructureTemplates(Id); the physical FK constraint
-            // FK_FormTemplates_DefaultKnowledgeStructureTemplate is managed in SSDT. EF treats this
-            // as an opaque nullable long — no navigation property is configured on purpose, to avoid
-            // cross-schema eager loading at the DbContext level (cascade handler loads explicitly
-            // via IKnowledgeStructureTemplateRepository.GetByExternalIdAsync).
-            entity.Property<long?>("DefaultKnowledgeStructureTemplateId");
 
             entity.HasMany(e => e.Questions)
                 .WithOne()
