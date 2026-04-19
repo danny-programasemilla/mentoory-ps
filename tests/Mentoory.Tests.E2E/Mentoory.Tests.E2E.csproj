@@ -13,6 +13,7 @@
         <PackageReference Include="Microsoft.NET.Test.Sdk"/>
         <PackageReference Include="Microsoft.Playwright"/>
         <PackageReference Include="Microsoft.SqlServer.DacFx"/>
+        <PackageReference Include="Respawn"/>
         <PackageReference Include="Testcontainers.MsSql"/>
         <PackageReference Include="xunit"/>
         <PackageReference Include="xunit.runner.visualstudio">
