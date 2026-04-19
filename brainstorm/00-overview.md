@@ -1,6 +1,6 @@
 # Brainstorm Overview
 
-Last updated: 2026-04-18 (revised after Knowledge module focused brainstorm — spec 016)
+Last updated: 2026-04-19 (Knowledge module binding redesign — amendment on spec 016)
 
 ## Sessions
 
@@ -16,6 +16,7 @@ Last updated: 2026-04-18 (revised after Knowledge module focused brainstorm — 
 | 08 | 2026-04-18 | mentoring-plan | parked | - |
 | 09 | 2026-04-18 | mentoring-execution | parked | - |
 | 10 | 2026-04-18 | cross-cutting-hardening | parked | - |
+| 11 | 2026-04-19 | knowledge-module-binding-redesign | spec-created | 016 (amended) |
 
 ## Open Threads
 
@@ -41,6 +42,8 @@ Last updated: 2026-04-18 (revised after Knowledge module focused brainstorm — 
 - Knowledge `TopicPriorityRangesChanged` outbox upgrade when Mentoring Plan consumer lands (from #07 revisit)
 - Knowledge topic score normalization (0–100 vs raw) — verify against `GetTopicScoreAggregationHandler` during `/speckit-plan` (from #07 revisit)
 - Knowledge concurrent-edit semantics on project clones (from #07 revisit)
+- Cross-module transaction semantics for project-creation-plus-KS-materialization — shared `DbContextTransaction` vs transient NULL window (from #11)
+- Fate of `CloneKnowledgeStructureTemplateCommand` after the binding redesign — keep as internal/Tenant-side entry point or fold into domain factory (from #11)
 - SWOT/ODSR summary algorithm per topic (from #08)
 - Mentoring plan snapshot scope — does it copy topic priority ranges too? (from #08)
 - Mentor/entrepreneur concurrent-edit policy (from #08)

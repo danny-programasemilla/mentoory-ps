@@ -2,6 +2,16 @@
 
 **Scope**: FR-K20 through FR-K23 — the modifications to the existing `Mentoory.Diagnostic` module that close the dangling `Questions.TopicId` FK.
 
+> **AMENDMENT 2026-04-19**: the "auto-cascade" behavior described below is replaced with
+> a compatibility check + topic-id rewrite. `CloneFormTemplateHandler` no longer creates or
+> mutates a `KnowledgeStructure` — the project's KS is materialized at project creation
+> time (new flow in `Mentoory.Tenant.Application.Commands.CreateProject`) so the form-clone
+> handler only needs to (a) validate that `FormTemplate.DefaultKnowledgeStructureTemplateExternalId`
+> matches `Project.KnowledgeStructureTemplateExternalId` (or is null — backward-compat for
+> forms that predate the KS model), and (b) rewrite `Question.TopicId` via the project's
+> existing KS. See [`AMENDMENT-PROJECT-KS-BINDING.md`](../AMENDMENT-PROJECT-KS-BINDING.md) for
+> the authoritative delta.
+
 ---
 
 ## Modified Diagnostic Aggregate

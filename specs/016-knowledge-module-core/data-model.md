@@ -1,7 +1,24 @@
 # Data Model: Knowledge Module Core
 
 **Feature**: 016-knowledge-module-core
-**Date**: 2026-04-18
+**Date**: 2026-04-18 (amended 2026-04-19)
+
+> **AMENDMENT 2026-04-19**: project-owned KS binding. Overrides the cross-module sections
+> below where they place the binding on `diagnostic.FormTemplates`. Authoritative delta is
+> in [`AMENDMENT-PROJECT-KS-BINDING.md`](./AMENDMENT-PROJECT-KS-BINDING.md). Summary:
+>
+> * `tenant.Projects` gains `KnowledgeStructureTemplateExternalId` (NOT NULL, FK) and
+>   `KnowledgeStructureExternalId` (NOT NULL, FK). Both immutable post-insert (application-enforced).
+> * `knowledge.KnowledgeStructures` gains a UNIQUE constraint on `ProjectId` and drops
+>   the composite `(ProjectId, SourceTemplateId)` index. `SourceTemplateId` becomes
+>   `NOT NULL` (no "create-from-scratch" path in v1).
+> * `diagnostic.FormTemplates.DefaultKnowledgeStructureTemplateExternalId` stays as a
+>   compatibility-metadata column; it no longer drives cascade creation.
+> * `CloneFormTemplateHandler` simplifies to a compatibility check + topic-id rewrite;
+>   it never creates or mutates a `KnowledgeStructure`.
+> * `IKnowledgeStructureRepository.GetByProjectAndSourceTemplateIdAsync` is replaced by
+>   `GetByProjectIdAsync` (there's at most one). `CountClonesBySourceTemplateIdAsync`
+>   stays for the `DeleteKnowledgeStructureTemplate` guard.
 
 All types live under `Mentoory.Knowledge.Domain`. Persistence mapping lives under `Mentoory.Knowledge.Infrastructure/Persistence/Configurations/`. Tables live under `Mentoory.Db/knowledge/Tables/`. DECIMAL precision matches `diagnostic.AnswerOptions.Score` (DECIMAL(10,2)) for all numeric range columns (per research R1).
 

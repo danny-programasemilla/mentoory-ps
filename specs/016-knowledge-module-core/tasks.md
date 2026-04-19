@@ -425,3 +425,57 @@ With multiple developers after Foundational is done:
 - Spanish UI text everywhere; code + docs in English
 - Constitution X enforced throughout: every `[Authorize]` names the target role AND all higher roles; every menu group includes `GlobalAdmin`
 - When in doubt about a cross-module boundary, follow the Diagnostic module's existing precedent — this spec is deliberately shaped to mirror it
+
+---
+
+## Phase 9: Amendment refactor — Project-owned KS binding (2026-04-19)
+
+**Source**: [`AMENDMENT-PROJECT-KS-BINDING.md`](./AMENDMENT-PROJECT-KS-BINDING.md) · brainstorm [`11-knowledge-module-binding-redesign`](../../brainstorm/11-knowledge-module-binding-redesign.md)
+
+**Goal**: move the KS binding from `FormTemplate` to `Project`, enforce 1 KS per project, materialize KS at project creation, simplify the form-clone handler to compatibility-check + rewrite only.
+
+### Database
+
+- [ ] T110 Alter `Mentoory.Db/tenant/Tables/Projects.sql`: add `[KnowledgeStructureTemplateExternalId] UNIQUEIDENTIFIER NOT NULL` (FK → `knowledge.KnowledgeStructureTemplates(ExternalId)`) and `[KnowledgeStructureExternalId] UNIQUEIDENTIFIER NOT NULL` (FK → `knowledge.KnowledgeStructures(ExternalId)`). Index both FKs.
+- [ ] T111 Alter `Mentoory.Db/knowledge/Tables/KnowledgeStructures.sql`: add `CONSTRAINT [UQ_KnowledgeStructures_ProjectId] UNIQUE ([ProjectId])`; drop `IX_KnowledgeStructures_ProjectId_SourceTemplateId`. Change `SourceTemplateId` from `BIGINT NULL` to `BIGINT NOT NULL` (domain factory already rejects the null path).
+
+### Domain
+
+- [ ] T112 Modify `Mentoory.Tenant.Domain.Aggregates.Project.Project`: add `KnowledgeStructureTemplateExternalId` (Guid, required) and `KnowledgeStructureExternalId` (Guid, required) properties; amend `Create(...)` factory to accept both; add `internal void SetKnowledgeStructure(Guid templateExternalId, Guid structureExternalId)` that throws if either value is already set (immutability guard).
+
+### Application / cross-module
+
+- [ ] T113 Add `Mentoory.Tenant.Application.Abstractions.IKnowledgeStructureProvisioner` with `Task<Guid> CloneForProjectAsync(Guid templateExternalId, long projectId, long incubatorId, CancellationToken)`. Mirrors `ITopicUsageQuery` direction (Tenant.Application owns the interface; Knowledge.Infrastructure implements).
+- [ ] T114 Implement `Mentoory.Knowledge.Infrastructure.CrossModule.KnowledgeStructureProvisioner : IKnowledgeStructureProvisioner` — loads KS template with full tree, calls `KnowledgeStructure.CloneFromTemplate(...)`, adds to repo, returns the new ExternalId. Register in `AddKnowledgeInfrastructure` DI.
+- [ ] T115 Update `Mentoory.Knowledge.Domain.Repositories.IKnowledgeStructureRepository`: replace `GetByProjectAndSourceTemplateIdAsync` with `GetByProjectIdAsync(long projectId, CancellationToken)`. Keep `CountClonesBySourceTemplateIdAsync` (delete-template guard still needs it).
+- [ ] T116 Update `Mentoory.Knowledge.Infrastructure.Persistence.Repositories.KnowledgeStructureRepository` to match the new interface.
+- [ ] T117 Modify `Mentoory.Tenant.Application.Commands.CreateProject.CreateProjectCommand` + handler: add `KnowledgeStructureTemplateExternalId` required parameter; validate template exists + not archived via `IKnowledgeStructureTemplateRepository.GetByExternalIdAsync` (new cross-module dep); call `IKnowledgeStructureProvisioner.CloneForProjectAsync`; stamp `project.SetKnowledgeStructure(...)`; save Tenant + Knowledge contexts in one transaction (pattern per research R3).
+- [ ] T118 Simplify `Mentoory.Diagnostic.Application.Commands.CloneFormTemplate.CloneFormTemplateHandler`: load project's KS via `IKnowledgeStructureRepository.GetByProjectIdAsync`; compatibility check (`template.DefaultKS` vs `project.KnowledgeStructureTemplateExternalId`); build rewrite map from the project's existing KS; rewrite on `ProjectForm.CloneFromTemplate`; save Diagnostic only. Remove the KS-creation/reuse branches + the dual-save pattern. Update the validator to carry the Spanish compatibility error.
+- [ ] T119 Remove obsolete Knowledge handlers: `CloneKnowledgeStructureTemplateHandler` (still usable from Tenant.Application; keep the command but make its controller action internal-only / removed from the web surface).
+
+### Web
+
+- [ ] T120 Modify project-creation view (locate in `Mentoory.Web/Areas/Administration/Views/Projects/Create.cshtml` or equivalent): add a **required** KS template dropdown bound via `ListKnowledgeStructureTemplatesQuery(IncludeArchived: false)`. Corresponding `CreateProjectViewModel` gets the Guid property. Controller POST forwards the Guid into the updated command.
+- [ ] T121 Update `Mentoory.Web.Infrastructure.Menu.MenuConfiguration.cs`: project-creation menu role list becomes `[ProjectCoordinator, IncubatorAdmin, GlobalAdmin]` if it isn't already.
+- [ ] T122 Remove `Mentoory.Web/Areas/Coordination/Views/Knowledge/CloneFromTemplate.cshtml` and its controller actions (`CloneFromTemplateGet` + `CloneFromTemplate` POST) + the "Clonar desde plantilla" button in `Projects.cshtml`. Update the empty-state copy: `"Esta plantilla no tiene estructura de conocimiento — contacta a un administrador."` (defensive; schema should prevent it).
+
+### Seeds (clean-state rebuild)
+
+- [ ] T123 Rewrite `Mentoory.Db.PostDeployment/004.SeedTestData.sql`:
+  - In § 3 Projects: each project's INSERT now sets `KnowledgeStructureTemplateExternalId = CAST('11111111-1111-1111-1111-111111111111' AS UNIQUEIDENTIFIER)` and `KnowledgeStructureExternalId = CAST('99999999-9999-9999-9999-999999999901' AS UNIQUEIDENTIFIER)`.
+  - In § 3.5 KS seed: keep the IDENTITY_INSERT Topics 1-5 block, but seed `SourceTemplateId = (SELECT Id FROM knowledge.KnowledgeStructureTemplates WHERE ExternalId = '11111111-...')`. This requires § 3.5 to run **after** `005` seeds the KS template — reorder via `Script.PostDeployment.sql` so `005` runs before the § 3.5 portion, OR (cleaner) move the KS-template seed INTO `004` so the Topics seed has its template id in scope.
+- [ ] T124 Rewrite `Mentoory.Tests.Integration.Fixtures.IntegrationTestBase.SeedKnowledgeTopicsAsync` to seed via the new flow: KS template (if not present) → call `CreateProjectCommand` for the seed project OR directly insert Project + KS rows with the new columns populated. Simpler: keep as raw SQL for speed; just add the new fields.
+
+### Tests
+
+- [ ] T125 Add `tests/Mentoory.Tenant.Tests/Handlers/CreateProjectHandlerTests.cs` (or extend existing): cover success with valid KS template, failure with missing template, failure with archived template, failure with duplicate project (FK cascade).
+- [ ] T126 Update `tests/Mentoory.Diagnostic.Tests/Handlers/CloneFormTemplateHandlerCascadeTests.cs`: rename to `CloneFormTemplateHandlerCompatibilityTests.cs`. Scenarios: compatible form → success + rewrite; incompatible form (different `DefaultKS`) → failure with Spanish message; form without `DefaultKS` → legacy pass-through (no rewrite). Remove "cascade creates KS" assertions entirely.
+- [ ] T127 Update `tests/Mentoory.Tests.Integration/Knowledge/DiagnosticCascadeRoundTripTests.cs`: preseed project with KS via `CreateProjectCommand` invocation (not direct SQL). Assert the form clone rewrites to pre-existing project topics. Retire the "reuse existing KS" test or convert it to a unique-constraint regression test.
+- [ ] T128 Update all Knowledge.Tests handlers that referenced `GetByProjectAndSourceTemplateIdAsync` to use `GetByProjectIdAsync` instead.
+- [ ] T129 [P] Remove handler tests that assumed the coordinator-side Clone-from-Template command/flow (`CloneKnowledgeStructureTemplateHandler*` tests). Keep/move the domain-level clone tests on `KnowledgeStructureCloneTests` — the factory `CloneFromTemplate` is still exercised; just not from a coordinator command.
+
+### Verification
+
+- [ ] T130 Full solution build + `dotnet test` across Knowledge, Diagnostic, Tenant unit suites + Integration suite + E2E suite — all green (mirrors the end-of-US5 checklist).
+- [ ] T131 Manual smoke: create a new project via Administration UI with a KS template; observe the KS auto-materializes; clone a compatible form; verify `Questions.TopicId` resolves; clone an incompatible form; verify the Spanish error appears.
+- [ ] T132 Update `brainstorm/07-knowledge-module.md` and `07-knowledge-module-feedback.md` Open Threads: mark the "form-to-KS binding cardinality" issue as resolved (refs AMENDMENT-PROJECT-KS-BINDING.md).

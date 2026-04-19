@@ -2,8 +2,28 @@
 
 **Feature Branch**: `016-knowledge-module-core`
 **Created**: 2026-04-18
-**Status**: Draft
+**Status**: Draft (amended 2026-04-19)
 **Input**: User description: Knowledge module core — hierarchical knowledge content domain (KnowledgeStructure > Module > Topic > Subject > Resource) with template-and-project-clone pattern mirroring Diagnostic's ProjectForm.CloneFromTemplate. Delivers the minimum-viable Knowledge domain that unblocks every downstream mentoring module (Mentoring Plan priority mapping, Session coverage, Assignments).
+
+> ## AMENDMENT 2026-04-19 — Project-owned KS binding
+>
+> Review flagged that the original design let a project end up with **multiple**
+> KnowledgeStructures — one per FormTemplate whose `DefaultKnowledgeStructureTemplateExternalId`
+> pointed at a different KS template. The business invariant is the opposite: a project has
+> **exactly one** KnowledgeStructure. The binding moves from FormTemplate to Project.
+>
+> **Invariants enforced post-amendment:**
+> 1. Each `Project` has exactly one `KnowledgeStructure` (UNIQUE on `KnowledgeStructures.ProjectId`).
+> 2. `Project.KnowledgeStructureTemplateExternalId` is **required** at project creation and **immutable** afterwards.
+> 3. `Project.KnowledgeStructureExternalId` is **populated in the same transaction** as project creation (NOT NULL once the project row exists).
+> 4. `FormTemplate.DefaultKnowledgeStructureTemplateExternalId` becomes **compatibility metadata** — it says "this form's questions reference topics authored against this KS template"; it does **not** drive KS creation.
+> 5. `CloneFormTemplateHandler` **never** creates or mutates a `KnowledgeStructure`. It rewrites `Question.TopicId` against the project's existing KS. If the form's `DefaultKnowledgeStructureTemplateExternalId` is set and does not match the project's `KnowledgeStructureTemplateExternalId`, the clone is rejected with `"Este formulario está diseñado para una estructura de conocimiento diferente a la del proyecto."`
+>
+> **Role changes:** project creation (which already selects a KS template) is now open to `ProjectCoordinator`, `IncubatorAdmin`, `GlobalAdmin`.
+>
+> **Scope impact:** US1 (global-admin template CRUD) and US3 (diagnostic cascade) stay; US2 loses the coordinator-facing "Clone from template" flow — the KS is auto-materialized at project creation so coordinators always find it pre-populated. US2's per-project tree editor (priority ranges + resources CRUD) is unchanged. US4 + US5 unchanged.
+>
+> This amendment is pre-release (no production data), so SSDT + domain + handler changes land in the same PR as the original implementation. See `AMENDMENT-PROJECT-KS-BINDING.md` for full delta.
 
 ## Overview
 
