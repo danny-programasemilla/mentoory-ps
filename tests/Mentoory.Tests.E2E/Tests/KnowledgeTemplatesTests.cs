@@ -146,14 +146,7 @@ public class KnowledgeTemplatesTests
         }
     }
 
-    // TODO(017-CP3-followup): modal-driven create flow times out waiting for
-    // #knowledgeModal.show after clicking [data-action='add-module'] on a freshly-created
-    // test-local template. Suspect a race between template-editor.js IIFE initialization
-    // and Bootstrap JS load order on /Templates/{id}. Likely fix: wait for
-    // `window.bootstrap !== undefined` via EvaluateAsync before first modal click, OR
-    // dispatch clicks via JS that directly calls `new bootstrap.Modal(...).show()`.
-    // 6/11 US1 tests currently pass; this one is skipped pending debug in a fresh session.
-    [Fact(Skip = "017-CP3-followup: modal timing on template-editor.js — see comment above.")]
+    [Fact]
     public async Task TemplateDetail_AddNodes_PersistsAfterReload()
     {
         var page = await _fixture.CreatePageAsync();
@@ -217,10 +210,7 @@ public class KnowledgeTemplatesTests
         }
     }
 
-    // TODO(017-CP3-followup): depends on TemplateDetail_AddNodes to seed a test-local
-    // topic via the modal flow. Same root cause as that test — unblock once modal
-    // timing is fixed.
-    [Fact(Skip = "017-CP3-followup: depends on modal-based topic creation. See sibling TODO.")]
+    [Fact]
     public async Task TopicPriorityRanges_SaveAndReload_PersistsThreeBands()
     {
         var page = await _fixture.CreatePageAsync();
@@ -258,7 +248,7 @@ public class KnowledgeTemplatesTests
         }
     }
 
-    [Fact(Skip = "017-CP3-followup: depends on modal-based topic creation. See TemplateDetail_AddNodes TODO.")]
+    [Fact]
     public async Task TopicPriorityRanges_OverlappingBands_ShowsValidationError()
     {
         var page = await _fixture.CreatePageAsync();
@@ -268,10 +258,11 @@ public class KnowledgeTemplatesTests
             var (_, topicId) = await PrepareTopicOnTestLocalTemplateAsync(page, "E2E-US1-5");
 
             // First save a valid set so we can confirm it's preserved after the overlap rejection.
-            await SetPriorityRangesAsync(page, topicId, high: (80, 100), medium: (50, 79), low: (0, 49));
-            await WaitForRangesToastAsync(page, "Rangos actualizados.");
+            // waitForReload: true awaits handleResponse's window.location.reload() via sentinel.
+            await SetPriorityRangesAsync(page, topicId, high: (80, 100), medium: (50, 79), low: (0, 49), waitForReload: true);
+            await ExpandFirstTopicAsync(page);
 
-            // Now attempt an overlapping set (High 70–100 overlaps Medium 65–80).
+            // Overlap is rejected client-side: fields persist, no POST, no reload.
             await SetPriorityRangesAsync(page, topicId, high: (70, 100), medium: (65, 80), low: (0, 60));
             var showed = await KnowledgeTestHelpers.WaitForSpanishMessageAsync(
                 page, "Los rangos de prioridad se solapan.", timeoutMs: 5000);
@@ -295,11 +286,7 @@ public class KnowledgeTemplatesTests
         }
     }
 
-    // TODO(017-CP3-followup): same modal-timing root cause as TemplateDetail_AddNodes.
-    // This test additionally exercises the Reorder endpoint via `page.EvaluateAsync` (no
-    // UI reorder control exists today) — once the modal flow works, the endpoint-level
-    // assertion should be straightforward.
-    [Fact(Skip = "017-CP3-followup: depends on modal-based AddModule to set up fixtures.")]
+    [Fact]
     public async Task TemplateModules_Reorder_PersistsAfterReload()
     {
         var page = await _fixture.CreatePageAsync();
@@ -331,7 +318,7 @@ public class KnowledgeTemplatesTests
                     const r = await fetch('/Coordination/Knowledge/Templates/{templateId}/Modules/Reorder', {{
                         method: 'POST',
                         headers: {{ 'Content-Type': 'application/json', 'RequestVerificationToken': token }},
-                        body: JSON.stringify({{ orderedIds: ['{moduleBId}', '{moduleAId}'] }})
+                        body: JSON.stringify({{ externalIds: ['{moduleBId}', '{moduleAId}'] }})
                     }});
                     return r.ok;
                 }}");
@@ -355,12 +342,7 @@ public class KnowledgeTemplatesTests
         }
     }
 
-    // TODO(017-CP3-followup): the archive action fires a fetch() + window.location.reload()
-    // chain from templates-list.js. After clicking, our NetworkIdle wait returns before the
-    // reload completes, so the archived row is still visible when we re-query. Fix:
-    // wait for an actual navigation (page.WaitForFunctionAsync looking for a URL change or
-    // DOM stamp that proves a fresh load happened) before asserting list state.
-    [Fact(Skip = "017-CP3-followup: post-fetch reload race — see comment above.")]
+    [Fact]
     public async Task Template_ArchiveAndUnarchive_ReflectsInListToggles()
     {
         var page = await _fixture.CreatePageAsync();
@@ -375,16 +357,16 @@ public class KnowledgeTemplatesTests
 
             var archiveBtn = page.Locator("tr").Filter(new LocatorFilterOptions { HasText = templateName })
                 .First.Locator("[data-action='archive-template']");
-            await archiveBtn.ClickAsync();
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            await ClickAndWaitForReloadAsync(page, archiveBtn);
 
             // Default view should now hide the archived row.
             var rowAfterArchive = page.Locator("tr").Filter(new LocatorFilterOptions { HasText = templateName });
             (await rowAfterArchive.CountAsync()).Should().Be(0,
                 "archived templates must not appear in the default (active-only) list view");
 
-            // Flip the 'Mostrar archivados' toggle → archived row reappears with 'Archivado' badge.
-            await page.Locator("input[type='checkbox'][name='includeArchived']").CheckAsync();
+            // Navigate to the archived-included view — sidesteps the checkbox `onchange` form-submit
+            // race (same class of issue as window.location.reload() — NetworkIdle returns too early).
+            await page.GotoAsync($"{_fixture.BaseUrl}/Coordination/Knowledge/Templates?includeArchived=true");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             var archivedRow = page.Locator("tr").Filter(new LocatorFilterOptions { HasText = templateName }).First;
@@ -393,11 +375,11 @@ public class KnowledgeTemplatesTests
             (await archivedRow.Locator("span.badge").Filter(new LocatorFilterOptions { HasText = "Archivado" }).CountAsync())
                 .Should().BeGreaterThan(0, "archived row must carry the 'Archivado' badge in the Estado column");
 
-            await archivedRow.Locator("[data-action='unarchive-template']").ClickAsync();
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            var unarchiveBtn = archivedRow.Locator("[data-action='unarchive-template']");
+            await ClickAndWaitForReloadAsync(page, unarchiveBtn);
 
-            // Turn the toggle off → restored template should appear in default view with 'Activo'.
-            await page.Locator("input[type='checkbox'][name='includeArchived']").UncheckAsync();
+            // Back to the default (active-only) view to confirm unarchive surfaced the restored row.
+            await page.GotoAsync($"{_fixture.BaseUrl}/Coordination/Knowledge/Templates");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             var restored = page.Locator("tr").Filter(new LocatorFilterOptions { HasText = templateName }).First;
@@ -413,12 +395,7 @@ public class KnowledgeTemplatesTests
         }
     }
 
-    // TODO(017-CP3-followup): assertion text "archivar en lugar de eliminar" does not match
-    // the exact Spanish substring the DeleteKnowledgeStructureTemplateHandler surfaces when
-    // a template has project clones. The guard is in place (handler returns failure) but
-    // the wording differs. Fix: inspect the actual toast HTML, copy the verbatim Spanish,
-    // and update the assertion substring. Keep the block-assertion as the contract.
-    [Fact(Skip = "017-CP3-followup: Spanish error substring mismatch — see comment above.")]
+    [Fact]
     public async Task Template_HardDelete_BlockedWhenProjectCloneExists()
     {
         var page = await _fixture.CreatePageAsync();
@@ -433,10 +410,12 @@ public class KnowledgeTemplatesTests
             var seededRow = page.Locator("tr").Filter(new LocatorFilterOptions { HasText = "Emprendimiento Básico" }).First;
             await seededRow.Locator("[data-action='delete-template']").ClickAsync();
 
+            // DeleteKnowledgeStructureTemplateHandler surfaces the verbatim:
+            // "No se puede eliminar: la plantilla tiene clones en uso por {N} proyecto(s). Archívela en su lugar."
             var blocked = await KnowledgeTestHelpers.WaitForSpanishMessageAsync(
-                page, "archivar en lugar de eliminar", timeoutMs: 5000);
+                page, "Archívela en su lugar", timeoutMs: 5000);
             blocked.Should().BeTrue(
-                "hard-delete on a template with project clones must be blocked with a Spanish message citing 'archivar en lugar de eliminar'");
+                "hard-delete on a template with project clones must surface the Spanish guard 'Archívela en su lugar'");
 
             // Template must still be in the list.
             await page.ReloadAsync();
@@ -512,18 +491,32 @@ public class KnowledgeTemplatesTests
         await page.Locator("#knowledgeModal.show").WaitForAsync(new LocatorWaitForOptions { Timeout = 5000 });
     }
 
-    private static async Task SubmitModalAndWaitReloadAsync(IPage page)
+    // Click a control whose JS handler ultimately calls window.location.reload() (or navigates
+    // via window.location.href). Stamps the current <html> so the wait can observe the actual
+    // navigation — WaitForLoadStateAsync(NetworkIdle) alone returns immediately when the page
+    // is already idle at dispatch time, allowing the subsequent assertion/navigation to race
+    // ahead of the POST and cancel it.
+    private static async Task ClickAndWaitForReloadAsync(IPage page, ILocator locator)
     {
-        var reloadTrigger = page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-        await page.Locator("#knowledgeModalSubmit").ClickAsync();
-
-        // template-editor.js does window.location.reload() after a ~400 ms success toast.
-        await reloadTrigger;
-        await page.WaitForLoadStateAsync(LoadState.NetworkIdle, new PageWaitForLoadStateOptions { Timeout = 10000 });
+        await page.EvaluateAsync("document.documentElement.setAttribute('data-e2e-pre-reload', '1')");
+        await locator.ClickAsync();
+        await page.WaitForFunctionAsync(
+            "() => !document.documentElement.hasAttribute('data-e2e-pre-reload')",
+            null,
+            new PageWaitForFunctionOptions { Timeout = 15_000 });
+        await page.WaitForLoadStateAsync(LoadState.NetworkIdle, new PageWaitForLoadStateOptions { Timeout = 10_000 });
     }
 
+    private static Task SubmitModalAndWaitReloadAsync(IPage page) =>
+        ClickAndWaitForReloadAsync(page, page.Locator("#knowledgeModalSubmit"));
+
     private static async Task SetPriorityRangesAsync(
-        IPage page, string topicId, (decimal Min, decimal Max) high, (decimal Min, decimal Max) medium, (decimal Min, decimal Max) low)
+        IPage page,
+        string topicId,
+        (decimal Min, decimal Max) high,
+        (decimal Min, decimal Max) medium,
+        (decimal Min, decimal Max) low,
+        bool waitForReload = false)
     {
         var editor = page.Locator($".priority-range-editor[data-topic-id='{topicId}']");
         await editor.Locator("[data-band='high'] [data-field='min']").FillAsync(high.Min.ToString(System.Globalization.CultureInfo.InvariantCulture));
@@ -532,7 +525,16 @@ public class KnowledgeTemplatesTests
         await editor.Locator("[data-band='medium'] [data-field='max']").FillAsync(medium.Max.ToString(System.Globalization.CultureInfo.InvariantCulture));
         await editor.Locator("[data-band='low'] [data-field='min']").FillAsync(low.Min.ToString(System.Globalization.CultureInfo.InvariantCulture));
         await editor.Locator("[data-band='low'] [data-field='max']").FillAsync(low.Max.ToString(System.Globalization.CultureInfo.InvariantCulture));
-        await editor.Locator("[data-action='update-topic-ranges']").ClickAsync();
+
+        var saveBtn = editor.Locator("[data-action='update-topic-ranges']");
+        if (waitForReload)
+        {
+            await ClickAndWaitForReloadAsync(page, saveBtn);
+        }
+        else
+        {
+            await saveBtn.ClickAsync();
+        }
     }
 
     private static async Task WaitForRangesToastAsync(IPage page, string substring)
