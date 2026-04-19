@@ -2,6 +2,7 @@ using Mentoory.Diagnostic.Application.Commands.CloneFormTemplate;
 using Mentoory.Diagnostic.Application.Queries.GetProjectForm;
 using Mentoory.Diagnostic.Application.Queries.ListFormTemplates;
 using Mentoory.Diagnostic.Application.Queries.ListProjectForms;
+using Mentoory.Shared.Application;
 using Mentoory.Shared.Application.DataTables;
 using Mentoory.Web.Areas.Coordination.Models;
 using Mentoory.Web.Infrastructure;
@@ -95,7 +96,9 @@ public class DiagnosticsController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        ModelState.AddModelError(string.Empty, "Error al clonar el formulario diagnóstico.");
+        ModelState.AddModelError(
+            string.Empty,
+            FirstErrorMessage(result) ?? "Error al clonar el formulario diagnóstico.");
         await PopulateTemplatesViewBag(ct);
         return View(model);
     }
@@ -115,6 +118,9 @@ public class DiagnosticsController : Controller
 
         return View(form);
     }
+
+    private static string? FirstErrorMessage(Result result) =>
+        result.ErrorMessages is { Length: > 0 } messages ? messages[0].Message : null;
 
     private async Task PopulateTemplatesViewBag(CancellationToken ct)
     {

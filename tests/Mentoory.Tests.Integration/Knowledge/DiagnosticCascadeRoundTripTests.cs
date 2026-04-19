@@ -3,6 +3,9 @@ using Mentoory.Diagnostic.Application.Commands.CloneFormTemplate;
 using Mentoory.Diagnostic.Domain.Aggregates.FormTemplate;
 using Mentoory.Diagnostic.Domain.Enums;
 using Mentoory.Diagnostic.Infrastructure.Persistence;
+using Mentoory.Knowledge.Application.Commands.AddModuleTemplate;
+using Mentoory.Knowledge.Application.Commands.AddTopicTemplate;
+using Mentoory.Knowledge.Application.Commands.CreateKnowledgeStructureTemplate;
 using Mentoory.Knowledge.Domain.Aggregates.KnowledgeStructureTemplate;
 using Mentoory.Knowledge.Infrastructure.Persistence;
 using Mentoory.Tenant.Application.Commands.CreateIncubator;
@@ -68,6 +71,91 @@ public class DiagnosticCascadeRoundTripTests : IntegrationTestBase
             projectTopicIds.Should().Contain(question.TopicId,
                 "every question's TopicId must resolve to a real project-topic id");
         }
+    }
+
+    /// <summary>
+    /// Spec 017 US3-3 — when the source FormTemplate has no
+    /// <c>DefaultKnowledgeStructureTemplateExternalId</c>, the clone path skips the whole KS
+    /// cascade: no mismatch check, no TopicId rewrite, no new KS row. Covers the null-binding
+    /// branch in <see cref="CloneFormTemplateHandler"/>.
+    /// </summary>
+    [Fact]
+    public async Task CloneFormTemplate_NullBinding_NoKnowledgeCascade()
+    {
+        var (projectId, incubatorId, _, topicAId, _) = await SetupProjectWithKsTemplateAsync();
+
+        var baselineStructureCount = await CountProjectKnowledgeStructuresAsync(projectId);
+        var baselineFormCount = await CountProjectFormsAsync(projectId);
+
+        var formTemplateExternalId = await CreateFormTemplateAsync(
+            ksTemplateExternalId: null, (topicAId, "¿Descripción del equipo?"));
+
+        var cloneResult = await SendWithTenantAsync(
+            new CloneFormTemplateCommand(formTemplateExternalId, projectId, incubatorId),
+            incubatorId);
+
+        cloneResult.IsSuccess.Should().BeTrue(
+            $"null-binding clone must succeed without invoking the KS cascade, got: {FormatFailure(cloneResult)}");
+
+        (await CountProjectKnowledgeStructuresAsync(projectId)).Should().Be(baselineStructureCount,
+            "a null-bound FormTemplate must NOT create or duplicate the project's KS row");
+
+        (await CountProjectFormsAsync(projectId)).Should().Be(baselineFormCount + 1,
+            "exactly one ProjectForm row must be created by the successful clone");
+
+        using var scope = CreateScope();
+        var diagnosticDb = scope.ServiceProvider.GetRequiredService<DiagnosticDbContext>();
+        var projectForm = await diagnosticDb.ProjectForms
+            .Include(f => f.Questions)
+            .AsNoTracking()
+            .FirstAsync(f => f.ProjectId == projectId);
+
+        projectForm.Questions.Should().HaveCount(1);
+        projectForm.Questions.Single().TopicId.Should().Be(topicAId,
+            "null-binding clone must preserve the source Question.TopicId verbatim (no rewrite)");
+    }
+
+    /// <summary>
+    /// Spec 017 T029 — regression guard confirming the command-layer equivalents of
+    /// <c>KnowledgeIntegrationHelpers.AddTopicToTemplateAsync</c> and
+    /// <c>CreateFormTemplateAsync</c> (the E2E helpers in <c>Mentoory.Tests.E2E.Infrastructure</c>)
+    /// commit to the same database the integration fixture's <see cref="KnowledgeDbContext"/>
+    /// reads. A fail in this test signals drift in DB-scope semantics (e.g., a new service
+    /// registration that silently splits the connection string) before the slower E2E suite
+    /// picks it up.
+    /// </summary>
+    [Fact]
+    public async Task KnowledgeIntegrationHelpers_UtilityContract_RegressionGuard()
+    {
+        var createTemplateResult = await SendAsync(new CreateKnowledgeStructureTemplateCommand(
+            $"Guard-{Guid.NewGuid():N}"[..16], null));
+        createTemplateResult.IsSuccess.Should().BeTrue(
+            $"CreateKnowledgeStructureTemplateCommand must succeed: {FormatFailure(createTemplateResult)}");
+        var templateExternalId = createTemplateResult.Value!;
+
+        var addModuleResult = await SendAsync(new AddModuleTemplateCommand(
+            templateExternalId, "Guard Module", Description: null, SortOrder: 1));
+        addModuleResult.IsSuccess.Should().BeTrue(
+            $"AddModuleTemplateCommand must succeed: {FormatFailure(addModuleResult)}");
+        var moduleExternalId = addModuleResult.Value!;
+
+        var addTopicResult = await SendAsync(new AddTopicTemplateCommand(
+            templateExternalId, moduleExternalId, "Guard Topic", Description: null, SortOrder: 1));
+        addTopicResult.IsSuccess.Should().BeTrue(
+            $"AddTopicTemplateCommand must succeed: {FormatFailure(addTopicResult)}");
+        var topicExternalId = addTopicResult.Value!;
+
+        using var scope = CreateScope();
+        var knowledgeDb = scope.ServiceProvider.GetRequiredService<KnowledgeDbContext>();
+        var reloaded = await knowledgeDb.Set<KnowledgeStructureTemplate>()
+            .Include(t => t.Modules).ThenInclude(m => m.Topics)
+            .AsNoTracking()
+            .FirstAsync(t => t.ExternalId == templateExternalId);
+
+        reloaded.Modules.Should().ContainSingle(m => m.ExternalId == moduleExternalId,
+            "the module added via command must be readable from a fresh KnowledgeDbContext scope");
+        reloaded.Modules.Single().Topics.Should().ContainSingle(t => t.ExternalId == topicExternalId,
+            "the topic added via command must be readable from the same scope");
     }
 
     [Fact]
@@ -166,14 +254,18 @@ public class DiagnosticCascadeRoundTripTests : IntegrationTestBase
     }
 
     private async Task<Guid> CreateFormTemplateAsync(
-        Guid ksTemplateExternalId,
+        Guid? ksTemplateExternalId,
         params (long TopicId, string Text)[] questions)
     {
         using var scope = CreateScope();
         var diagnosticDb = scope.ServiceProvider.GetRequiredService<DiagnosticDbContext>();
 
         var formTemplate = FormTemplate.Create("Diagnóstico", null, null, DateTime.UtcNow);
-        formTemplate.SetDefaultKnowledgeStructureTemplate(ksTemplateExternalId);
+        if (ksTemplateExternalId is Guid boundExternalId)
+        {
+            formTemplate.SetDefaultKnowledgeStructureTemplate(boundExternalId);
+        }
+
         for (var i = 0; i < questions.Length; i++)
         {
             formTemplate.AddQuestion(questions[i].TopicId, questions[i].Text, QuestionType.Text, StageApplicability.Both, i + 1, null, false);
@@ -182,5 +274,19 @@ public class DiagnosticCascadeRoundTripTests : IntegrationTestBase
         diagnosticDb.FormTemplates.Add(formTemplate);
         await diagnosticDb.SaveChangesAsync();
         return formTemplate.ExternalId;
+    }
+
+    private async Task<int> CountProjectKnowledgeStructuresAsync(long projectId)
+    {
+        using var scope = CreateScope();
+        var knowledgeDb = scope.ServiceProvider.GetRequiredService<KnowledgeDbContext>();
+        return await knowledgeDb.Set<KS>().AsNoTracking().CountAsync(s => s.ProjectId == projectId);
+    }
+
+    private async Task<int> CountProjectFormsAsync(long projectId)
+    {
+        using var scope = CreateScope();
+        var diagnosticDb = scope.ServiceProvider.GetRequiredService<DiagnosticDbContext>();
+        return await diagnosticDb.ProjectForms.AsNoTracking().CountAsync(f => f.ProjectId == projectId);
     }
 }

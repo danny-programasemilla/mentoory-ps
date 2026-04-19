@@ -1,12 +1,18 @@
 using MediatR;
+using Mentoory.Access.Application.Commands.AssignRole;
+using Mentoory.Access.Infrastructure.Persistence;
 using Mentoory.Diagnostic.Application.Commands.CloneFormTemplate;
 using Mentoory.Diagnostic.Domain.Aggregates.FormTemplate;
 using Mentoory.Diagnostic.Domain.Enums;
 using Mentoory.Diagnostic.Infrastructure.Persistence;
 using Mentoory.Knowledge.Application.Commands.AddModuleTemplate;
 using Mentoory.Knowledge.Application.Commands.AddTopicTemplate;
+using Mentoory.Knowledge.Application.Commands.CreateKnowledgeStructureTemplate;
 using Mentoory.Knowledge.Infrastructure.Persistence;
 using Mentoory.Shared.Application;
+using Mentoory.Shared.Domain.Constants;
+using Mentoory.Tenant.Application.Commands.CreateProject;
+using Mentoory.Tenant.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -220,6 +226,124 @@ public static class KnowledgeIntegrationHelpers
     /// </summary>
     public static Task<Guid> GetSeededBoundFormTemplateExternalIdAsync(WebApplicationFactory<Program> factory)
         => Task.FromResult(SeededBoundFormTemplateExternalId);
+
+    /// <summary>
+    /// Creates a fresh <c>KnowledgeStructureTemplate</c> via <see cref="CreateKnowledgeStructureTemplateCommand"/>.
+    /// Used by US3-2 to build a KS template distinct from the one the target project is bound to.
+    /// </summary>
+    public static async Task<Guid> CreateKsTemplateAsync(
+        WebApplicationFactory<Program> factory,
+        string templateName)
+    {
+        var result = await SendAsync(factory, new CreateKnowledgeStructureTemplateCommand(templateName, null));
+        if (!result.IsSuccess)
+        {
+            throw new InvalidOperationException(
+                $"CreateKnowledgeStructureTemplateCommand failed: {FormatErrors(result)}");
+        }
+
+        return result.Value!;
+    }
+
+    /// <summary>
+    /// Looks up an incubator by exact name and returns its internal id and external id. The
+    /// seeded incubators (e.g., <c>Incubadora Alpha</c>) use <c>NEWID()</c> for ExternalId so
+    /// tests that need the ExternalId (e.g., to pass to <see cref="CreateProjectCommand"/>)
+    /// must resolve it at runtime.
+    /// </summary>
+    public static async Task<(long Id, Guid ExternalId)> GetIncubatorByNameAsync(
+        WebApplicationFactory<Program> factory,
+        string incubatorName)
+    {
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TenantDbContext>();
+        var incubator = await db.Incubators
+            .AsNoTracking()
+            .FirstAsync(i => i.Name == incubatorName);
+        return (incubator.Id, incubator.ExternalId);
+    }
+
+    /// <summary>
+    /// Looks up a project by exact name and returns its internal ids. The seeded projects
+    /// (e.g., <c>Proyecto Innovación</c>) use <c>NEWID()</c> for ExternalId so tests that
+    /// need the internal ids (e.g., for <see cref="CountProjectFormsAsync"/>) must resolve
+    /// them at runtime. Applies <c>IgnoreQueryFilters()</c> so the lookup works even when
+    /// no tenant context is installed on the scope.
+    /// </summary>
+    public static async Task<(long ProjectId, long IncubatorId, Guid ExternalId)> GetProjectByNameAsync(
+        WebApplicationFactory<Program> factory,
+        string projectName)
+    {
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TenantDbContext>();
+        var project = await db.Projects
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .FirstAsync(p => p.Name == projectName);
+        return (project.Id, project.IncubatorId, project.ExternalId);
+    }
+
+    /// <summary>
+    /// Creates a fresh project in <paramref name="incubatorName"/> bound to
+    /// <paramref name="ksTemplateExternalId"/> and grants <paramref name="coordinatorEmail"/>
+    /// a <c>ProjectCoordinator</c> role assignment on it. The project goes through
+    /// <see cref="CreateProjectCommand"/>, which in turn invokes <c>IKnowledgeStructureProvisioner</c>
+    /// to materialize the project's KS with <c>SourceTemplateTopicExternalId</c> correctly
+    /// populated — a precondition for <see cref="CloneFormTemplateHandler"/>'s TopicId rewrite
+    /// to succeed. Used by US3-1 happy-path coverage where the seeded <c>Proyecto Innovación</c>
+    /// KS was hand-coded without the SourceTemplate back-references.
+    /// </summary>
+    public static async Task<(long ProjectId, long IncubatorId, Guid ExternalId, string Name)>
+        CreateProjectWithCoordinatorAsync(
+            WebApplicationFactory<Program> factory,
+            string coordinatorEmail,
+            string incubatorName,
+            Guid ksTemplateExternalId,
+            string projectName)
+    {
+        var (incubatorId, incubatorExternalId) = await GetIncubatorByNameAsync(factory, incubatorName);
+
+        var createResult = await SendAsync(factory, new CreateProjectCommand(
+            incubatorExternalId, projectName, Description: null, ksTemplateExternalId));
+        if (!createResult.IsSuccess)
+        {
+            throw new InvalidOperationException(
+                $"CreateProjectCommand failed for '{projectName}': {FormatErrors(createResult)}");
+        }
+
+        var projectExternalId = createResult.Value!;
+        long projectId;
+        long userId;
+
+        using (var scope = factory.Services.CreateScope())
+        {
+            var tenantDb = scope.ServiceProvider.GetRequiredService<TenantDbContext>();
+            projectId = await tenantDb.Projects
+                .IgnoreQueryFilters()
+                .AsNoTracking()
+                .Where(p => p.ExternalId == projectExternalId)
+                .Select(p => p.Id)
+                .FirstAsync();
+
+            var accessDb = scope.ServiceProvider.GetRequiredService<AccessDbContext>();
+            var normalizedEmail = coordinatorEmail.Trim().ToUpperInvariant();
+            userId = await accessDb.Users
+                .AsNoTracking()
+                .Where(u => u.Email.NormalizedValue == normalizedEmail)
+                .Select(u => u.Id)
+                .FirstAsync();
+        }
+
+        var assignResult = await SendAsync(factory, new AssignRoleCommand(
+            userId, incubatorId, projectId, Roles.ProjectCoordinator));
+        if (!assignResult.IsSuccess)
+        {
+            throw new InvalidOperationException(
+                $"AssignRoleCommand failed for {coordinatorEmail} on project {projectName}: {FormatErrors(assignResult)}");
+        }
+
+        return (projectId, incubatorId, projectExternalId, projectName);
+    }
 
     private static async Task<TResponse> SendAsync<TResponse>(
         WebApplicationFactory<Program> factory,
