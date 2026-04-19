@@ -88,6 +88,33 @@ public static class KnowledgeTestHelpers
     }
 
     /// <summary>
+    /// Clicks a control whose JS handler ultimately calls <c>window.location.reload()</c>
+    /// (or a delayed equivalent) and reliably waits for the subsequent navigation. Stamps the
+    /// <c>&lt;html&gt;</c> element before the click and waits for the stamp to disappear —
+    /// <see cref="IPage.WaitForLoadStateAsync"/> alone returns immediately when the page is
+    /// already idle at dispatch time, which races the reload.
+    /// </summary>
+    public static async Task ClickAndWaitForReloadAsync(IPage page, ILocator locator)
+    {
+        await page.EvaluateAsync("document.documentElement.setAttribute('data-e2e-pre-reload', '1')");
+        await locator.ClickAsync();
+        await page.WaitForFunctionAsync(
+            "() => !document.documentElement.hasAttribute('data-e2e-pre-reload')",
+            null,
+            new PageWaitForFunctionOptions { Timeout = 15_000 });
+        await page.WaitForLoadStateAsync(
+            LoadState.NetworkIdle,
+            new PageWaitForLoadStateOptions { Timeout = 10_000 });
+    }
+
+    /// <summary>
+    /// Submits the shared <c>#knowledgeModal</c> used by the template- and project-structure
+    /// editors and waits for the editor's success-reload to settle.
+    /// </summary>
+    public static Task SubmitModalAndWaitReloadAsync(IPage page) =>
+        ClickAndWaitForReloadAsync(page, page.Locator("#knowledgeModalSubmit"));
+
+    /// <summary>
     /// Captures a full-page screenshot to <c>screenshots/{testName}_{utc}.png</c>. Mirrors
     /// <see cref="PlaywrightFixture.TakeScreenshotOnFailureAsync"/> for helpers that don't
     /// hold a fixture reference.

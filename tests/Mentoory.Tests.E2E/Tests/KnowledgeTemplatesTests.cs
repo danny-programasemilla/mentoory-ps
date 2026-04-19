@@ -491,24 +491,11 @@ public class KnowledgeTemplatesTests
         await page.Locator("#knowledgeModal.show").WaitForAsync(new LocatorWaitForOptions { Timeout = 5000 });
     }
 
-    // Click a control whose JS handler ultimately calls window.location.reload() (or navigates
-    // via window.location.href). Stamps the current <html> so the wait can observe the actual
-    // navigation — WaitForLoadStateAsync(NetworkIdle) alone returns immediately when the page
-    // is already idle at dispatch time, allowing the subsequent assertion/navigation to race
-    // ahead of the POST and cancel it.
-    private static async Task ClickAndWaitForReloadAsync(IPage page, ILocator locator)
-    {
-        await page.EvaluateAsync("document.documentElement.setAttribute('data-e2e-pre-reload', '1')");
-        await locator.ClickAsync();
-        await page.WaitForFunctionAsync(
-            "() => !document.documentElement.hasAttribute('data-e2e-pre-reload')",
-            null,
-            new PageWaitForFunctionOptions { Timeout = 15_000 });
-        await page.WaitForLoadStateAsync(LoadState.NetworkIdle, new PageWaitForLoadStateOptions { Timeout = 10_000 });
-    }
+    private static Task ClickAndWaitForReloadAsync(IPage page, ILocator locator) =>
+        KnowledgeTestHelpers.ClickAndWaitForReloadAsync(page, locator);
 
     private static Task SubmitModalAndWaitReloadAsync(IPage page) =>
-        ClickAndWaitForReloadAsync(page, page.Locator("#knowledgeModalSubmit"));
+        KnowledgeTestHelpers.SubmitModalAndWaitReloadAsync(page);
 
     private static async Task SetPriorityRangesAsync(
         IPage page,

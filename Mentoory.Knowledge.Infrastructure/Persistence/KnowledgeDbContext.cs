@@ -42,7 +42,7 @@ public class KnowledgeDbContext : SharedAbstractDbContext
         ConfigureSubjectTemplate(modelBuilder);
         ConfigureResourceTemplate(modelBuilder);
 
-        ConfigureKnowledgeStructure(modelBuilder);
+        ConfigureKnowledgeStructure(modelBuilder, _tenantContext);
         ConfigureModule(modelBuilder);
         ConfigureTopic(modelBuilder);
         ConfigureSubject(modelBuilder);
@@ -193,7 +193,7 @@ public class KnowledgeDbContext : SharedAbstractDbContext
         });
     }
 
-    private static void ConfigureKnowledgeStructure(ModelBuilder modelBuilder)
+    private static void ConfigureKnowledgeStructure(ModelBuilder modelBuilder, ITenantContext tenantContext)
     {
         modelBuilder.Entity<KS>(entity =>
         {
@@ -233,6 +233,13 @@ public class KnowledgeDbContext : SharedAbstractDbContext
             entity.Metadata
                 .FindNavigation(nameof(KS.Modules))!
                 .SetPropertyAccessMode(PropertyAccessMode.Field);
+
+            // Multi-tenant query filter — mirrors TenantDbContext's Projects filter (spec 017
+            // US4-7 / US6-3 tenant isolation). Queries without a tenant context (e.g. seed-time
+            // or integration-test scopes that never set CurrentIncubatorId) see every row; HTTP
+            // requests see only rows in the caller's active incubator.
+            entity.HasQueryFilter(s =>
+                tenantContext.CurrentIncubatorId == null || s.IncubatorId == tenantContext.CurrentIncubatorId);
         });
     }
 

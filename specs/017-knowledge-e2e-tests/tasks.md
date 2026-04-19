@@ -128,14 +128,24 @@ All tasks edit the same file (`tests/Mentoory.Tests.E2E/Tests/KnowledgeTemplates
 
 ### Implementation for User Story 4
 
-- [ ] T030 [P] [US4] Create `tests/Mentoory.Tests.E2E/Tests/KnowledgeProjectTreeEditingTests.cs` with the xUnit + `[Collection(E2ETestCollection.Name)]` scaffold and a constructor that takes `PlaywrightFixture`.
-- [ ] T031 [US4] Add `AddNodesAtEachLevel_PersistsAfterReload` to `tests/Mentoory.Tests.E2E/Tests/KnowledgeProjectTreeEditingTests.cs`: log in as `coord1`, navigate to project KS detail, add unique-named Module → Topic → Subject → Resource, reload, assert all present AND flagged as clone-only (no template-source badge). Covers US4-1.
-- [ ] T032 [US4] Add `RenameClonedTopic_PersistsOnCloneOnly` to `tests/Mentoory.Tests.E2E/Tests/KnowledgeProjectTreeEditingTests.cs`: rename a seeded cloned topic (e.g., `Finanzas` → `Finanzas Básicas`) in one browser context (coordinator), then open `/Coordination/Knowledge/Templates/{seededKsExtId}` in a second browser context as GlobalAdmin, assert template's original name unchanged. Covers US4-2.
-- [ ] T033 [US4] Add `ProjectTopicPriorityRanges_SaveAndReload_PersistsBands` to `tests/Mentoory.Tests.E2E/Tests/KnowledgeProjectTreeEditingTests.cs`: set High/Medium/Low on a project topic, reload, assert bands in order High → Medium → Low. Covers US4-3.
-- [ ] T034 [US4] Add `ProjectTopicPriorityRanges_OverlappingBands_ShowsValidationError` to `tests/Mentoory.Tests.E2E/Tests/KnowledgeProjectTreeEditingTests.cs`: submit overlapping bands, assert Spanish error, assert previous bands preserved. Covers US4-4.
-- [ ] T035 [US4] Add `DeleteProjectTopic_Referenced_Blocked` to `tests/Mentoory.Tests.E2E/Tests/KnowledgeProjectTreeEditingTests.cs`: **setup**: use `KnowledgeIntegrationHelpers.CloneFormIntoProjectAsync` to create a ProjectForm whose Questions reference a project topic. **act**: attempt delete on that topic. **assert**: Spanish error naming the referencing-question count, topic still in tree. Covers US4-5.
-- [ ] T036 [US4] Add `DeleteProjectTopic_Unreferenced_Succeeds` to `tests/Mentoory.Tests.E2E/Tests/KnowledgeProjectTreeEditingTests.cs`: add a new clone-only topic to the project, delete it, assert gone after reload. Covers US4-6.
-- [ ] T037 [US4] Add `ProjectTopic_TenantIsolation_CrossProjectReturnsNotFound` to `tests/Mentoory.Tests.E2E/Tests/KnowledgeProjectTreeEditingTests.cs`: log in as `coord1`, obtain the KS ExternalId of `Proyecto Norte Uno` (via `KnowledgeIntegrationHelpers`), attempt GET `/Coordination/Knowledge/Projects/{foreignKsExtId}`, assert ≥400 OR body does NOT contain any of `Proyecto Norte Uno`'s tree names. Covers US4-7 (also overlaps US6-3 — cross-story coverage is OK).
+> **Phase 6 status (2026-04-19)**: 7/7 green. One glue change: added an incubator-scope
+> `HasQueryFilter` to `KnowledgeStructure` in `Mentoory.Knowledge.Infrastructure/Persistence/KnowledgeDbContext.cs`
+> (mirrors `TenantDbContext`'s existing `Projects` filter). Without it, T037's strengthened
+> assertion surfaced that coord1 could load `Proyecto Norte Uno`'s KS detail at status 200 —
+> a Phase-5-style enforcement gap. The filter is permissive when `CurrentIncubatorId` is null
+> (seed-time and integration-scope queries), so existing integration tests stay green.
+> Additionally, the reload-wait helpers (`ClickAndWaitForReloadAsync`,
+> `SubmitModalAndWaitReloadAsync`) were promoted to `KnowledgeTestHelpers` since they were
+> duplicated byte-for-byte between `KnowledgeTemplatesTests` and this new file.
+
+- [X] T030 [P] [US4] Create `tests/Mentoory.Tests.E2E/Tests/KnowledgeProjectTreeEditingTests.cs` with the xUnit + `[Collection(E2ETestCollection.Name)]` scaffold and a constructor that takes `PlaywrightFixture`.
+- [X] T031 [US4] `AddNodesAtEachLevel_PersistsAfterReload`. Covers US4-1. Asserts `Local` badge (green) on added nodes; no `Origen: plantilla` badge since the new entities have NULL `SourceTemplate*ExternalId` refs.
+- [X] T032 [US4] `RenameClonedTopic_PersistsOnCloneOnly`. Covers US4-2. Renames seeded `Equipo` topic (not `Finanzas` — other tests assert on that name) and opens the template detail in a second browser context as GlobalAdmin to assert the template's `Propuesta de valor` TopicTemplate is unchanged.
+- [X] T033 [US4] `ProjectTopicPriorityRanges_SaveAndReload_PersistsBands`. Covers US4-3. Sets ranges on a test-local topic via the stamp-and-wait helper, then re-reads after reload.
+- [X] T034 [US4] `ProjectTopicPriorityRanges_OverlappingBands_ShowsValidationError`. Covers US4-4. Overlap is rejected client-side (no POST, no reload), so assertion waits for the Spanish toast `Los rangos de prioridad se solapan.` and verifies the valid first save survives.
+- [X] T035 [US4] `DeleteProjectTopic_Referenced_Blocked`. Covers US4-5. Uses `CreateProjectWithCoordinatorAsync` (coord2, not coord1) + `CloneFormIntoProjectAsync` to stage 3 Questions referencing the cloned `Propuesta de valor` topic, then asserts the Spanish guard `pregunta(s) de diagnóstico`.
+- [X] T036 [US4] `DeleteProjectTopic_Unreferenced_Succeeds`. Covers US4-6.
+- [X] T037 [US4] `ProjectTopic_TenantIsolation_CrossProjectReturnsNotFound`. Covers US4-7. Strengthened beyond the spec-literal form (`body.Should().NotContain("Proyecto Norte Uno")`) once the `KnowledgeStructure` tenant filter was added — see Phase 6 status note above.
 
 **Checkpoint**: US4 fully green. Coordinator's day-one workflow protected.
 
