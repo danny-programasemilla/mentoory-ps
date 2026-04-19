@@ -6,12 +6,21 @@ using Xunit;
 namespace Mentoory.Tests.E2E.Tests;
 
 /// <summary>
-/// E2E smoke for spec 016 US2 + Phase 9 amendment — ProjectCoordinator's per-project knowledge
-/// structure views. Under the Phase 9 binding, every project is bound 1:1 to a KS template at
+/// E2E coverage for spec 016 US2 + Phase 9 amendment, extended by spec 017 Phase 4
+/// (T019–T023). Under the Phase 9 binding, every project is bound 1:1 to a KS template at
 /// creation (via <c>IKnowledgeStructureProvisioner</c>), so the coordinator-side "Clone from
 /// template" UI is retired and the seeded 'Proyecto Innovación' already has a materialized KS.
+///
+/// | Spec 017 scenario | Method |
+/// |---|---|
+/// | US2-1            | Projects_PageLoads_ShowsMaterializedKs |
+/// | US2-4 (+ US4-2 baseline) | ProjectStructureDetail_PageLoads_ShowsTree |
+/// | US2-4 (clone-name regression) | ProjectStructureDetail_TreeContainsClonedNames |
+/// | US2-5            | Projects_NoCloneFromTemplateButton_Phase9Regression |
+/// | US2-6            | CloneFromTemplate_LegacyRoute_NoLongerAccessible |
 /// </summary>
 [Collection(E2ETestCollection.Name)]
+[Trait("Category", "E2E")]
 public class KnowledgeProjectStructureTests
 {
     private readonly PlaywrightFixture _fixture;
@@ -109,20 +118,66 @@ public class KnowledgeProjectStructureTests
                 HasText = "Ver detalles",
             }).First;
 
-            if (await detailLink.CountAsync() == 0)
-            {
-                return;
-            }
+            (await detailLink.CountAsync()).Should().BeGreaterThan(0,
+                "the seeded 'Proyecto Innovación' must surface a 'Ver detalles' link in the list");
 
             await detailLink.ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             page.Url.Should().MatchRegex(@"/Coordination/Knowledge/Projects/[0-9a-fA-F-]{36}",
                 "project-structure detail URL must include the KS ExternalId");
+
+            var body = await page.ContentAsync();
+
+            // (a) All four hierarchy levels are enumerated in the tree-card header.
+            body.Should().Contain("Módulos / Temas / Asignaturas / Recursos",
+                "the project KS tree header must enumerate all four hierarchy levels");
+
+            // (b) Seeded KS defaults to SyncMode.Disconnected → "Desconectada" badge renders.
+            body.Should().Contain("Desconectada",
+                "seeded project KS defaults to SyncMode.Disconnected — the 'Desconectada' badge must render");
+
+            // (c) Specific seeded Spanish names are rendered in the tree.
+            body.Should().Contain("Diagnóstico",
+                "the seeded module 'Diagnóstico' must appear in the project KS tree");
+            body.Should().Contain("Modelo de Negocio",
+                "the seeded topic 'Modelo de Negocio' must appear in the project KS tree");
         }
         finally
         {
             await _fixture.TakeScreenshotOnFailureAsync(page, nameof(ProjectStructureDetail_PageLoads_ShowsTree));
+            await page.Context.DisposeAsync();
+        }
+    }
+
+    [Fact]
+    public async Task ProjectStructureDetail_TreeContainsClonedNames()
+    {
+        var page = await _fixture.CreatePageAsync();
+        try
+        {
+            await LoginAsCoordinatorAsync(page);
+            await page.GotoAsync($"{_fixture.BaseUrl}/Coordination/Knowledge/Projects");
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            await page.Locator("a[href*='/Projects/']").Filter(new LocatorFilterOptions
+            {
+                HasText = "Ver detalles",
+            }).First.ClickAsync();
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            // Acts as a regression guard for US4-2 ("rename doesn't leak" baseline): if a
+            // future test renames one of these topics, the template-side unchanged assertion
+            // is only meaningful when we can identify the known pre-rename names here.
+            var body = await page.ContentAsync();
+            body.Should().Contain("Finanzas",
+                "the seeded topic 'Finanzas' must appear in the project KS tree");
+            body.Should().Contain("Mercado",
+                "the seeded topic 'Mercado' must appear in the project KS tree");
+        }
+        finally
+        {
+            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(ProjectStructureDetail_TreeContainsClonedNames));
             await page.Context.DisposeAsync();
         }
     }

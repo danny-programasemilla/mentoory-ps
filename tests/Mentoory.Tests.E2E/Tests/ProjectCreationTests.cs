@@ -6,11 +6,19 @@ using Xunit;
 namespace Mentoory.Tests.E2E.Tests;
 
 /// <summary>
-/// E2E-T009 - Validates that the project creation form includes IsPublic checkbox,
-/// EnrollmentVariant dropdown, the Phase 9 required KS-template dropdown, and standard
-/// project fields.
+/// E2E coverage for spec 016 Phase 9 project-creation fields (IsPublic, EnrollmentVariant,
+/// required KS-template dropdown), kept under spec 017 Phase 4 US2 regression umbrella.
+///
+/// | Spec 017 scenario | Method |
+/// |---|---|
+/// | US2-2 (required KS dropdown + Emprendimiento Básico option) | CreateProject_PageLoads_WithNewFields |
+/// | US2-2 (happy-path redirect + success toast)                 | CreateProject_ValidSubmission_RedirectsToProjectsList |
+/// | US2-3 (missing KS template blocks submit)                   | CreateProject_MissingKsTemplate_ShowsValidationError |
+/// | US2-2 (IsPublic default)                                     | CreateProject_IsPublicCheckbox_DefaultsToUnchecked |
+/// | Name validation (pre-Phase 9 regression)                     | CreateProject_EmptyName_ShowsValidationError |
 /// </summary>
 [Collection(E2ETestCollection.Name)]
+[Trait("Category", "E2E")]
 public class ProjectCreationTests
 {
     private readonly PlaywrightFixture _fixture;
