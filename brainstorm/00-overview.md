@@ -1,6 +1,6 @@
 # Brainstorm Overview
 
-Last updated: 2026-04-18 (revised after PR #10 code review)
+Last updated: 2026-04-19 (added #11 — E2E coverage for feature 016)
 
 ## Sessions
 
@@ -16,6 +16,7 @@ Last updated: 2026-04-18 (revised after PR #10 code review)
 | 08 | 2026-04-18 | mentoring-plan | parked | - |
 | 09 | 2026-04-18 | mentoring-execution | parked | - |
 | 10 | 2026-04-18 | cross-cutting-hardening | parked | - |
+| 11 | 2026-04-19 | e2e-lifecycle-coverage | spec-created | 016/e2e |
 
 ## Open Threads
 
@@ -55,6 +56,9 @@ Last updated: 2026-04-18 (revised after PR #10 code review)
 - Notification template engine — inline vs Razor vs Scriban (from #10)
 - Audit pipeline mechanism — attribute-based vs explicit calls (from #10; v1 payload scope is decided)
 - Cross-cutting ship order: Subscription first vs Audit first (from #10)
+- PlaywrightFixture extensibility assumption may fail at C0 (from #11)
+- Test #3 broken-state fixture: pull-weight vs redundant with unit coverage (from #11)
+- Concurrency UI test mechanism: parallel contexts vs test-time stale-advance helper (from #11)
 
 ## Decisions Ratified During Review
 
