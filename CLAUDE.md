@@ -102,6 +102,6 @@ After completing any implementation, review the code for:
 Run /simplify before presenting code to the user.
 
 ## Recent Changes
+- 016-project-lifecycle-finish/e2e: Added Microsoft.Playwright E2E coverage for the coordinator UI — fixtures + page objects via PlaywrightFixture's WebApplicationFactory.Services, chunked multi-session execution protocol at specs/016-project-lifecycle-finish/e2e/
 - 016-project-lifecycle-finish: Added C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, MediatR 14.1, FluentValidation 12.1, Riok.Mapperly 4.x, EF Core 10.x, Tabler Admin Template (Bootstrap 5), DataTables 2.3.4, jQuery, Tabler Icons Webfont
 - 013-table-filtering: Added C# / .NET 10.0 + JavaScript (vanilla, ES5-compatible) + DataTables 2.3.4, jQuery, Tabler v1.4.0 (Bootstrap 5), Tabler Icons Webfont
-- 012-table-polish: Added C# / .NET 10.0 + Razor Views + CSS + JavaScript + Tabler v1.4.0 (Bootstrap 5), DataTables 2.3.4, jQuery, Tabler Icons Webfont
