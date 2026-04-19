@@ -1,5 +1,6 @@
 using MediatR;
 using Mentoory.Access.Application.Commands.AssignRole;
+using Mentoory.Access.Domain.Aggregates.User;
 using Mentoory.Access.Infrastructure.Persistence;
 using Mentoory.Diagnostic.Application.Commands.CloneFormTemplate;
 using Mentoory.Diagnostic.Domain.Aggregates.FormTemplate;
@@ -284,24 +285,69 @@ public static class KnowledgeIntegrationHelpers
     }
 
     /// <summary>
-    /// Creates a fresh project in <paramref name="incubatorName"/> bound to
-    /// <paramref name="ksTemplateExternalId"/> and grants <paramref name="coordinatorEmail"/>
-    /// a <c>ProjectCoordinator</c> role assignment on it. The project goes through
-    /// <see cref="CreateProjectCommand"/>, which in turn invokes <c>IKnowledgeStructureProvisioner</c>
-    /// to materialize the project's KS with <c>SourceTemplateTopicExternalId</c> correctly
-    /// populated — a precondition for <see cref="CloneFormTemplateHandler"/>'s TopicId rewrite
-    /// to succeed. Used by US3-1 happy-path coverage where the seeded <c>Proyecto Innovación</c>
-    /// KS was hand-coded without the SourceTemplate back-references.
+    /// Inserts a fresh <see cref="User"/> + <see cref="Credential"/> pair directly via
+    /// <see cref="AccessDbContext"/>, then marks the account <c>Active</c>. Email and
+    /// NationalId are derived from a new <c>Guid</c> so concurrent invocations don't collide
+    /// on the unique index. Returns the seeded user's internal id, email, and plaintext
+    /// password ready for <c>LoginAndSelectAsync</c>.
     /// </summary>
-    public static async Task<(long ProjectId, long IncubatorId, Guid ExternalId, string Name)>
+    /// <remarks>
+    /// This intentionally sidesteps the <c>RegisterUser</c> command path: that flow goes
+    /// through MailKit and expects <c>PendingVerification → Active</c> via the email-
+    /// verification token, which is noise for a test fixture. The seeded users in
+    /// <c>004.SeedTestData.sql</c> use the same direct-insert approach.
+    /// </remarks>
+    public static async Task<(long UserId, string Email, string Password)>
+        CreateTransientCoordinatorUserAsync(WebApplicationFactory<Program> factory)
+    {
+        var suffix = Guid.NewGuid().ToString("N");
+        var email = $"e2e-coord-{suffix}@test.mentoory.com";
+        var nationalId = $"TEST-E2E-{suffix[..12]}";
+        var utcNow = DateTime.UtcNow;
+
+        var user = User.Register(
+            email: email,
+            country: "Chile",
+            nationalId: nationalId,
+            firstName: "E2E",
+            lastName: $"Coord {suffix[..8]}",
+            passwordHash: Transient.PasswordHash,
+            utcNow: utcNow);
+        user.VerifyEmail(utcNow);
+
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AccessDbContext>();
+        db.Users.Add(user);
+        await db.SaveChangesAsync();
+
+        return (user.Id, email, Transient.Password);
+    }
+
+    /// <summary>
+    /// Creates a fresh project in <paramref name="incubatorName"/> bound to
+    /// <paramref name="ksTemplateExternalId"/>, provisions a <b>throwaway</b> coordinator
+    /// user (via <see cref="CreateTransientCoordinatorUserAsync"/>), and grants that user a
+    /// <c>ProjectCoordinator</c> role assignment on the new project. The project goes
+    /// through <see cref="CreateProjectCommand"/>, which invokes
+    /// <c>IKnowledgeStructureProvisioner</c> to materialize the project's KS with
+    /// <c>SourceTemplateTopicExternalId</c> correctly populated — a precondition for
+    /// <see cref="CloneFormTemplateHandler"/>'s TopicId rewrite to succeed.
+    /// </summary>
+    /// <remarks>
+    /// Each call creates its own throwaway user rather than reusing a seeded coordinator:
+    /// E2E tests share DB state within a collection (no Respawn between tests), so granting
+    /// additional assignments to a seeded account accumulates across the run and breaks any
+    /// legacy test that asserts a specific coordinator's project count.
+    /// </remarks>
+    public static async Task<(long ProjectId, long IncubatorId, Guid ExternalId, string Name, string CoordinatorEmail, string CoordinatorPassword)>
         CreateProjectWithCoordinatorAsync(
             WebApplicationFactory<Program> factory,
-            string coordinatorEmail,
             string incubatorName,
             Guid ksTemplateExternalId,
             string projectName)
     {
         var (incubatorId, incubatorExternalId) = await GetIncubatorByNameAsync(factory, incubatorName);
+        var (userId, coordinatorEmail, coordinatorPassword) = await CreateTransientCoordinatorUserAsync(factory);
 
         var createResult = await SendAsync(factory, new CreateProjectCommand(
             incubatorExternalId, projectName, Description: null, ksTemplateExternalId));
@@ -313,7 +359,6 @@ public static class KnowledgeIntegrationHelpers
 
         var projectExternalId = createResult.Value!;
         long projectId;
-        long userId;
 
         using (var scope = factory.Services.CreateScope())
         {
@@ -323,14 +368,6 @@ public static class KnowledgeIntegrationHelpers
                 .AsNoTracking()
                 .Where(p => p.ExternalId == projectExternalId)
                 .Select(p => p.Id)
-                .FirstAsync();
-
-            var accessDb = scope.ServiceProvider.GetRequiredService<AccessDbContext>();
-            var normalizedEmail = coordinatorEmail.Trim().ToUpperInvariant();
-            userId = await accessDb.Users
-                .AsNoTracking()
-                .Where(u => u.Email.NormalizedValue == normalizedEmail)
-                .Select(u => u.Id)
                 .FirstAsync();
         }
 
@@ -342,7 +379,7 @@ public static class KnowledgeIntegrationHelpers
                 $"AssignRoleCommand failed for {coordinatorEmail} on project {projectName}: {FormatErrors(assignResult)}");
         }
 
-        return (projectId, incubatorId, projectExternalId, projectName);
+        return (projectId, incubatorId, projectExternalId, projectName, coordinatorEmail, coordinatorPassword);
     }
 
     private static async Task<TResponse> SendAsync<TResponse>(
@@ -362,5 +399,16 @@ public static class KnowledgeIntegrationHelpers
         }
 
         return string.Join("; ", result.ErrorMessages.Select(m => $"[{m.Context}] {m.Message}"));
+    }
+
+    // Credentials for the throwaway users created by CreateTransientCoordinatorUserAsync.
+    // Nested so both the plaintext and the hash stay implementation-detail of this helper —
+    // exposing either at the class level would leak them into test code that should only
+    // touch the plaintext via the tuple returned by CreateProjectWithCoordinatorAsync.
+    private static class Transient
+    {
+        public const string Password = "Test123!@#";
+        public const string PasswordHash =
+            "pbkdf2-sha512$600000$vXEKVDDyckYOMgyiPBPUQg==$ZTWBL0Wx1XaoHBz9SRedZ1nbH0wZDh5taxDgqlKsn7A=";
     }
 }

@@ -9,6 +9,7 @@ namespace Mentoory.Tests.E2E.Tests;
 /// Validates context switching behavior from the top-bar modal.
 /// </summary>
 [Collection(E2ETestCollection.Name)]
+[Trait("Category", "E2E")]
 public class ContextSwitchingTests
 {
     private readonly PlaywrightFixture _fixture;

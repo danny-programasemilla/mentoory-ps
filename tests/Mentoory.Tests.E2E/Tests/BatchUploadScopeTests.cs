@@ -12,6 +12,7 @@ namespace Mentoory.Tests.E2E.Tests;
 /// server rejects unauthorized submissions, and IncubatorAdmin/GlobalAdmin behavior is preserved.
 /// </summary>
 [Collection(E2ETestCollection.Name)]
+[Trait("Category", "E2E")]
 public class BatchUploadScopeTests
 {
     private readonly PlaywrightFixture _fixture;

@@ -25,7 +25,7 @@
 dotnet test tests/Mentoory.Tests.E2E/Mentoory.Tests.E2E.csproj
 ```
 
-Expected wall-time on a typical laptop: ~4–5 minutes (CI reference target: ≤ 6 minutes per SC-T02).
+Expected wall-time on a typical laptop: ~5–6 minutes (Phase 9 measured 5m 28s locally; CI reference target: ≤ 6 minutes per SC-T02). One test is currently quarantined (`KnowledgeAuthorizationTests.TenantIsolation_CoordinatorB_CannotAccessCoordinatorAsKs`) via `[Fact(Skip=...)]` — see the XML doc on that method; the same invariant is covered by `KnowledgeProjectTreeEditingTests.ProjectTopic_TenantIsolation_CrossProjectReturnsNotFound`. Expect `Passed! — Failed: 0, Passed: 138, Skipped: 1, Total: 139`.
 
 ### Run a single user-story file
 
@@ -108,12 +108,13 @@ tests/Mentoory.Tests.E2E/bin/Debug/net10.0/screenshots/
 
 ## Mutation-Test Smoke (SC-T04)
 
-To manually verify the suite catches Phase 9 regressions:
+Full procedure and reference output: [`mutation-smoke.md`](./mutation-smoke.md) (generated 2026-04-19 during Phase 9).
 
-1. On a scratch branch, revert one invariant — e.g., drop `UNIQUE(ProjectId)` from `knowledge.KnowledgeStructures.sql`.
-2. Rebuild DACPAC.
-3. Run `DiagnosticCascadeRoundTripTests.CloneFormTemplate_TwiceForSameProject_DoesNotDuplicateProjectKs`.
-4. Expected: FAIL. Confirms the test catches the regression.
-5. Revert the revert; clean scratch branch.
+Short version — to manually verify the suite catches Phase 9 regressions:
 
-Repeat with one or two other invariants (e.g., return `Success` instead of the mismatch error in `CloneFormTemplateHandler`, remove `[Authorize(Roles="GlobalAdmin")]` on Templates list). Each should cause at least one new test to fail per SC-T04.
+1. On a scratch branch, revert one invariant. Two worked-out examples:
+   - **A (DB constraint)**: comment out `CONSTRAINT [UQ_KnowledgeStructures_ProjectId] UNIQUE ([ProjectId])` in `Mentoory.Db/knowledge/Tables/KnowledgeStructures.sql`. Note: `CloneFormTemplate_TwiceForSameProject_DoesNotDuplicateProjectKs` still **passes** under this mutation because `CloneFormTemplateHandler` is idempotent at the application layer — the UNIQUE constraint is a DB-level backstop. The invariant itself is still asserted; the constraint just never fires in this path. See `mutation-smoke.md § Mutation A` for the Phase-10 follow-up recommendation (direct-DbContext test targeting the DB constraint).
+   - **B (Authorization attribute)**: comment out `[Authorize(Roles = "GlobalAdmin")]` on the `Templates` GET action in `Mentoory.Web/Areas/Coordination/Controllers/KnowledgeController.cs`. `ProtectedRoutes_CoordinatorDenied_ForTemplateRoutes` fails on the `/Templates` row as expected.
+2. Rebuild the affected project (DACPAC for A, Web for B) **and** rebuild the test project so the fresh binary propagates into `tests/Mentoory.Tests.E2E/bin/Debug/net10.0/`. Do NOT use `--no-build` after a controller or SQL change — the stale test bin silently hides the mutation.
+3. Run the targeted test.
+4. Revert the mutation; re-run the test to confirm green. `git status` should show no changes to `Mentoory.Db/` or `Mentoory.Web/`.

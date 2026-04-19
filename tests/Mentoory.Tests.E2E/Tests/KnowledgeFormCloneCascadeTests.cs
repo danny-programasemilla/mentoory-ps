@@ -31,17 +31,11 @@ public class KnowledgeFormCloneCascadeTests
     [Fact]
     public async Task CloneCompatibleForm_HappyPath_CreatesProjectForm()
     {
-        // coord2 (not coord1) owns the test-provisioned project because several legacy E2E tests
-        // (e.g., DiagnosticWorkflowTests, MenuVisibilityTests) rely on coord1 having a single
-        // project so `/Access/Login` auto-routes past the context picker; turning coord1 into a
-        // multi-project user would break those. coord2 is only accessed through context-selecting
-        // helpers, so it tolerates multi-project assignment.
         var seededKsTemplateId = await KnowledgeIntegrationHelpers.GetSeededKsTemplateExternalIdAsync(_fixture);
         var seededFormTemplateId = await KnowledgeIntegrationHelpers.GetSeededBoundFormTemplateExternalIdAsync(_fixture);
         var projectName = $"E2E-US3-1-{Guid.NewGuid():N}"[..24];
         var project = await KnowledgeIntegrationHelpers.CreateProjectWithCoordinatorAsync(
             _fixture,
-            coordinatorEmail: "coord2@test.mentoory.com",
             incubatorName: "Incubadora Alpha",
             ksTemplateExternalId: seededKsTemplateId,
             projectName: projectName);
@@ -52,7 +46,7 @@ public class KnowledgeFormCloneCascadeTests
         try
         {
             await KnowledgeTestHelpers.LoginAndSelectAsync(
-                page, _fixture.BaseUrl, "coord2@test.mentoory.com", "Test123!@#",
+                page, _fixture.BaseUrl, project.CoordinatorEmail, project.CoordinatorPassword,
                 ContextSelection.CoordinatorForProject(project.Name));
 
             await page.GotoAsync($"{_fixture.BaseUrl}/Coordination/Diagnostics/Clone");

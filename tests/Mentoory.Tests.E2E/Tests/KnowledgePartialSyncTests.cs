@@ -110,7 +110,7 @@ public class KnowledgePartialSyncTests
         var page = await _fixture.CreatePageAsync();
         try
         {
-            await LoginAsCoord2ForProjectAsync(page, project.Name);
+            await LoginAsProjectCoordinatorAsync(page, project.CoordinatorEmail, project.CoordinatorPassword, project.Name);
             var projectKsExternalId = await GetProjectKsExternalIdAsync(project.ProjectId);
             await OpenProjectKsDetailAsync(page, projectKsExternalId);
 
@@ -146,7 +146,7 @@ public class KnowledgePartialSyncTests
         var page = await _fixture.CreatePageAsync();
         try
         {
-            await LoginAsCoord2ForProjectAsync(page, project.Name);
+            await LoginAsProjectCoordinatorAsync(page, project.CoordinatorEmail, project.CoordinatorPassword, project.Name);
             var projectKsExternalId = await GetProjectKsExternalIdAsync(project.ProjectId);
             await OpenProjectKsDetailAsync(page, projectKsExternalId);
             await SetSyncModeViaUiAsync(page, SyncModeRadio.Partial);
@@ -190,7 +190,7 @@ public class KnowledgePartialSyncTests
         var page = await _fixture.CreatePageAsync();
         try
         {
-            await LoginAsCoord2ForProjectAsync(page, project.Name);
+            await LoginAsProjectCoordinatorAsync(page, project.CoordinatorEmail, project.CoordinatorPassword, project.Name);
             var projectKsExternalId = await GetProjectKsExternalIdAsync(project.ProjectId);
             await OpenProjectKsDetailAsync(page, projectKsExternalId);
 
@@ -228,7 +228,7 @@ public class KnowledgePartialSyncTests
         var page = await _fixture.CreatePageAsync();
         try
         {
-            await LoginAsCoord2ForProjectAsync(page, project.Name);
+            await LoginAsProjectCoordinatorAsync(page, project.CoordinatorEmail, project.CoordinatorPassword, project.Name);
             var projectKsExternalId = await GetProjectKsExternalIdAsync(project.ProjectId);
             await OpenProjectKsDetailAsync(page, projectKsExternalId);
 
@@ -338,10 +338,10 @@ public class KnowledgePartialSyncTests
             "coord1@test.mentoory.com", "Test123!@#",
             ContextSelection.FirstEnabled);
 
-    private Task LoginAsCoord2ForProjectAsync(IPage page, string projectName) =>
+    private Task LoginAsProjectCoordinatorAsync(IPage page, string email, string password, string projectName) =>
         KnowledgeTestHelpers.LoginAndSelectAsync(
             page, _fixture.BaseUrl,
-            "coord2@test.mentoory.com", "Test123!@#",
+            email, password,
             ContextSelection.CoordinatorForProject(projectName));
 
     private async Task OpenProjectKsDetailAsync(IPage page, Guid ksExternalId)
@@ -350,12 +350,11 @@ public class KnowledgePartialSyncTests
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
     }
 
-    private async Task<(long ProjectId, long IncubatorId, Guid ExternalId, string Name)>
+    private async Task<(long ProjectId, long IncubatorId, Guid ExternalId, string Name, string CoordinatorEmail, string CoordinatorPassword)>
         ProvisionFreshProjectAsync(string prefix)
     {
         return await KnowledgeIntegrationHelpers.CreateProjectWithCoordinatorAsync(
             _fixture,
-            coordinatorEmail: "coord2@test.mentoory.com",
             incubatorName: "Incubadora Alpha",
             ksTemplateExternalId: SeededKsTemplateExternalId,
             projectName: $"E2E-{prefix}-{Guid.NewGuid():N}"[..24]);

@@ -11,6 +11,7 @@ namespace Mentoory.Tests.E2E.Tests;
 /// and can request self-enrollment.
 /// </summary>
 [Collection(E2ETestCollection.Name)]
+[Trait("Category", "E2E")]
 public class AvailableProjectsTests
 {
     private readonly PlaywrightFixture _fixture;

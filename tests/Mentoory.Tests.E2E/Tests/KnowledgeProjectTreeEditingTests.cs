@@ -265,13 +265,12 @@ public class KnowledgeProjectTreeEditingTests
     [Fact]
     public async Task DeleteProjectTopic_Referenced_Blocked()
     {
-        // Fresh project (coord2, not coord1 — see Phase 5 status note in tasks.md) so the
-        // clone goes through the provisioner and populates SourceTemplateTopicExternalId —
-        // CloneFormTemplateHandler's TopicId rewrite requires those back-references.
+        // Fresh project (not the seeded one) so the provisioner populates
+        // SourceTemplateTopicExternalId — CloneFormTemplateHandler's TopicId rewrite requires
+        // those back-references, which the hand-coded seed KS doesn't carry.
         var projectName = $"E2E-US4-5-{Guid.NewGuid():N}"[..24];
         var project = await KnowledgeIntegrationHelpers.CreateProjectWithCoordinatorAsync(
             _fixture,
-            coordinatorEmail: "coord2@test.mentoory.com",
             incubatorName: "Incubadora Alpha",
             ksTemplateExternalId: SeededKsTemplateExternalId,
             projectName: projectName);
@@ -291,7 +290,7 @@ public class KnowledgeProjectTreeEditingTests
 
             await KnowledgeTestHelpers.LoginAndSelectAsync(
                 page, _fixture.BaseUrl,
-                "coord2@test.mentoory.com", "Test123!@#",
+                project.CoordinatorEmail, project.CoordinatorPassword,
                 ContextSelection.CoordinatorForProject(project.Name));
 
             await OpenProjectKsDetailAsync(page, projectKsExternalId);
