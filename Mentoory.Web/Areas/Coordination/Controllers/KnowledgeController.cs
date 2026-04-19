@@ -84,18 +84,10 @@ public class KnowledgeController : Controller
     [Authorize(Roles = "GlobalAdmin")]
     public async Task<IActionResult> TemplateDetail(Guid externalId, CancellationToken ct)
     {
-        try
-        {
-            var detail = await _executor.SendOrThrowAsync(
-                new GetKnowledgeStructureTemplateQuery(externalId), ct);
+        var detail = await _executor.SendOrThrowAsync(
+            new GetKnowledgeStructureTemplateQuery(externalId), ct);
 
-            return View(detail);
-        }
-        catch (InvalidOperationException)
-        {
-            TempData["WarningMessage"] = "La plantilla solicitada no existe o no está disponible.";
-            return RedirectToAction(nameof(Templates));
-        }
+        return View(detail);
     }
 
     [HttpGet("Templates/Create")]
@@ -501,18 +493,10 @@ public class KnowledgeController : Controller
     [Authorize(Roles = "ProjectCoordinator,IncubatorAdmin,GlobalAdmin")]
     public async Task<IActionResult> ProjectStructureDetail(Guid externalId, CancellationToken ct)
     {
-        try
-        {
-            var detail = await _executor.SendOrThrowAsync(
-                new GetProjectKnowledgeStructureQuery(externalId), ct);
+        var detail = await _executor.SendOrThrowAsync(
+            new GetProjectKnowledgeStructureQuery(externalId), ct);
 
-            return View(detail);
-        }
-        catch (InvalidOperationException)
-        {
-            TempData["WarningMessage"] = "La estructura solicitada no existe o no está disponible.";
-            return RedirectToAction(nameof(Projects));
-        }
+        return View(detail);
     }
 
     [HttpGet("Projects/Clone")]

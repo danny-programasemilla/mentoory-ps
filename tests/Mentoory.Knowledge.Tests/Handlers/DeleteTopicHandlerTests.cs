@@ -118,11 +118,11 @@ public class DeleteTopicHandlerTests
 
     private static KS BuildStructureWithOneTopic(out Guid structureExternalId, out Guid topicExternalId)
     {
-        var template = KnowledgeStructureTemplate.Create("T", null, DateTime.UtcNow);
+        var template = KnowledgeStructureTemplate.Create("T", null, TestClock.FixedUtc);
         var tplModule = template.AddModule("M", null, 1);
         template.AddTopic(tplModule.ExternalId, "Top", null, 1);
 
-        var structure = KS.CloneFromTemplate(template, projectId: 42, incubatorId: 7, DateTime.UtcNow);
+        var structure = KS.CloneFromTemplate(template, projectId: 42, incubatorId: 7, TestClock.FixedUtc);
         structureExternalId = structure.ExternalId;
         topicExternalId = structure.Modules.Single().Topics.Single().ExternalId;
         return structure;

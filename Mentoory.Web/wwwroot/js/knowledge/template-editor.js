@@ -1,15 +1,38 @@
 // Mentoory - Knowledge structure template editor (US1)
-// Vanilla ES5-compatible JS. Relies on window.knowledgeTemplate (set by TemplateDetail.cshtml)
-// and the global showToast() helper from site.js.
+// Vanilla ES5-compatible JS. Reads its configuration from data-* attributes on the
+// root `[data-template-id]` card (set by TemplateDetail.cshtml), keeping the view
+// free of script blocks per constitution § VIII. Uses the global showToast() helper
+// from site.js.
 
 (function () {
     'use strict';
 
-    if (!window.knowledgeTemplate) {
+    var root = document.querySelector('[data-template-id]');
+    if (!root) {
         return;
     }
 
-    var ctx = window.knowledgeTemplate;
+    var ctx = {
+        externalId: root.dataset.templateId,
+        moduleCount: parseInt(root.dataset.moduleCount || '0', 10),
+        urls: {
+            updateTemplate: root.dataset.urlUpdateTemplate,
+            addModule: root.dataset.urlAddModule,
+            updateModule: root.dataset.urlUpdateModule,
+            deleteModule: root.dataset.urlDeleteModule,
+            addTopic: root.dataset.urlAddTopic,
+            updateTopic: root.dataset.urlUpdateTopic,
+            deleteTopic: root.dataset.urlDeleteTopic,
+            updateTopicRanges: root.dataset.urlUpdateTopicRanges,
+            addSubject: root.dataset.urlAddSubject,
+            updateSubject: root.dataset.urlUpdateSubject,
+            deleteSubject: root.dataset.urlDeleteSubject,
+            addResource: root.dataset.urlAddResource,
+            updateResource: root.dataset.urlUpdateResource,
+            deleteResource: root.dataset.urlDeleteResource
+        },
+        guidPlaceholder: root.dataset.guidPlaceholder || '00000000-0000-0000-0000-000000000000'
+    };
 
     // -------------------------------------------------------------------------
     // HTTP helpers

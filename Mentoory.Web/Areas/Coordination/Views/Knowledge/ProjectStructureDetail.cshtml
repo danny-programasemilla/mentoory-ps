@@ -58,7 +58,26 @@
     </div>
 }
 
-<div class="card mb-4" data-structure-id="@Model.ExternalId">
+<div class="card mb-4"
+     data-structure-id="@Model.ExternalId"
+     data-module-count="@Model.Modules.Count"
+     data-guid-placeholder="00000000-0000-0000-0000-000000000000"
+     data-url-update-structure="@Url.Action("UpdateProjectStructure", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId })"
+     data-url-set-sync-mode="@Url.Action("SetProjectStructureSyncMode", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId })"
+     data-url-sync-from-template="@Url.Action("SyncFromTemplate", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId })"
+     data-url-add-module="@Url.Action("AddProjectModule", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId })"
+     data-url-update-module="@Url.Action("UpdateProjectModule", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId, moduleExternalId = System.Guid.Empty })"
+     data-url-delete-module="@Url.Action("DeleteProjectModule", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId, moduleExternalId = System.Guid.Empty })"
+     data-url-add-topic="@Url.Action("AddProjectTopic", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId })"
+     data-url-update-topic="@Url.Action("UpdateProjectTopic", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId, topicExternalId = System.Guid.Empty })"
+     data-url-delete-topic="@Url.Action("DeleteProjectTopic", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId, topicExternalId = System.Guid.Empty })"
+     data-url-update-topic-ranges="@Url.Action("UpdateProjectTopicPriorityRanges", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId, topicExternalId = System.Guid.Empty })"
+     data-url-add-subject="@Url.Action("AddProjectSubject", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId })"
+     data-url-update-subject="@Url.Action("UpdateProjectSubject", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId, subjectExternalId = System.Guid.Empty })"
+     data-url-delete-subject="@Url.Action("DeleteProjectSubject", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId, subjectExternalId = System.Guid.Empty })"
+     data-url-add-resource="@Url.Action("AddProjectResource", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId })"
+     data-url-update-resource="@Url.Action("UpdateProjectResource", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId, resourceExternalId = System.Guid.Empty })"
+     data-url-delete-resource="@Url.Action("DeleteProjectResource", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId, resourceExternalId = System.Guid.Empty })">
     <div class="card-header">
         <h3 class="card-title">Información de la Estructura</h3>
         <div class="card-actions">
@@ -202,30 +221,5 @@
 
 @section Scripts {
     <script src="~/js/site.js"></script>
-    <script>
-        window.knowledgeProject = {
-            structureExternalId: '@Model.ExternalId',
-            moduleCount: @Model.Modules.Count,
-            urls: {
-                updateStructure: '@Url.Action("UpdateProjectStructure", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId })',
-                setSyncMode: '@Url.Action("SetProjectStructureSyncMode", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId })',
-                syncFromTemplate: '@Url.Action("SyncFromTemplate", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId })',
-                addModule: '@Url.Action("AddProjectModule", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId })',
-                updateModule: '@Url.Action("UpdateProjectModule", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId, moduleExternalId = System.Guid.Empty })',
-                deleteModule: '@Url.Action("DeleteProjectModule", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId, moduleExternalId = System.Guid.Empty })',
-                addTopic: '@Url.Action("AddProjectTopic", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId })',
-                updateTopic: '@Url.Action("UpdateProjectTopic", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId, topicExternalId = System.Guid.Empty })',
-                deleteTopic: '@Url.Action("DeleteProjectTopic", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId, topicExternalId = System.Guid.Empty })',
-                updateTopicRanges: '@Url.Action("UpdateProjectTopicPriorityRanges", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId, topicExternalId = System.Guid.Empty })',
-                addSubject: '@Url.Action("AddProjectSubject", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId })',
-                updateSubject: '@Url.Action("UpdateProjectSubject", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId, subjectExternalId = System.Guid.Empty })',
-                deleteSubject: '@Url.Action("DeleteProjectSubject", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId, subjectExternalId = System.Guid.Empty })',
-                addResource: '@Url.Action("AddProjectResource", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId })',
-                updateResource: '@Url.Action("UpdateProjectResource", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId, resourceExternalId = System.Guid.Empty })',
-                deleteResource: '@Url.Action("DeleteProjectResource", "Knowledge", new { area = "Coordination", structureExternalId = Model.ExternalId, resourceExternalId = System.Guid.Empty })'
-            },
-            guidPlaceholder: '00000000-0000-0000-0000-000000000000'
-        };
-    </script>
     <script src="~/js/knowledge/project-structure-editor.js"></script>
 }

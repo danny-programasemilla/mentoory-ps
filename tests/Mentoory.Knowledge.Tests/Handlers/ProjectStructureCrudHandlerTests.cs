@@ -260,12 +260,12 @@ public class ProjectStructureCrudHandlerTests
 
     private static KS FreshClone()
     {
-        var template = KnowledgeStructureTemplate.Create("T", "desc", DateTime.UtcNow);
+        var template = KnowledgeStructureTemplate.Create("T", "desc", TestClock.FixedUtc);
         var tplModule = template.AddModule("Módulo 1", null, 1);
         var tplTopic = template.AddTopic(tplModule.ExternalId, "Tema 1", null, 1);
         template.AddSubject(tplTopic.ExternalId, "Materia 1", null, 1);
 
-        return KS.CloneFromTemplate(template, projectId: 42, incubatorId: 7, DateTime.UtcNow);
+        return KS.CloneFromTemplate(template, projectId: 42, incubatorId: 7, TestClock.FixedUtc);
     }
 
     private void SetupFullTree(KS structure)

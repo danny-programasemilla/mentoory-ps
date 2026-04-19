@@ -1,15 +1,40 @@
 // Mentoory - Knowledge structure clone (project) editor (US2)
-// Vanilla ES5-compatible JS. Relies on window.knowledgeProject (set by ProjectStructureDetail.cshtml)
-// and the global showToast() helper from site.js.
+// Vanilla ES5-compatible JS. Reads its configuration from data-* attributes on the
+// root `[data-structure-id]` card (set by ProjectStructureDetail.cshtml), keeping
+// the view free of script blocks per constitution § VIII. Uses the global
+// showToast() helper from site.js.
 
 (function () {
     'use strict';
 
-    if (!window.knowledgeProject) {
+    var root = document.querySelector('[data-structure-id]');
+    if (!root) {
         return;
     }
 
-    var ctx = window.knowledgeProject;
+    var ctx = {
+        structureExternalId: root.dataset.structureId,
+        moduleCount: parseInt(root.dataset.moduleCount || '0', 10),
+        urls: {
+            updateStructure: root.dataset.urlUpdateStructure,
+            setSyncMode: root.dataset.urlSetSyncMode,
+            syncFromTemplate: root.dataset.urlSyncFromTemplate,
+            addModule: root.dataset.urlAddModule,
+            updateModule: root.dataset.urlUpdateModule,
+            deleteModule: root.dataset.urlDeleteModule,
+            addTopic: root.dataset.urlAddTopic,
+            updateTopic: root.dataset.urlUpdateTopic,
+            deleteTopic: root.dataset.urlDeleteTopic,
+            updateTopicRanges: root.dataset.urlUpdateTopicRanges,
+            addSubject: root.dataset.urlAddSubject,
+            updateSubject: root.dataset.urlUpdateSubject,
+            deleteSubject: root.dataset.urlDeleteSubject,
+            addResource: root.dataset.urlAddResource,
+            updateResource: root.dataset.urlUpdateResource,
+            deleteResource: root.dataset.urlDeleteResource
+        },
+        guidPlaceholder: root.dataset.guidPlaceholder || '00000000-0000-0000-0000-000000000000'
+    };
 
     // -------------------------------------------------------------------------
     // HTTP helpers

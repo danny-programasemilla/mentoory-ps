@@ -42,6 +42,10 @@ public class KnowledgeStructureTemplateRepository : AbstractRepository<Knowledge
             .FirstOrDefaultAsync(t => t.ExternalId == externalId, cancellationToken);
     }
 
+    // NOTE: AsNoTracking is intentionally absent on the write-path full-tree loaders
+    // (GetBy*WithFullTreeAsync). EF must track the aggregate so mutations through
+    // the root can be persisted. The parallel GetByExternalIdReadOnlyAsync applies
+    // AsNoTracking for query projections.
     public Task<KnowledgeStructureTemplate?> GetByIdWithFullTreeAsync(long id, CancellationToken cancellationToken)
     {
         return _dbContext.KnowledgeStructureTemplates

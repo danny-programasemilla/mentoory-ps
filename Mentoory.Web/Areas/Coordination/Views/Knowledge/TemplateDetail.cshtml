@@ -49,7 +49,24 @@
     </div>
 }
 
-<div class="card mb-4" data-template-id="@Model.ExternalId">
+<div class="card mb-4"
+     data-template-id="@Model.ExternalId"
+     data-module-count="@Model.Modules.Count"
+     data-guid-placeholder="00000000-0000-0000-0000-000000000000"
+     data-url-update-template="@Url.Action("UpdateTemplate", "Knowledge", new { area = "Coordination", externalId = Model.ExternalId })"
+     data-url-add-module="@Url.Action("AddModule", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId })"
+     data-url-update-module="@Url.Action("UpdateModule", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId, moduleExternalId = System.Guid.Empty })"
+     data-url-delete-module="@Url.Action("DeleteModule", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId, moduleExternalId = System.Guid.Empty })"
+     data-url-add-topic="@Url.Action("AddTopic", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId })"
+     data-url-update-topic="@Url.Action("UpdateTopic", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId, topicExternalId = System.Guid.Empty })"
+     data-url-delete-topic="@Url.Action("DeleteTopic", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId, topicExternalId = System.Guid.Empty })"
+     data-url-update-topic-ranges="@Url.Action("UpdateTopicPriorityRanges", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId, topicExternalId = System.Guid.Empty })"
+     data-url-add-subject="@Url.Action("AddSubject", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId })"
+     data-url-update-subject="@Url.Action("UpdateSubject", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId, subjectExternalId = System.Guid.Empty })"
+     data-url-delete-subject="@Url.Action("DeleteSubject", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId, subjectExternalId = System.Guid.Empty })"
+     data-url-add-resource="@Url.Action("AddResource", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId })"
+     data-url-update-resource="@Url.Action("UpdateResource", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId, resourceExternalId = System.Guid.Empty })"
+     data-url-delete-resource="@Url.Action("DeleteResource", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId, resourceExternalId = System.Guid.Empty })">
     <div class="card-header">
         <h3 class="card-title">Información de la Plantilla</h3>
         <div class="card-actions">
@@ -142,28 +159,5 @@
 
 @section Scripts {
     <script src="~/js/site.js"></script>
-    <script>
-        window.knowledgeTemplate = {
-            externalId: '@Model.ExternalId',
-            moduleCount: @Model.Modules.Count,
-            urls: {
-                updateTemplate: '@Url.Action("UpdateTemplate", "Knowledge", new { area = "Coordination", externalId = Model.ExternalId })',
-                addModule: '@Url.Action("AddModule", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId })',
-                updateModule: '@Url.Action("UpdateModule", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId, moduleExternalId = System.Guid.Empty })',
-                deleteModule: '@Url.Action("DeleteModule", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId, moduleExternalId = System.Guid.Empty })',
-                addTopic: '@Url.Action("AddTopic", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId })',
-                updateTopic: '@Url.Action("UpdateTopic", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId, topicExternalId = System.Guid.Empty })',
-                deleteTopic: '@Url.Action("DeleteTopic", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId, topicExternalId = System.Guid.Empty })',
-                updateTopicRanges: '@Url.Action("UpdateTopicPriorityRanges", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId, topicExternalId = System.Guid.Empty })',
-                addSubject: '@Url.Action("AddSubject", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId })',
-                updateSubject: '@Url.Action("UpdateSubject", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId, subjectExternalId = System.Guid.Empty })',
-                deleteSubject: '@Url.Action("DeleteSubject", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId, subjectExternalId = System.Guid.Empty })',
-                addResource: '@Url.Action("AddResource", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId })',
-                updateResource: '@Url.Action("UpdateResource", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId, resourceExternalId = System.Guid.Empty })',
-                deleteResource: '@Url.Action("DeleteResource", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId, resourceExternalId = System.Guid.Empty })'
-            },
-            guidPlaceholder: '00000000-0000-0000-0000-000000000000'
-        };
-    </script>
     <script src="~/js/knowledge/template-editor.js"></script>
 }
