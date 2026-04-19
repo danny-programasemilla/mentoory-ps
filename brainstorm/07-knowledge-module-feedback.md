@@ -138,3 +138,9 @@ The spec distinguishes the write path (tracking) from the read path (`AsNoTracki
 ---
 
 **Summary**: 2 blockers prevent merge. B1 (`BaseController` inheritance) and B2 (logic in a Razor view script block) are constitution violations. W1–W4 are correctness/consistency issues that should be fixed but are lower risk. The underlying architecture, CQRS patterns, SQL schema, and test coverage are solid.
+
+---
+
+### 2026-04-19 addendum — Phase 9 amendment
+
+The form-to-KS binding cardinality issue flagged during brainstorming has been **resolved**: the KS binding moved from `FormTemplate` to `Project`, enforcing 1 KS per project via a UNIQUE constraint on `KnowledgeStructures.ProjectId`. The form-template's `DefaultKnowledgeStructureTemplateExternalId` is now compatibility metadata only; `CloneFormTemplateHandler` rewrites topic ids but never provisions KS. See [AMENDMENT-PROJECT-KS-BINDING.md](../specs/016-knowledge-module-core/AMENDMENT-PROJECT-KS-BINDING.md) and brainstorm [11](./11-knowledge-module-binding-redesign.md).

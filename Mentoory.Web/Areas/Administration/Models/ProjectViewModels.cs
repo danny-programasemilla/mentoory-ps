@@ -13,6 +13,10 @@ public sealed class CreateProjectViewModel
     [Display(Name = "Descripción")]
     public string? Description { get; set; }
 
+    [Required(ErrorMessage = "Debe seleccionar una plantilla de conocimiento.")]
+    [Display(Name = "Plantilla de conocimiento")]
+    public Guid KnowledgeStructureTemplateExternalId { get; set; }
+
     [Display(Name = "Visible públicamente")]
     public bool IsPublic { get; set; }
 

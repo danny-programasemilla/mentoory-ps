@@ -7,7 +7,6 @@ using Mentoory.Knowledge.Application.Commands.AddSubjectTemplate;
 using Mentoory.Knowledge.Application.Commands.AddTopic;
 using Mentoory.Knowledge.Application.Commands.AddTopicTemplate;
 using Mentoory.Knowledge.Application.Commands.ArchiveKnowledgeStructureTemplate;
-using Mentoory.Knowledge.Application.Commands.CloneKnowledgeStructureTemplate;
 using Mentoory.Knowledge.Application.Commands.CreateKnowledgeStructureTemplate;
 using Mentoory.Knowledge.Application.Commands.DeleteKnowledgeStructureTemplate;
 using Mentoory.Knowledge.Application.Commands.DeleteModule;
@@ -497,63 +496,6 @@ public class KnowledgeController : Controller
             new GetProjectKnowledgeStructureQuery(externalId), ct);
 
         return View(detail);
-    }
-
-    [HttpGet("Projects/Clone")]
-    [Authorize(Roles = "ProjectCoordinator,IncubatorAdmin,GlobalAdmin")]
-    public async Task<IActionResult> CloneFromTemplateGet(CancellationToken ct)
-    {
-        if (!User.GetActiveProjectId().HasValue)
-        {
-            TempData["WarningMessage"] = "Debe seleccionar un proyecto antes de clonar una plantilla.";
-            return RedirectToAction("Select", "Context", new { area = string.Empty, returnUrl = Request.Path.Value });
-        }
-
-        var templates = await _executor.SendOrThrowAsync(
-            new ListKnowledgeStructureTemplatesQuery(IncludeArchived: false), ct);
-
-        ViewBag.Templates = templates;
-        return View("CloneFromTemplate", new CloneStructureViewModel());
-    }
-
-    [HttpPost("Projects/Clone")]
-    [ValidateAntiForgeryToken]
-    [Authorize(Roles = "ProjectCoordinator,IncubatorAdmin,GlobalAdmin")]
-    public async Task<IActionResult> CloneFromTemplate(CloneStructureViewModel model, CancellationToken ct)
-    {
-        var projectId = User.GetActiveProjectId();
-        if (!projectId.HasValue)
-        {
-            TempData["WarningMessage"] = "Debe seleccionar un proyecto antes de clonar una plantilla.";
-            return RedirectToAction("Select", "Context", new { area = string.Empty, returnUrl = Request.Path.Value });
-        }
-
-        if (!ModelState.IsValid)
-        {
-            var templates = await _executor.SendOrThrowAsync(
-                new ListKnowledgeStructureTemplatesQuery(IncludeArchived: false), ct);
-            ViewBag.Templates = templates;
-            return View("CloneFromTemplate", model);
-        }
-
-        var incubatorId = User.GetActiveIncubatorId();
-        var result = await _executor.SendAndLogIfFailureAsync(
-            new CloneKnowledgeStructureTemplateCommand(
-                model.SourceTemplateExternalId,
-                projectId.Value,
-                incubatorId), ct);
-
-        if (result.IsSuccess)
-        {
-            TempData["SuccessMessage"] = "Estructura de conocimiento clonada exitosamente.";
-            return RedirectToAction(nameof(ProjectStructureDetail), new { externalId = result.Value });
-        }
-
-        ModelState.AddModelError(string.Empty, FirstErrorMessage(result) ?? "Error al clonar la plantilla.");
-        var reloadTemplates = await _executor.SendOrThrowAsync(
-            new ListKnowledgeStructureTemplatesQuery(IncludeArchived: false), ct);
-        ViewBag.Templates = reloadTemplates;
-        return View("CloneFromTemplate", model);
     }
 
     // -------------------------------------------------------------------------

@@ -156,3 +156,4 @@ One pass through `spex:review-spec`. Initial status was ⚠ NEEDS WORK against t
 - **Outbox upgrade for `TopicPriorityRangesChanged`** — deferred, not a blocker until Mentoring Plan consumer is built.
 - **Topic score range (0–100 vs raw)** — verification task for `/speckit-plan`.
 - **Concurrent-edit semantics on clones** — not addressed in v1; flag if it becomes a real user problem.
+- **Form-to-KS binding cardinality (FR-K20 series)** — ✅ **resolved 2026-04-19**: moved from `FormTemplate` to `Project` (1 KS per project), see [AMENDMENT-PROJECT-KS-BINDING.md](../specs/016-knowledge-module-core/AMENDMENT-PROJECT-KS-BINDING.md) and brainstorm [11](./11-knowledge-module-binding-redesign.md). Form-template binding is now compatibility metadata only; KS materializes at project creation.

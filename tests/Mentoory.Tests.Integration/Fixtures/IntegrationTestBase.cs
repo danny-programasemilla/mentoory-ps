@@ -124,13 +124,22 @@ public abstract class IntegrationTestBase : IAsyncLifetime
             BEGIN
                 DECLARE @StructureExternalId UNIQUEIDENTIFIER = CAST('99999999-9999-9999-9999-999999999901' AS UNIQUEIDENTIFIER);
                 DECLARE @ModuleExternalId UNIQUEIDENTIFIER = CAST('99999999-9999-9999-9999-999999999902' AS UNIQUEIDENTIFIER);
+                DECLARE @TemplateExternalId UNIQUEIDENTIFIER = CAST('11111111-1111-1111-1111-111111111111' AS UNIQUEIDENTIFIER);
+
+                IF NOT EXISTS (SELECT 1 FROM [knowledge].[KnowledgeStructureTemplates] WHERE [ExternalId] = @TemplateExternalId)
+                BEGIN
+                    INSERT INTO [knowledge].[KnowledgeStructureTemplates] ([ExternalId], [Name], [Description], [IsArchived], [Version], [CreatedAtUtc])
+                    VALUES (@TemplateExternalId, N'Emprendimiento Básico', N'Plantilla de ejemplo.', 0, 1, SYSUTCDATETIME());
+                END
+
+                DECLARE @TemplateId BIGINT = (SELECT [Id] FROM [knowledge].[KnowledgeStructureTemplates] WHERE [ExternalId] = @TemplateExternalId);
 
                 IF NOT EXISTS (SELECT 1 FROM [knowledge].[KnowledgeStructures] WHERE [ExternalId] = @StructureExternalId)
                 BEGIN
                     -- ProjectId = 999999 is an out-of-band sentinel that test ProjectIds (typically
                     -- 10-99) never use, so the seed KS isn't counted by cascade reuse queries.
                     INSERT INTO [knowledge].[KnowledgeStructures] ([ExternalId], [ProjectId], [IncubatorId], [Name], [Description], [SourceTemplateId], [SourceTemplateVersion], [SyncMode], [CreatedAtUtc])
-                    VALUES (@StructureExternalId, 999999, 999999, N'Test KS (FK parent for seeded Topics 1-5)', NULL, NULL, NULL, 0, SYSUTCDATETIME());
+                    VALUES (@StructureExternalId, 999999, 999999, N'Test KS (FK parent for seeded Topics 1-5)', NULL, @TemplateId, 1, 0, SYSUTCDATETIME());
                 END
 
                 DECLARE @StructureId BIGINT = (SELECT [Id] FROM [knowledge].[KnowledgeStructures] WHERE [ExternalId] = @StructureExternalId);

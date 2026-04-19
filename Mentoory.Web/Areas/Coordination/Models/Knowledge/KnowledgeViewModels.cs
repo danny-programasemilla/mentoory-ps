@@ -215,13 +215,6 @@ public sealed class UpdateResourceInputModel
 // -----------------------------------------------------------------------------
 // Project clone view models (US2)
 // -----------------------------------------------------------------------------
-public sealed class CloneStructureViewModel
-{
-    [Display(Name = "Plantilla de origen")]
-    [Required(ErrorMessage = "Debe seleccionar una plantilla de origen.")]
-    public Guid SourceTemplateExternalId { get; set; }
-}
-
 public sealed class SetSyncModeInputModel
 {
     [Display(Name = "Modo de sincronización")]

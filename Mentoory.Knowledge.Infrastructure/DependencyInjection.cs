@@ -1,6 +1,8 @@
 using Mentoory.Knowledge.Domain.Repositories;
+using Mentoory.Knowledge.Infrastructure.CrossModule;
 using Mentoory.Knowledge.Infrastructure.Persistence;
 using Mentoory.Knowledge.Infrastructure.Persistence.Repositories;
+using Mentoory.Tenant.Application.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,6 +33,7 @@ public static class DependencyInjection
 
         builder.Services.AddScoped<IKnowledgeStructureTemplateRepository, KnowledgeStructureTemplateRepository>();
         builder.Services.AddScoped<IKnowledgeStructureRepository, KnowledgeStructureRepository>();
+        builder.Services.AddScoped<IKnowledgeStructureProvisioner, KnowledgeStructureProvisioner>();
 
         return builder;
     }

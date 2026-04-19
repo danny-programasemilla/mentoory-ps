@@ -18,7 +18,7 @@ public class GetProjectByExternalIdHandlerTests
     [Fact]
     public async Task Handle_WhenIncubatorIdMismatch_ReturnsFailure()
     {
-        var project = Project.Create(1, "Test Project", null, UtcNow);
+        var project = Project.Create(1, "Test Project", null, Guid.Parse("11111111-1111-1111-1111-111111111111"), UtcNow);
         _projectRepo.Setup(r => r.GetByExternalIdAsync(project.ExternalId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(project);
 
@@ -37,7 +37,7 @@ public class GetProjectByExternalIdHandlerTests
     [Fact]
     public async Task Handle_WhenIncubatorIdMatches_ReturnsSuccess()
     {
-        var project = Project.Create(1, "Test Project", null, UtcNow);
+        var project = Project.Create(1, "Test Project", null, Guid.Parse("11111111-1111-1111-1111-111111111111"), UtcNow);
         _projectRepo.Setup(r => r.GetByExternalIdAsync(project.ExternalId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(project);
 
@@ -55,7 +55,7 @@ public class GetProjectByExternalIdHandlerTests
     [Fact]
     public async Task Handle_WhenCallerIncubatorIdIsNull_ReturnsSuccess()
     {
-        var project = Project.Create(1, "Test Project", null, UtcNow);
+        var project = Project.Create(1, "Test Project", null, Guid.Parse("11111111-1111-1111-1111-111111111111"), UtcNow);
         _projectRepo.Setup(r => r.GetByExternalIdAsync(project.ExternalId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(project);
 

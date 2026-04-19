@@ -13,7 +13,7 @@ public interface IKnowledgeStructureRepository : IRepository<KnowledgeStructure>
     Task<KnowledgeStructure?> GetByIdWithFullTreeAsync(long id, CancellationToken cancellationToken);
     Task<KnowledgeStructure?> GetByExternalIdWithFullTreeAsync(Guid externalId, CancellationToken cancellationToken);
     Task<KnowledgeStructure?> GetByExternalIdReadOnlyAsync(Guid externalId, CancellationToken cancellationToken);
-    Task<KnowledgeStructure?> GetByProjectAndSourceTemplateIdAsync(long projectId, long sourceTemplateId, CancellationToken cancellationToken);
+    Task<KnowledgeStructure?> GetByProjectIdAsync(long projectId, CancellationToken cancellationToken);
     Task<IReadOnlyList<KnowledgeStructure>> ListByProjectAsync(long projectId, CancellationToken cancellationToken);
     Task<int> CountClonesBySourceTemplateIdAsync(long sourceTemplateId, CancellationToken cancellationToken);
     IQueryable<KnowledgeStructure> Query();

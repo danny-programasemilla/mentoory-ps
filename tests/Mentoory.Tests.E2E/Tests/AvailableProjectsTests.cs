@@ -41,6 +41,7 @@ public class AvailableProjectsTests
             }
 
             await page.SelectOptionAsync("select[name='EnrollmentVariant']", "1"); // Directo
+            await SelectFirstKnowledgeTemplateAsync(page);
             await page.Locator("button[type='submit']").Filter(new LocatorFilterOptions
             {
                 HasText = "Crear Proyecto"
@@ -175,6 +176,7 @@ public class AvailableProjectsTests
             }
 
             await page.SelectOptionAsync("select[name='EnrollmentVariant']", "1"); // Directo
+            await SelectFirstKnowledgeTemplateAsync(page);
             await page.Locator("button[type='submit']").Filter(new LocatorFilterOptions
             {
                 HasText = "Crear Proyecto"
@@ -234,6 +236,18 @@ public class AvailableProjectsTests
             await _fixture.TakeScreenshotOnFailureAsync(page, nameof(AvailableProjects_SelfEnrollment_ShowsSuccessMessage));
             await page.Context.DisposeAsync();
         }
+    }
+
+    private static async Task SelectFirstKnowledgeTemplateAsync(IPage page)
+    {
+        var ksDropdown = page.Locator("select[name='KnowledgeStructureTemplateExternalId']");
+        await ksDropdown.WaitForAsync(new LocatorWaitForOptions { Timeout = 5000 });
+
+        var values = await ksDropdown.Locator("option").EvaluateAllAsync<string[]>(
+            "nodes => nodes.map(n => n.value).filter(v => v && v.length > 0)");
+
+        values.Should().NotBeEmpty();
+        await ksDropdown.SelectOptionAsync(values[0]);
     }
 
     private async Task LoginAsync(IPage page, string email, string password)

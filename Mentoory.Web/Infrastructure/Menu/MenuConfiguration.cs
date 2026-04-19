@@ -17,12 +17,12 @@ public static class MenuConfiguration
             new("Plantillas", "/Platform/Templates/Diagnostics", "ti ti-file-text"),
         }),
 
-        new MenuGroup("Administración", "ti ti-users-group", new[] { "IncubatorAdmin", "GlobalAdmin" }, new MenuItem[]
+        new MenuGroup("Administración", "ti ti-users-group", new[] { "ProjectCoordinator", "IncubatorAdmin", "GlobalAdmin" }, new MenuItem[]
         {
-            new("Panel", "/Administration/Dashboard", "ti ti-dashboard"),
-            new("Proyectos", "/Administration/Projects", "ti ti-sitemap"),
-            new("Usuarios", "/Administration/Users", "ti ti-users"),
-            new("Carga Masiva", "/Administration/BatchUpload", "ti ti-file-upload"),
+            new("Panel", "/Administration/Dashboard", "ti ti-dashboard", new[] { "IncubatorAdmin", "GlobalAdmin" }),
+            new("Proyectos", "/Administration/Projects", "ti ti-sitemap", new[] { "ProjectCoordinator", "IncubatorAdmin", "GlobalAdmin" }),
+            new("Usuarios", "/Administration/Users", "ti ti-users", new[] { "IncubatorAdmin", "GlobalAdmin" }),
+            new("Carga Masiva", "/Administration/BatchUpload", "ti ti-file-upload", new[] { "IncubatorAdmin", "GlobalAdmin" }),
         }),
 
         new MenuGroup("Coordinación", "ti ti-list-check", new[] { "ProjectCoordinator", "Mentor", "IncubatorAdmin", "GlobalAdmin" }, new MenuItem[]

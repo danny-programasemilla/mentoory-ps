@@ -18,5 +18,8 @@ public class CreateProjectValidator : AbstractValidator<CreateProjectCommand>
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Name is required")
             .MaximumLength(200).WithMessage("Name must not exceed 200 characters");
+
+        RuleFor(x => x.KnowledgeStructureTemplateExternalId)
+            .NotEmpty().WithMessage("La plantilla de conocimiento es requerida.");
     }
 }

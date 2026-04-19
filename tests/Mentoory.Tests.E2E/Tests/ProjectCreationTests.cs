@@ -7,7 +7,8 @@ namespace Mentoory.Tests.E2E.Tests;
 
 /// <summary>
 /// E2E-T009 - Validates that the project creation form includes IsPublic checkbox,
-/// EnrollmentVariant dropdown, and standard project fields.
+/// EnrollmentVariant dropdown, the Phase 9 required KS-template dropdown, and standard
+/// project fields.
 /// </summary>
 [Collection(E2ETestCollection.Name)]
 public class ProjectCreationTests
@@ -29,17 +30,14 @@ public class ProjectCreationTests
             await page.GotoAsync($"{_fixture.BaseUrl}/Administration/Projects/Create");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // Assert IsPublic checkbox is present
             var isPublicCheckbox = page.Locator("input[type='checkbox'][name='IsPublic']");
             (await isPublicCheckbox.CountAsync()).Should().Be(1,
                 "project creation form should have an IsPublic checkbox");
 
-            // Assert EnrollmentVariant dropdown is present
             var enrollmentDropdown = page.Locator("select[name='EnrollmentVariant']");
             (await enrollmentDropdown.CountAsync()).Should().Be(1,
                 "project creation form should have an EnrollmentVariant dropdown");
 
-            // Assert dropdown options
             var flujoCompletoOption = enrollmentDropdown.Locator("option[value='0']");
             (await flujoCompletoOption.CountAsync()).Should().Be(1,
                 "EnrollmentVariant should have 'Flujo completo' option (value 0)");
@@ -47,6 +45,17 @@ public class ProjectCreationTests
             var directoOption = enrollmentDropdown.Locator("option[value='1']");
             (await directoOption.CountAsync()).Should().Be(1,
                 "EnrollmentVariant should have 'Directo' option (value 1)");
+
+            var ksTemplateDropdown = page.Locator("select[name='KnowledgeStructureTemplateExternalId']");
+            (await ksTemplateDropdown.CountAsync()).Should().Be(1,
+                "Phase 9: project creation form must expose a required KS-template dropdown");
+
+            var seededTemplateOption = ksTemplateDropdown.Locator("option").Filter(new LocatorFilterOptions
+            {
+                HasText = "Emprendimiento Básico",
+            });
+            (await seededTemplateOption.CountAsync()).Should().BeGreaterThan(0,
+                "the seeded 'Emprendimiento Básico' template should appear in the dropdown");
         }
         finally
         {
@@ -74,7 +83,8 @@ public class ProjectCreationTests
                 await isPublicCheckbox.CheckAsync();
             }
 
-            await page.SelectOptionAsync("select[name='EnrollmentVariant']", "1"); // Directo
+            await page.SelectOptionAsync("select[name='EnrollmentVariant']", "1");
+            await SelectFirstKnowledgeTemplateAsync(page);
 
             await page.Locator("button[type='submit']").Filter(new LocatorFilterOptions
             {
@@ -106,14 +116,12 @@ public class ProjectCreationTests
             await page.GotoAsync($"{_fixture.BaseUrl}/Administration/Projects/Create");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // Leave Name field empty and submit (use filtered locator to avoid TopBar's hidden logout submit)
             await page.Locator("button[type='submit']").Filter(new LocatorFilterOptions
             {
                 HasText = "Crear Proyecto"
             }).ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // Assert validation error appears
             var validationErrors = page.Locator(".text-danger, .input-validation-error, .validation-summary-errors, .field-validation-error");
             (await validationErrors.CountAsync()).Should().BeGreaterThan(0,
                 "submitting with an empty name should show a validation error");
@@ -121,6 +129,39 @@ public class ProjectCreationTests
         finally
         {
             await _fixture.TakeScreenshotOnFailureAsync(page, nameof(CreateProject_EmptyName_ShowsValidationError));
+            await page.Context.DisposeAsync();
+        }
+    }
+
+    [Fact]
+    public async Task CreateProject_MissingKsTemplate_ShowsValidationError()
+    {
+        var page = await _fixture.CreatePageAsync();
+        try
+        {
+            await LoginAndSelectContextAsync(page, "incadmin1@test.mentoory.com", "Test123!@#");
+            await page.GotoAsync($"{_fixture.BaseUrl}/Administration/Projects/Create");
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            var projectName = $"E2E KS-missing {Guid.NewGuid():N}";
+            await page.FillAsync("input[name='Name']", projectName);
+
+            await page.Locator("button[type='submit']").Filter(new LocatorFilterOptions
+            {
+                HasText = "Crear Proyecto"
+            }).ClickAsync();
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            page.Url.Should().Contain("/Administration/Projects/Create",
+                "Phase 9: without a KS template the form must not submit");
+
+            var pageContent = await page.ContentAsync();
+            pageContent.Should().Contain("plantilla de conocimiento",
+                "validation error for the missing KS-template selection should be displayed");
+        }
+        finally
+        {
+            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(CreateProject_MissingKsTemplate_ShowsValidationError));
             await page.Context.DisposeAsync();
         }
     }
@@ -148,6 +189,18 @@ public class ProjectCreationTests
         }
     }
 
+    private static async Task SelectFirstKnowledgeTemplateAsync(IPage page)
+    {
+        var ksDropdown = page.Locator("select[name='KnowledgeStructureTemplateExternalId']");
+        await ksDropdown.WaitForAsync(new LocatorWaitForOptions { Timeout = 5000 });
+
+        var values = await ksDropdown.Locator("option").EvaluateAllAsync<string[]>(
+            "nodes => nodes.map(n => n.value).filter(v => v && v.length > 0)");
+
+        values.Should().NotBeEmpty("KS-template dropdown must have at least one real option (seeded 'Emprendimiento Básico')");
+        await ksDropdown.SelectOptionAsync(values[0]);
+    }
+
     private async Task LoginAndSelectContextAsync(IPage page, string email, string password)
     {
         await page.GotoAsync($"{_fixture.BaseUrl}/Access/Login");
@@ -156,11 +209,9 @@ public class ProjectCreationTests
         await page.ClickAsync("button[type='submit']");
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-        // Wait for login redirect chain to complete (login -> context -> home)
         await page.WaitForURLAsync(url => !url.Contains("/Access/Login"), new PageWaitForURLOptions { Timeout = 10000 });
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-        // If redirected to context selection, pick the first available context
         if (page.Url.Contains("/Context/Select"))
         {
             var roleDropdown = page.Locator("[data-mode='page'] [data-cs='role']");

@@ -7,5 +7,6 @@ public sealed record CreateProjectCommand(
     Guid IncubatorExternalId,
     string Name,
     string? Description,
+    Guid KnowledgeStructureTemplateExternalId,
     bool IsPublic = false,
     EnrollmentVariant EnrollmentVariant = EnrollmentVariant.FullFlow) : IBaseRequest<Guid>;

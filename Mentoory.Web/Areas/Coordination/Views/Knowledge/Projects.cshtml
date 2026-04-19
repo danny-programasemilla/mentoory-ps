@@ -7,9 +7,6 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Estructuras de Conocimiento del Proyecto</h2>
-    <a asp-action="CloneFromTemplateGet" class="btn btn-primary">
-        <i class="ti ti-copy me-1"></i>Clonar desde plantilla
-    </a>
 </div>
 
 @if (TempData["SuccessMessage"] is string successMessage)
@@ -41,13 +38,8 @@
                 </div>
                 <p class="empty-title">Sin estructuras</p>
                 <p class="empty-subtitle text-secondary">
-                    Aún no hay estructuras de conocimiento para este proyecto. Clone una plantilla para comenzar.
+                    Este proyecto no tiene estructura de conocimiento. Contacte a un administrador.
                 </p>
-                <div class="empty-action">
-                    <a asp-action="CloneFromTemplateGet" class="btn btn-primary">
-                        <i class="ti ti-copy me-1"></i>Clonar desde plantilla
-                    </a>
-                </div>
             </div>
         }
         else

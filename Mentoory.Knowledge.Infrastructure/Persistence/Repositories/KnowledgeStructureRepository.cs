@@ -43,10 +43,10 @@ public class KnowledgeStructureRepository : AbstractRepository<KS>, IKnowledgeSt
     }
 
     // NOTE: AsNoTracking is intentionally absent on the write-path full-tree loaders
-    // (GetBy*WithFullTreeAsync and GetByProjectAndSourceTemplateIdAsync). EF must
-    // track the aggregate so mutations through the root can be persisted. The
-    // parallel GetByExternalIdReadOnlyAsync applies AsNoTracking for query
-    // projections, and ListByProjectAsync / Query() are read-only.
+    // (GetBy*WithFullTreeAsync and GetByProjectIdAsync). EF must track the aggregate
+    // so mutations through the root can be persisted. The parallel
+    // GetByExternalIdReadOnlyAsync applies AsNoTracking for query projections, and
+    // ListByProjectAsync / Query() are read-only.
     public Task<KS?> GetByIdWithFullTreeAsync(long id, CancellationToken cancellationToken)
     {
         return _dbContext.KnowledgeStructures
@@ -81,7 +81,7 @@ public class KnowledgeStructureRepository : AbstractRepository<KS>, IKnowledgeSt
             .FirstOrDefaultAsync(s => s.ExternalId == externalId, cancellationToken);
     }
 
-    public Task<KS?> GetByProjectAndSourceTemplateIdAsync(long projectId, long sourceTemplateId, CancellationToken cancellationToken)
+    public Task<KS?> GetByProjectIdAsync(long projectId, CancellationToken cancellationToken)
     {
         return _dbContext.KnowledgeStructures
             .AsSplitQuery()
@@ -89,7 +89,7 @@ public class KnowledgeStructureRepository : AbstractRepository<KS>, IKnowledgeSt
                 .ThenInclude(m => m.Topics)
                     .ThenInclude(t => t.Subjects)
                         .ThenInclude(sub => sub.Resources)
-            .FirstOrDefaultAsync(s => s.ProjectId == projectId && s.SourceTemplateId == sourceTemplateId, cancellationToken);
+            .FirstOrDefaultAsync(s => s.ProjectId == projectId, cancellationToken);
     }
 
     public async Task<IReadOnlyList<KS>> ListByProjectAsync(long projectId, CancellationToken cancellationToken)

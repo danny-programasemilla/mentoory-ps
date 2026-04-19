@@ -215,14 +215,30 @@ ELSE
 
 
 -- ==========================================================================================
--- SECTION 3: Projects
+-- SECTION 2.5: Knowledge structure template (required by tenant.Projects FK)
+-- ------------------------------------------------------------------------------------------
+-- Seeded inline here (before §3 Projects) because each project now references the
+-- "Emprendimiento Básico" template via KnowledgeStructureTemplateExternalId (NOT NULL).
+-- 005.SeedKnowledgeData.sql re-seeds the template idempotently (IF NOT EXISTS) — safe.
 -- ==========================================================================================
 
--- Fix existing seed projects that were incorrectly created with CurrentStageState = 0 (NotStarted)
--- Domain model creates projects with Registration + InProgress (CurrentStageState = 1)
-UPDATE [tenant].[Projects]
-SET [CurrentStageState] = 1
-WHERE [CurrentStageType] = 0 AND [CurrentStageState] = 0;
+DECLARE @TemplateExternalId UNIQUEIDENTIFIER = CAST('11111111-1111-1111-1111-111111111111' AS UNIQUEIDENTIFIER);
+DECLARE @StructureTemplateId BIGINT;
+
+IF NOT EXISTS (SELECT 1 FROM [knowledge].[KnowledgeStructureTemplates] WHERE [ExternalId] = @TemplateExternalId)
+BEGIN
+    INSERT INTO [knowledge].[KnowledgeStructureTemplates] ([ExternalId], [Name], [Description], [IsArchived], [Version], [CreatedAtUtc])
+    VALUES (@TemplateExternalId, N'Emprendimiento Básico', N'Plantilla de ejemplo para proyectos de emprendimiento en etapa temprana.', 0, 1, @Now);
+
+    SET @StructureTemplateId = SCOPE_IDENTITY();
+END
+ELSE
+    SELECT @StructureTemplateId = [Id] FROM [knowledge].[KnowledgeStructureTemplates] WHERE [ExternalId] = @TemplateExternalId;
+
+
+-- ==========================================================================================
+-- SECTION 3: Projects
+-- ==========================================================================================
 
 DECLARE @Project1Id BIGINT;  -- Proyecto Innovación (Incubator 1)
 DECLARE @Project2Id BIGINT;  -- Proyecto Sostenibilidad (Incubator 1)
@@ -234,8 +250,8 @@ DECLARE @Project4Id BIGINT;  -- Proyecto Comunitario (Incubator 2)
 -- ------------------------------------------------------------------------------------------
 IF NOT EXISTS (SELECT 1 FROM [tenant].[Projects] WHERE [Name] = N'Proyecto Innovación' AND [IncubatorId] = @Incubator1Id)
 BEGIN
-    INSERT INTO [tenant].[Projects] ([ExternalId], [IncubatorId], [Name], [Description], [CurrentStageType], [CurrentStageState], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
-    VALUES (NEWID(), @Incubator1Id, N'Proyecto Innovación', N'Proyecto piloto de innovación tecnológica aplicada al sector agrícola', 0, 1, 1, @Now, @Now);
+    INSERT INTO [tenant].[Projects] ([ExternalId], [IncubatorId], [Name], [Description], [KnowledgeStructureTemplateExternalId], [CurrentStageType], [CurrentStageState], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @Incubator1Id, N'Proyecto Innovación', N'Proyecto piloto de innovación tecnológica aplicada al sector agrícola', @TemplateExternalId, 0, 1, 1, @Now, @Now);
 
     SET @Project1Id = SCOPE_IDENTITY();
 END
@@ -247,8 +263,8 @@ ELSE
 -- ------------------------------------------------------------------------------------------
 IF NOT EXISTS (SELECT 1 FROM [tenant].[Projects] WHERE [Name] = N'Proyecto Sostenibilidad' AND [IncubatorId] = @Incubator1Id)
 BEGIN
-    INSERT INTO [tenant].[Projects] ([ExternalId], [IncubatorId], [Name], [Description], [CurrentStageType], [CurrentStageState], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
-    VALUES (NEWID(), @Incubator1Id, N'Proyecto Sostenibilidad', N'Desarrollo de modelo de negocio sostenible con impacto medioambiental positivo', 0, 1, 1, @Now, @Now);
+    INSERT INTO [tenant].[Projects] ([ExternalId], [IncubatorId], [Name], [Description], [KnowledgeStructureTemplateExternalId], [CurrentStageType], [CurrentStageState], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @Incubator1Id, N'Proyecto Sostenibilidad', N'Desarrollo de modelo de negocio sostenible con impacto medioambiental positivo', @TemplateExternalId, 0, 1, 1, @Now, @Now);
 
     SET @Project2Id = SCOPE_IDENTITY();
 END
@@ -260,8 +276,8 @@ ELSE
 -- ------------------------------------------------------------------------------------------
 IF NOT EXISTS (SELECT 1 FROM [tenant].[Projects] WHERE [Name] = N'Proyecto Digital' AND [IncubatorId] = @Incubator2Id)
 BEGIN
-    INSERT INTO [tenant].[Projects] ([ExternalId], [IncubatorId], [Name], [Description], [CurrentStageType], [CurrentStageState], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
-    VALUES (NEWID(), @Incubator2Id, N'Proyecto Digital', N'Plataforma digital para conectar emprendedores con mentores especializados', 0, 1, 1, @Now, @Now);
+    INSERT INTO [tenant].[Projects] ([ExternalId], [IncubatorId], [Name], [Description], [KnowledgeStructureTemplateExternalId], [CurrentStageType], [CurrentStageState], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @Incubator2Id, N'Proyecto Digital', N'Plataforma digital para conectar emprendedores con mentores especializados', @TemplateExternalId, 0, 1, 1, @Now, @Now);
 
     SET @Project3Id = SCOPE_IDENTITY();
 END
@@ -273,8 +289,8 @@ ELSE
 -- ------------------------------------------------------------------------------------------
 IF NOT EXISTS (SELECT 1 FROM [tenant].[Projects] WHERE [Name] = N'Proyecto Comunitario' AND [IncubatorId] = @Incubator2Id)
 BEGIN
-    INSERT INTO [tenant].[Projects] ([ExternalId], [IncubatorId], [Name], [Description], [CurrentStageType], [CurrentStageState], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
-    VALUES (NEWID(), @Incubator2Id, N'Proyecto Comunitario', N'Iniciativa de desarrollo comunitario para fortalecer redes de emprendimiento local', 0, 1, 1, @Now, @Now);
+    INSERT INTO [tenant].[Projects] ([ExternalId], [IncubatorId], [Name], [Description], [KnowledgeStructureTemplateExternalId], [CurrentStageType], [CurrentStageState], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @Incubator2Id, N'Proyecto Comunitario', N'Iniciativa de desarrollo comunitario para fortalecer redes de emprendimiento local', @TemplateExternalId, 0, 1, 1, @Now, @Now);
 
     SET @Project4Id = SCOPE_IDENTITY();
 END
@@ -289,8 +305,8 @@ ELSE
 -- Topic Ids 1-5 exist BEFORE Section 8 inserts diagnostic.Questions with those literal
 -- TopicIds. We seed them here (inside this script) so the FK resolves mid-batch.
 -- Parent rows: knowledge.KnowledgeStructures (for Proyecto Innovación) + knowledge.Modules.
--- SourceTemplateId is NULL here because the sample KnowledgeStructureTemplate is seeded
--- later in 005.SeedKnowledgeData.sql; the link isn't load-bearing for test data.
+-- SourceTemplateId references the "Emprendimiento Básico" template seeded in §2.5
+-- (every project KS is sourced from a template under spec 016 Phase 9 — no NULL path).
 -- Convention: 1=Modelo de Negocio, 2=Equipo, 3=Mercado, 4=Finanzas, 5=Impacto
 -- ==========================================================================================
 
@@ -304,7 +320,7 @@ BEGIN
     VALUES (@ProjectStructureExternalId, @Project1Id, @Incubator1Id,
         N'Estructura de Conocimiento - Proyecto Innovación',
         N'Estructura de conocimiento sembrada para alinear con los temas del diagnóstico de prueba.',
-        NULL, NULL, 0, @Now);
+        @StructureTemplateId, 1, 0, @Now);
 
     SET @ProjectStructureId = SCOPE_IDENTITY();
 END

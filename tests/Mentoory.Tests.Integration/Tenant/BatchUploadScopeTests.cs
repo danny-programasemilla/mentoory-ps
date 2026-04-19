@@ -122,7 +122,7 @@ public class BatchUploadScopeTests : IntegrationTestBase
     private async Task<long> CreateProjectInIncubatorAsync(long incubatorId, string name)
     {
         var incubatorExternalId = await GetIncubatorExternalIdAsync(incubatorId);
-        var result = await SendAsync(new CreateProjectCommand(incubatorExternalId, name, null));
+        var result = await SendAsync(new CreateProjectCommand(incubatorExternalId, name, null, Guid.Parse("11111111-1111-1111-1111-111111111111")));
         result.IsSuccess.Should().BeTrue();
         return await GetProjectIdAsync(result.Value!);
     }
@@ -130,7 +130,7 @@ public class BatchUploadScopeTests : IntegrationTestBase
     private async Task<(long Id, Guid ExternalId)> CreateProjectAsync(long incubatorId, string name)
     {
         var incubatorExternalId = await GetIncubatorExternalIdAsync(incubatorId);
-        var result = await SendAsync(new CreateProjectCommand(incubatorExternalId, name, null));
+        var result = await SendAsync(new CreateProjectCommand(incubatorExternalId, name, null, Guid.Parse("11111111-1111-1111-1111-111111111111")));
         result.IsSuccess.Should().BeTrue();
         var id = await GetProjectIdAsync(result.Value!);
         return (id, result.Value!);
