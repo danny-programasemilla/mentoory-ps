@@ -13,7 +13,7 @@ Populated incrementally by each chunk. One row per scenario in `specs/016-projec
 
 | # | Parent spec ref | Scenario | Chunk | Test file | Status |
 |---|-----------------|----------|-------|-----------|--------|
-| — | SC-E-foundation | Fixtures wired correctly | C0 | `LifecycleSmokeTests.cs` | 🚧 |
+| — | SC-E-foundation | Fixtures wired correctly | C0 | `LifecycleSmokeTests.Fixtures_CanLoginAsCoordinatorAndOpenCoordinationProjectsList` | ✅ |
 | 1 | US1 §1 | Registration→Forms advance via UI | C1 | `WalkthroughAdvanceTests.Coordinator_AdvancesProjectFromRegistrationToForms` | 🚧 |
 | 2 | US1 §2 | Closure project rejects advance | C1 | `WalkthroughAdvanceTests.Coordinator_CannotAdvanceProjectAtClosure` | 🚧 |
 | 3 | US1 §3 | Completed stage rejects advance | C1 | `WalkthroughAdvanceTests.Coordinator_CannotAdvanceWhenCurrentStageIsCompleted` | 🚧 |
