@@ -430,18 +430,20 @@ With multiple developers after Foundational is done:
 
 ## Phase 9: Amendment refactor — Project-owned KS binding (2026-04-19)
 
-**Source**: [`AMENDMENT-PROJECT-KS-BINDING.md`](./AMENDMENT-PROJECT-KS-BINDING.md) · brainstorm [`11-knowledge-module-binding-redesign`](../../brainstorm/11-knowledge-module-binding-redesign.md)
+**Source**: [`AMENDMENT-PROJECT-KS-BINDING.md`](./AMENDMENT-PROJECT-KS-BINDING.md) · [`plan.md § Phase 9`](./plan.md) · brainstorm [`11-knowledge-module-binding-redesign`](../../brainstorm/11-knowledge-module-binding-redesign.md)
 
-**Goal**: move the KS binding from `FormTemplate` to `Project`, enforce 1 KS per project, materialize KS at project creation, simplify the form-clone handler to compatibility-check + rewrite only.
+**Goal**: move the KS binding from `FormTemplate` to `Project`, enforce 1 KS per project via UNIQUE on `KS.ProjectId`, materialize KS at project creation via a cross-module provisioner, simplify the form-clone handler to compatibility-check + rewrite only.
+
+> **Plan Phase 0 resolution (R1)**: drop the proposed `Project.KnowledgeStructureExternalId` column. The 1:1 binding is realized solely through UNIQUE on `KnowledgeStructures.ProjectId`. This eliminates the circular FK and simplifies T110 / T112 / T117. See `plan.md § R1` for rationale.
 
 ### Database
 
-- [ ] T110 Alter `Mentoory.Db/tenant/Tables/Projects.sql`: add `[KnowledgeStructureTemplateExternalId] UNIQUEIDENTIFIER NOT NULL` (FK → `knowledge.KnowledgeStructureTemplates(ExternalId)`) and `[KnowledgeStructureExternalId] UNIQUEIDENTIFIER NOT NULL` (FK → `knowledge.KnowledgeStructures(ExternalId)`). Index both FKs.
+- [ ] T110 Alter `Mentoory.Db/tenant/Tables/Projects.sql`: add **one** column `[KnowledgeStructureTemplateExternalId] UNIQUEIDENTIFIER NOT NULL` (FK → `knowledge.KnowledgeStructureTemplates(ExternalId)`). Index it. **Do NOT add** `KnowledgeStructureExternalId` (per R1).
 - [ ] T111 Alter `Mentoory.Db/knowledge/Tables/KnowledgeStructures.sql`: add `CONSTRAINT [UQ_KnowledgeStructures_ProjectId] UNIQUE ([ProjectId])`; drop `IX_KnowledgeStructures_ProjectId_SourceTemplateId`. Change `SourceTemplateId` from `BIGINT NULL` to `BIGINT NOT NULL` (domain factory already rejects the null path).
 
 ### Domain
 
-- [ ] T112 Modify `Mentoory.Tenant.Domain.Aggregates.Project.Project`: add `KnowledgeStructureTemplateExternalId` (Guid, required) and `KnowledgeStructureExternalId` (Guid, required) properties; amend `Create(...)` factory to accept both; add `internal void SetKnowledgeStructure(Guid templateExternalId, Guid structureExternalId)` that throws if either value is already set (immutability guard).
+- [ ] T112 Modify `Mentoory.Tenant.Domain.Aggregates.Project.Project`: add **one** property `KnowledgeStructureTemplateExternalId` (Guid, `private set`); amend `Create(...)` factory to accept + set it (throw on `Guid.Empty`). **No separate `SetKnowledgeStructure` mutator** — immutability via `private set` + populated only in the factory.
 
 ### Application / cross-module
 
@@ -449,7 +451,7 @@ With multiple developers after Foundational is done:
 - [ ] T114 Implement `Mentoory.Knowledge.Infrastructure.CrossModule.KnowledgeStructureProvisioner : IKnowledgeStructureProvisioner` — loads KS template with full tree, calls `KnowledgeStructure.CloneFromTemplate(...)`, adds to repo, returns the new ExternalId. Register in `AddKnowledgeInfrastructure` DI.
 - [ ] T115 Update `Mentoory.Knowledge.Domain.Repositories.IKnowledgeStructureRepository`: replace `GetByProjectAndSourceTemplateIdAsync` with `GetByProjectIdAsync(long projectId, CancellationToken)`. Keep `CountClonesBySourceTemplateIdAsync` (delete-template guard still needs it).
 - [ ] T116 Update `Mentoory.Knowledge.Infrastructure.Persistence.Repositories.KnowledgeStructureRepository` to match the new interface.
-- [ ] T117 Modify `Mentoory.Tenant.Application.Commands.CreateProject.CreateProjectCommand` + handler: add `KnowledgeStructureTemplateExternalId` required parameter; validate template exists + not archived via `IKnowledgeStructureTemplateRepository.GetByExternalIdAsync` (new cross-module dep); call `IKnowledgeStructureProvisioner.CloneForProjectAsync`; stamp `project.SetKnowledgeStructure(...)`; save Tenant + Knowledge contexts in one transaction (pattern per research R3).
+- [ ] T117 Modify `Mentoory.Tenant.Application.Commands.CreateProject.CreateProjectCommand` + handler: add `KnowledgeStructureTemplateExternalId` required parameter; inject `IKnowledgeStructureTemplateRepository` (fail-fast existence check via existing `ExistsByExternalIdAsync`) + `IKnowledgeStructureProvisioner`. Flow: validate → `Project.Create(...)` with new Guid → `projectRepository.Add(project)` → `SaveEntitiesAsync` (Tenant tx commits, `project.Id` populated) → `provisioner.CloneForProjectAsync(templateGuid, project.Id, incubator.Id, ct)` (separate Knowledge tx). On provisioner failure, log Error + return `Failure(ResultErrorCodes.GenericError, ("KnowledgeStructure", "Proyecto creado pero falló la creación de la estructura de conocimiento. Contacte a un administrador."))` — Project row persists; admin "repair" action can retry (see T131). See `plan.md § R1` for the atomicity trade-off.
 - [ ] T118 Simplify `Mentoory.Diagnostic.Application.Commands.CloneFormTemplate.CloneFormTemplateHandler`: load project's KS via `IKnowledgeStructureRepository.GetByProjectIdAsync`; compatibility check (`template.DefaultKS` vs `project.KnowledgeStructureTemplateExternalId`); build rewrite map from the project's existing KS; rewrite on `ProjectForm.CloneFromTemplate`; save Diagnostic only. Remove the KS-creation/reuse branches + the dual-save pattern. Update the validator to carry the Spanish compatibility error.
 - [ ] T119 Remove obsolete Knowledge handlers: `CloneKnowledgeStructureTemplateHandler` (still usable from Tenant.Application; keep the command but make its controller action internal-only / removed from the web surface).
 
