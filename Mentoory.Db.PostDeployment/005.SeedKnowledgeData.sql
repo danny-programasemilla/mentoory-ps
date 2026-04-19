@@ -121,3 +121,53 @@ UPDATE [diagnostic].[FormTemplates]
 SET [DefaultKnowledgeStructureTemplateExternalId] = @TemplateExternalId
 WHERE [Name] = N'Diagnóstico de Impacto'
   AND ([DefaultKnowledgeStructureTemplateExternalId] IS NULL OR [DefaultKnowledgeStructureTemplateExternalId] != @TemplateExternalId);
+
+
+-- ==========================================================================================
+-- SECTION 3: Bound FormTemplate for E2E cascade coverage (spec 017, Addition 2)
+-- ------------------------------------------------------------------------------------------
+-- Seeds a FormTemplate whose DefaultKnowledgeStructureTemplateExternalId points at the
+-- "Emprendimiento Básico" KS template seeded above. Its QuestionTemplates reference the
+-- "Propuesta de valor" TopicTemplate Id via soft reference (QuestionTemplates.TopicId has
+-- no DB-level FK; CloneFormTemplateHandler rewrites these to project-topic Ids at clone
+-- time via BuildTopicIdRewriteMap).
+-- Note on ExternalIds: '33333333-3333-3333-3333-333333333333' is also used as the
+-- "Propuesta de valor" TopicTemplate ExternalId above — legal because ExternalId uniqueness
+-- is per-table, but kept intentional per spec 017 contracts/seed-additions.md.
+-- ==========================================================================================
+
+DECLARE @FormTemplateBoundExternalId UNIQUEIDENTIFIER = CAST('33333333-3333-3333-3333-333333333333' AS UNIQUEIDENTIFIER);
+DECLARE @FormTemplateBoundId BIGINT;
+
+IF NOT EXISTS (SELECT 1 FROM [diagnostic].[FormTemplates] WHERE [ExternalId] = @FormTemplateBoundExternalId)
+BEGIN
+    INSERT INTO [diagnostic].[FormTemplates] ([ExternalId], [Name], [Description], [SubscriptionTier], [Version], [IsActive], [CreatedAtUtc], [DefaultKnowledgeStructureTemplateExternalId])
+    VALUES (@FormTemplateBoundExternalId,
+        N'Diagnóstico Básico de Emprendimiento',
+        N'Formulario de diagnóstico vinculado a la plantilla Emprendimiento Básico.',
+        NULL, 1, 1, @Now, @TemplateExternalId);
+
+    SET @FormTemplateBoundId = SCOPE_IDENTITY();
+END
+ELSE
+    SELECT @FormTemplateBoundId = [Id] FROM [diagnostic].[FormTemplates] WHERE [ExternalId] = @FormTemplateBoundExternalId;
+
+-- QuestionTemplates for the bound FormTemplate — TopicId points at the seeded
+-- "Propuesta de valor" TopicTemplate. Soft reference only (no FK on QuestionTemplates.TopicId).
+IF NOT EXISTS (SELECT 1 FROM [diagnostic].[QuestionTemplates] WHERE [FormTemplateId] = @FormTemplateBoundId)
+BEGIN
+    INSERT INTO [diagnostic].[QuestionTemplates] ([FormTemplateId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (@FormTemplateBoundId, @TopicTemplateId,
+        N'¿Cómo describe la propuesta de valor actual de su emprendimiento?',
+        0, 2, 1, N'Propuesta de valor', 0);
+
+    INSERT INTO [diagnostic].[QuestionTemplates] ([FormTemplateId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (@FormTemplateBoundId, @TopicTemplateId,
+        N'¿Cuántos segmentos de clientes puede atender su propuesta?',
+        1, 2, 2, N'Propuesta de valor', 0);
+
+    INSERT INTO [diagnostic].[QuestionTemplates] ([FormTemplateId], [TopicId], [QuestionText], [QuestionType], [StageApplicability], [SortOrder], [BlockGroup], [IsOptional])
+    VALUES (@FormTemplateBoundId, @TopicTemplateId,
+        N'¿Su propuesta de valor ha sido validada con clientes reales?',
+        2, 2, 3, N'Propuesta de valor', 0);
+END

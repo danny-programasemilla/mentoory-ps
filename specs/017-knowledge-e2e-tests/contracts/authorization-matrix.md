@@ -51,7 +51,7 @@ Every route under `/Coordination/Knowledge/**` and the Phase 9 addition to `/Adm
 
 | Scenario | Actor | Target | Expected |
 |---|---|---|---|
-| Coord B attempts to GET coord A's project KS by ExternalId | `coord2@test.mentoory.com` (Incubadora Norte) | KS of `Proyecto Innovación` (Incubadora Primaria) | ≥ 400 OR body contains no names from A's tree |
+| Coord B attempts to GET coord A's project KS by ExternalId | `coordnorte@test.mentoory.com` (Incubadora Norte) | KS of `Proyecto Innovación` (Incubadora Primaria) | ≥ 400 OR body contains no names from A's tree |
 | Coord A modifies `ActiveProjectId` cookie to B's projectId | `coord1` | B's project KS detail | Same — tenant filter on repository level rejects |
 
 ## Menu Visibility (US6-5)

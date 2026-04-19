@@ -44,7 +44,7 @@ public sealed record ContextSelection(
 
 **Decision**: Extend `004.SeedTestData.sql` + `005.SeedKnowledgeData.sql` with two additions:
 
-1. **Second coordinator in second incubator** (for US6-3 tenant isolation). Call them `coord2@test.mentoory.com` / `Incubadora Norte`. The RoleAssignments table already supports multi-incubator users; the insert needs a `WHERE NOT EXISTS` guard matching the existing style in `004`.
+1. **Tenant-isolation coordinator in a dedicated second incubator** (for US6-3). Originally drafted as `coord2@test.mentoory.com` / `Incubadora Norte`, but that email already exists bound to Incubadora Alpha — reassigning breaks `BatchUploadScopeTests.ProjectCoordinator2_SeesOnlyTheirProject` (asserts "coord2 is in exactly one project"). Implemented as `coordnorte@test.mentoory.com` instead, living only in Incubadora Norte. Insert uses `IF NOT EXISTS` guards matching the existing style in `004`.
 2. **One FormTemplate bound to the seeded KS template** (for US3 cascade happy-path). Bind it via `DefaultKnowledgeStructureTemplateExternalId` to `Emprendimiento Básico`'s KS template. Give it 2–3 questions, each with `TopicId` pointing at a seeded template topic. Insert into `005.SeedKnowledgeData.sql` after the KS template seed, with the same `IF NOT EXISTS` idempotency guard.
 
 **What already exists** (verified by reading current seed scripts):

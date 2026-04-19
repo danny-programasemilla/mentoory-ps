@@ -41,7 +41,7 @@ Each entry below lists the target test class, the acceptance scenarios from `spe
 | 2.3 | `CloneFromTemplate_LegacyRoute_NoLongerAccessible` | US2-6 | **Existing**; keep. |
 | 2.4 | `ProjectStructureDetail_PageLoads_ShowsTree` | US2-4 | **Existing**; extend. Assert SyncMode badge shows `Desconectado` and all four levels render in Spanish. |
 | 2.5 | `ProjectStructureDetail_TreeContainsClonedNames` | US4-2 (partial / regression) | **New**; assert specific Spanish names from the seed (`Finanzas`, `Mercadeo`, etc.) appear in the tree. |
-| 2.6 | `ProjectStructure_CoordinatorB_CannotSeeCoordinatorAsProject` | US4-7 / US6-3 | **New**; log in as `coord2@test.mentoory.com` (second incubator); GET `coord1`'s project KS by ExternalId; assert ≥400 or empty body. |
+| 2.6 | `ProjectStructure_CoordinatorB_CannotSeeCoordinatorAsProject` | US4-7 / US6-3 | **New**; log in as `coordnorte@test.mentoory.com` (second incubator); GET `coord1`'s project KS by ExternalId; assert ≥400 or empty body. |
 
 **File total**: 6 methods (4 existing + 2 new)
 
@@ -109,7 +109,7 @@ Each entry below lists the target test class, the acceptance scenarios from `spe
 |---|---|---|---|
 | 6.1 | `ProtectedRoutes_CoordinatorDenied_ForTemplateRoutes` | US6-1 | `[Theory]` over `[InlineData]` for ~10 routes under `/Coordination/Knowledge/Templates/**`. Login as `coord1`. Assert every response is ≥400 OR URL no longer contains the protected path. |
 | 6.2 | `ProtectedRoutes_Unauthenticated_RedirectToLogin` | US6-2 | `[Theory]` over ~5 routes under `/Coordination/Knowledge/*`. No login. Assert URL ends at `/Access/Login`. |
-| 6.3 | `TenantIsolation_CoordinatorB_CannotAccessCoordinatorAsKs` | US6-3 | Log in as `coord2@test.mentoory.com`. GET `coord1`'s project KS detail by ExternalId. Assert ≥400 OR body contains none of coord1's KS module/topic names. |
+| 6.3 | `TenantIsolation_CoordinatorB_CannotAccessCoordinatorAsKs` | US6-3 | Log in as `coordnorte@test.mentoory.com`. GET `coord1`'s project KS detail by ExternalId. Assert ≥400 OR body contains none of coord1's KS module/topic names. |
 | 6.4 | `CreateProject_CrossIncubatorForm_Denied` | US6-4 | Log in as `incadmin1`. POST `/Administration/Projects/Create` with a hand-crafted body carrying a foreign IncubatorId (form-hack simulation). Assert ≥400 / authz error / no project row (assert via integration helper post-check). |
 | 6.5 | `Menu_GlobalAdmin_ShowsBothEntries_Coordinator_ShowsOnlyProjects` | US6-5 | Login as `multirole` → GlobalAdmin context; assert sidebar shows "Plantillas de conocimiento" AND "Estructuras del proyecto". Login as `coord1`; assert sidebar shows only "Estructuras del proyecto". |
 

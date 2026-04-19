@@ -127,55 +127,7 @@ public class KnowledgeProjectStructureTests
         }
     }
 
-    private async Task LoginAsCoordinatorAsync(IPage page)
-    {
-        await page.GotoAsync($"{_fixture.BaseUrl}/Access/Login");
-        await page.FillAsync("input[name='Email']", "coord1@test.mentoory.com");
-        await page.FillAsync("input[name='Password']", "Test123!@#");
-        await page.ClickAsync("button[type='submit']");
-        await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-
-        await page.WaitForURLAsync(url => !url.Contains("/Access/Login"), new PageWaitForURLOptions { Timeout = 10000 });
-        await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-
-        if (!page.Url.Contains("/Context/Select"))
-        {
-            return;
-        }
-
-        var roleDropdown = page.Locator("[data-mode='page'] [data-cs='role']");
-        await page.WaitForFunctionAsync(
-            "sel => sel.options.length > 1",
-            await roleDropdown.ElementHandleAsync(),
-            new() { Timeout = 10000 });
-        if (await roleDropdown.IsEnabledAsync())
-        {
-            await roleDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
-        }
-
-        var incubatorDropdown = page.Locator("[data-mode='page'] [data-cs='incubator']");
-        await page.WaitForFunctionAsync(
-            "sel => sel.options.length > 1",
-            await incubatorDropdown.ElementHandleAsync(),
-            new() { Timeout = 10000 });
-        if (await incubatorDropdown.IsEnabledAsync())
-        {
-            await incubatorDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
-        }
-
-        var projectDropdown = page.Locator("[data-mode='page'] [data-cs='project']");
-        if (await projectDropdown.CountAsync() > 0 && await projectDropdown.IsEnabledAsync())
-        {
-            await page.WaitForFunctionAsync(
-                "sel => sel.options.length > 1",
-                await projectDropdown.ElementHandleAsync(),
-                new() { Timeout = 10000 });
-            await projectDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
-        }
-
-        var confirmBtn = page.Locator("[data-mode='page'] [data-cs='confirm']");
-        await Assertions.Expect(confirmBtn).ToBeEnabledAsync(new() { Timeout = 15000 });
-        await confirmBtn.ClickAsync();
-        await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-    }
+    private Task LoginAsCoordinatorAsync(IPage page) =>
+        KnowledgeTestHelpers.LoginAndSelectAsync(
+            page, _fixture.BaseUrl, "coord1@test.mentoory.com", "Test123!@#", ContextSelection.FirstEnabled);
 }

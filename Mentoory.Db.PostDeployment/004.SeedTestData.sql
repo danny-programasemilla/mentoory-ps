@@ -25,6 +25,7 @@ DECLARE @IncAdmin1Id   BIGINT;
 DECLARE @IncAdmin2Id   BIGINT;
 DECLARE @Coord1Id      BIGINT;
 DECLARE @Coord2Id      BIGINT;
+DECLARE @CoordNorteId  BIGINT;  -- spec 017: coordinator in Incubadora Norte (US6-3 tenant isolation)
 DECLARE @Mentor1Id     BIGINT;
 DECLARE @Entrep1Id     BIGINT;
 DECLARE @Entrep2Id     BIGINT;
@@ -94,6 +95,25 @@ BEGIN
 END
 ELSE
     SELECT @Coord2Id = [Id] FROM [access].[Users] WHERE [NormalizedEmail] = N'COORD2@TEST.MENTOORY.COM';
+
+-- ------------------------------------------------------------------------------------------
+-- User: Project Coordinator Norte (spec 017 — US6-3 tenant isolation)
+-- Lives only in Incubadora Norte (seeded in §2). Deliberately separate from coord2 to
+-- avoid breaking the "coord2 is in exactly one project (Sostenibilidad, Alpha)" invariant
+-- asserted by BatchUploadScopeTests.ProjectCoordinator2_SeesOnlyTheirProject.
+-- ------------------------------------------------------------------------------------------
+IF NOT EXISTS (SELECT 1 FROM [access].[Users] WHERE [NormalizedEmail] = N'COORDNORTE@TEST.MENTOORY.COM')
+BEGIN
+    INSERT INTO [access].[Users] ([ExternalId], [Email], [NormalizedEmail], [Country], [NationalId], [FirstName], [LastName], [AccountStatus], [FailedLoginAttempts], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), N'coordnorte@test.mentoory.com', N'COORDNORTE@TEST.MENTOORY.COM', N'Chile', N'TEST-COORDNORTE', N'Camila', N'Riquelme', 1, 0, @Now, @Now);
+
+    SET @CoordNorteId = SCOPE_IDENTITY();
+
+    INSERT INTO [access].[Credentials] ([UserId], [PasswordHash], [IsActive], [CreatedAtUtc])
+    VALUES (@CoordNorteId, @PasswordHash, 1, @Now);
+END
+ELSE
+    SELECT @CoordNorteId = [Id] FROM [access].[Users] WHERE [NormalizedEmail] = N'COORDNORTE@TEST.MENTOORY.COM';
 
 -- ------------------------------------------------------------------------------------------
 -- User: Mentor
@@ -182,6 +202,7 @@ ELSE
 
 DECLARE @Incubator1Id BIGINT;
 DECLARE @Incubator2Id BIGINT;
+DECLARE @IncubatorNorteId BIGINT;  -- spec 017: third incubator for tenant isolation (US6-3)
 DECLARE @SubscriptionPlanId BIGINT;
 
 -- Resolve subscription plan seeded by 003.SeedDefaultSubscriptionPlan.sql
@@ -212,6 +233,22 @@ BEGIN
 END
 ELSE
     SELECT @Incubator2Id = [Id] FROM [tenant].[Incubators] WHERE [Name] = N'Incubadora Beta';
+
+-- ------------------------------------------------------------------------------------------
+-- Incubator: Incubadora Norte (spec 017, Addition 1 — for US6-3 tenant isolation)
+-- ExternalId collides with ModuleTemplate "Ideación" in 005 — legal (different table).
+-- ------------------------------------------------------------------------------------------
+DECLARE @IncubatorNorteExternalId UNIQUEIDENTIFIER = CAST('22222222-2222-2222-2222-222222222222' AS UNIQUEIDENTIFIER);
+
+IF NOT EXISTS (SELECT 1 FROM [tenant].[Incubators] WHERE [ExternalId] = @IncubatorNorteExternalId)
+BEGIN
+    INSERT INTO [tenant].[Incubators] ([ExternalId], [Name], [Description], [SubscriptionPlanId], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (@IncubatorNorteExternalId, N'Incubadora Norte', N'Incubadora regional del norte para pruebas de aislamiento de inquilinos.', @SubscriptionPlanId, 1, @Now, @Now);
+
+    SET @IncubatorNorteId = SCOPE_IDENTITY();
+END
+ELSE
+    SELECT @IncubatorNorteId = [Id] FROM [tenant].[Incubators] WHERE [ExternalId] = @IncubatorNorteExternalId;
 
 
 -- ==========================================================================================
@@ -244,6 +281,7 @@ DECLARE @Project1Id BIGINT;  -- Proyecto Innovación (Incubator 1)
 DECLARE @Project2Id BIGINT;  -- Proyecto Sostenibilidad (Incubator 1)
 DECLARE @Project3Id BIGINT;  -- Proyecto Digital (Incubator 2)
 DECLARE @Project4Id BIGINT;  -- Proyecto Comunitario (Incubator 2)
+DECLARE @ProjectNorteId BIGINT;  -- Proyecto Norte Uno (Incubadora Norte; spec 017 US6-3)
 
 -- ------------------------------------------------------------------------------------------
 -- Project: Proyecto Innovación (Incubadora Alpha)
@@ -296,6 +334,21 @@ BEGIN
 END
 ELSE
     SELECT @Project4Id = [Id] FROM [tenant].[Projects] WHERE [Name] = N'Proyecto Comunitario' AND [IncubatorId] = @Incubator2Id;
+
+-- ------------------------------------------------------------------------------------------
+-- Project: Proyecto Norte Uno (Incubadora Norte) — spec 017 US6-3 tenant isolation fixture
+-- ------------------------------------------------------------------------------------------
+DECLARE @ProjectNorteExternalId UNIQUEIDENTIFIER = CAST('88888888-8888-8888-8888-888888880001' AS UNIQUEIDENTIFIER);
+
+IF NOT EXISTS (SELECT 1 FROM [tenant].[Projects] WHERE [ExternalId] = @ProjectNorteExternalId)
+BEGIN
+    INSERT INTO [tenant].[Projects] ([ExternalId], [IncubatorId], [Name], [Description], [KnowledgeStructureTemplateExternalId], [CurrentStageType], [CurrentStageState], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (@ProjectNorteExternalId, @IncubatorNorteId, N'Proyecto Norte Uno', N'Proyecto del norte vinculado a la plantilla Emprendimiento Básico.', @TemplateExternalId, 0, 1, 1, @Now, @Now);
+
+    SET @ProjectNorteId = SCOPE_IDENTITY();
+END
+ELSE
+    SELECT @ProjectNorteId = [Id] FROM [tenant].[Projects] WHERE [ExternalId] = @ProjectNorteExternalId;
 
 
 -- ==========================================================================================
@@ -393,6 +446,25 @@ IF NOT EXISTS (SELECT 1 FROM [knowledge].[Topics] WHERE [Id] = 5)
 SET IDENTITY_INSERT [knowledge].[Topics] OFF;
 
 
+-- ------------------------------------------------------------------------------------------
+-- KnowledgeStructure for Proyecto Norte Uno (spec 017 US6-3)
+-- Materialized here at seed time; no Modules/Topics under it (the tenant-isolation tests
+-- only need the KS row to exist so its ExternalId is resolvable).
+-- UNIQUE constraint on ProjectId means each project has exactly one KS row.
+-- ------------------------------------------------------------------------------------------
+DECLARE @ProjectNorteKsExternalId UNIQUEIDENTIFIER = CAST('88888888-8888-8888-8888-888888880002' AS UNIQUEIDENTIFIER);
+
+IF NOT EXISTS (SELECT 1 FROM [knowledge].[KnowledgeStructures] WHERE [ExternalId] = @ProjectNorteKsExternalId)
+BEGIN
+    INSERT INTO [knowledge].[KnowledgeStructures] ([ExternalId], [ProjectId], [IncubatorId], [Name], [Description],
+        [SourceTemplateId], [SourceTemplateVersion], [SyncMode], [CreatedAtUtc])
+    VALUES (@ProjectNorteKsExternalId, @ProjectNorteId, @IncubatorNorteId,
+        N'Estructura de Conocimiento - Proyecto Norte Uno',
+        N'Estructura vacía usada como fixture de aislamiento de inquilinos.',
+        @StructureTemplateId, 1, 0, @Now);
+END
+
+
 -- ==========================================================================================
 -- SECTION 4: Role Assignments
 -- ==========================================================================================
@@ -434,6 +506,22 @@ IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @Coord2
 BEGIN
     INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
     VALUES (NEWID(), @Coord2Id, @Incubator1Id, @Project2Id, N'ProjectCoordinator', 1, @Now, @Now);
+END
+
+-- ------------------------------------------------------------------------------------------
+-- ProjectCoordinator Norte -> Incubadora Norte (incubator-level base) + Proyecto Norte Uno
+-- Spec 017: required by US6-3 tenant-isolation E2E tests.
+-- ------------------------------------------------------------------------------------------
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @CoordNorteId AND [IncubatorId] = @IncubatorNorteId AND [ProjectId] IS NULL AND [Role] = N'ProjectCoordinator' AND [IsActive] = 1)
+BEGIN
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @CoordNorteId, @IncubatorNorteId, NULL, N'ProjectCoordinator', 1, @Now, @Now);
+END
+
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @CoordNorteId AND [IncubatorId] = @IncubatorNorteId AND [ProjectId] = @ProjectNorteId AND [Role] = N'ProjectCoordinator' AND [IsActive] = 1)
+BEGIN
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @CoordNorteId, @IncubatorNorteId, @ProjectNorteId, N'ProjectCoordinator', 1, @Now, @Now);
 END
 
 -- ------------------------------------------------------------------------------------------

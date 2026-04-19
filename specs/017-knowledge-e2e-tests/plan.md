@@ -94,7 +94,7 @@ specs/017-knowledge-e2e-tests/
 
 ```text
 Mentoory.Db.PostDeployment/                   # Seed additions (idempotent INSERT guards)
-├── 004.SeedTestData.sql                      # EXTENDED: add coord2 user in second incubator (US6-3)
+├── 004.SeedTestData.sql                      # EXTENDED: add coordnorte user + Incubadora Norte + Proyecto Norte Uno for US6-3
 └── 005.SeedKnowledgeData.sql                 # EXTENDED: add a FormTemplate bound to the KS template (US3)
 
 tests/Mentoory.Tests.E2E/

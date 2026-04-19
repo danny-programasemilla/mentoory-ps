@@ -35,14 +35,14 @@ Scripts run on every DACPAC publish; duplicate runs MUST NOT produce duplicate r
 
 **Entities to add**:
 1. `tenant.Incubators` row: `Incubadora Norte` (external id: fixed Guid `22222222-2222-2222-2222-222222222222`).
-2. `access.Users` row: `coord2@test.mentoory.com` with password hash matching `Test123!@#` (same hashing fn the existing seed uses).
+2. `access.Users` row: `coordnorte@test.mentoory.com` with password hash matching `Test123!@#` (same hashing fn the existing seed uses).
 3. `access.RoleAssignments` row: `(userId: coord2, roleId: ProjectCoordinator, incubatorId: Incubadora Norte, projectId: NULL)`.
 4. `tenant.Projects` row: `Proyecto Norte Uno` in Incubadora Norte, bound to seeded KS template (existing `Emprendimiento Básico`). `IKnowledgeStructureProvisioner` at seed time materializes its `knowledge.KnowledgeStructures` row.
 5. Optionally: assign `coord2` to `Proyecto Norte Uno` via a new `access.RoleAssignments` row with both `incubatorId` and `projectId` set.
 
 **Verification** (after DACPAC publish):
 - `SELECT COUNT(*) FROM tenant.Incubators WHERE Name = 'Incubadora Norte'` → 1
-- `SELECT COUNT(*) FROM access.Users WHERE Email = 'coord2@test.mentoory.com'` → 1
+- `SELECT COUNT(*) FROM access.Users WHERE Email = 'coordnorte@test.mentoory.com'` → 1
 - Login as `coord2` / `Test123!@#` → lands on `/Context/Select` with only Incubadora Norte visible.
 
 **Existing patterns to mirror**: the `multirole` user insert in `004.SeedTestData.sql` (§ 4) is the reference implementation. The new user block copies it, substituting email + Guid.

@@ -201,43 +201,7 @@ public class ProjectCreationTests
         await ksDropdown.SelectOptionAsync(values[0]);
     }
 
-    private async Task LoginAndSelectContextAsync(IPage page, string email, string password)
-    {
-        await page.GotoAsync($"{_fixture.BaseUrl}/Access/Login");
-        await page.FillAsync("input[name='Email']", email);
-        await page.FillAsync("input[name='Password']", password);
-        await page.ClickAsync("button[type='submit']");
-        await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-
-        await page.WaitForURLAsync(url => !url.Contains("/Access/Login"), new PageWaitForURLOptions { Timeout = 10000 });
-        await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-
-        if (page.Url.Contains("/Context/Select"))
-        {
-            var roleDropdown = page.Locator("[data-mode='page'] [data-cs='role']");
-            await page.WaitForFunctionAsync(
-                "sel => sel.options.length > 1",
-                await roleDropdown.ElementHandleAsync(),
-                new() { Timeout = 10000 });
-            if (await roleDropdown.IsEnabledAsync())
-            {
-                await roleDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
-            }
-
-            var incubatorDropdown = page.Locator("[data-mode='page'] [data-cs='incubator']");
-            await page.WaitForFunctionAsync(
-                "sel => sel.options.length > 1",
-                await incubatorDropdown.ElementHandleAsync(),
-                new() { Timeout = 10000 });
-            if (await incubatorDropdown.IsEnabledAsync())
-            {
-                await incubatorDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
-            }
-
-            var confirmBtn = page.Locator("[data-mode='page'] [data-cs='confirm']");
-            await Assertions.Expect(confirmBtn).ToBeEnabledAsync(new() { Timeout = 15000 });
-            await confirmBtn.ClickAsync();
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-        }
-    }
+    private Task LoginAndSelectContextAsync(IPage page, string email, string password) =>
+        KnowledgeTestHelpers.LoginAndSelectAsync(
+            page, _fixture.BaseUrl, email, password, ContextSelection.FirstEnabled);
 }
