@@ -30,9 +30,9 @@ description: "Task list for implementing spec 017 — Knowledge Module E2E Test 
 
 **Purpose**: One-time changes that unblock every user-story phase.
 
-- [ ] T001 Verify the 016 branch builds and the current E2E suite passes locally by running `dotnet build` and then `dotnet test tests/Mentoory.Tests.E2E/Mentoory.Tests.E2E.csproj --filter "FullyQualifiedName~KnowledgeTemplatesTests.Templates_PageLoads"`. If either fails, stop and fix the baseline before proceeding.
-- [ ] T002 [P] Read `specs/016-knowledge-module-core/contracts/diagnostic-cascade.md` and `Mentoory.Db/diagnostic/Tables/Questions.sql` to resolve the open item flagged in `specs/017-knowledge-e2e-tests/contracts/seed-additions.md` § Addition 2 — specifically, whether `diagnostic.Questions.TopicId` FK is conditional on template-vs-project, uses `TopicTemplates.Id`, or uses `Topics.Id`. Document the answer as a one-paragraph note at the top of `contracts/seed-additions.md`; this drives the exact TopicId values used in T004.
-- [ ] T003 [P] Patch `tests/Mentoory.Tests.E2E/Infrastructure/PlaywrightFixture.cs` to honor `E2E_HEADED=1` env var per research R7: `Headless = Environment.GetEnvironmentVariable("E2E_HEADED") != "1"` and `SlowMo = Environment.GetEnvironmentVariable("E2E_HEADED") == "1" ? 250 : 0`. Keep CI default (unset = headless).
+- [X] T001 Verify the 016 branch builds and the current E2E suite passes locally by running `dotnet build` and then `dotnet test tests/Mentoory.Tests.E2E/Mentoory.Tests.E2E.csproj --filter "FullyQualifiedName~KnowledgeTemplatesTests.Templates_PageLoads"`. If either fails, stop and fix the baseline before proceeding.
+- [X] T002 [P] Read `specs/016-knowledge-module-core/contracts/diagnostic-cascade.md` and `Mentoory.Db/diagnostic/Tables/Questions.sql` to resolve the open item flagged in `specs/017-knowledge-e2e-tests/contracts/seed-additions.md` § Addition 2 — specifically, whether `diagnostic.Questions.TopicId` FK is conditional on template-vs-project, uses `TopicTemplates.Id`, or uses `Topics.Id`. Document the answer as a one-paragraph note at the top of `contracts/seed-additions.md`; this drives the exact TopicId values used in T004.
+- [X] T003 [P] Patch `tests/Mentoory.Tests.E2E/Infrastructure/PlaywrightFixture.cs` to honor `E2E_HEADED=1` env var per research R7: `Headless = Environment.GetEnvironmentVariable("E2E_HEADED") != "1"` and `SlowMo = Environment.GetEnvironmentVariable("E2E_HEADED") == "1" ? 250 : 0`. Keep CI default (unset = headless).
 
 ---
 

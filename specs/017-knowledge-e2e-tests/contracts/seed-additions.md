@@ -1,5 +1,17 @@
 # Contract: PostDeployment Seed Additions
 
+> **Resolution (T002, 2026-04-19)** — Template-side questions live in `diagnostic.QuestionTemplates`,
+> NOT in `diagnostic.Questions`. `QuestionTemplates.TopicId` is a `BIGINT NOT NULL` with **no FK**
+> (soft reference to `knowledge.TopicTemplates.Id`, enforced in application code only).
+> `diagnostic.Questions.TopicId` has `FK_Questions_Topics → knowledge.Topics(Id)` and is the
+> project-side topic reference rewritten by `CloneFormTemplateHandler.BuildTopicIdRewriteMap`.
+> **Seed implication for Addition 2**: the FormTemplate's questions are inserted into
+> `diagnostic.QuestionTemplates` with `TopicId` values resolved from `knowledge.TopicTemplates`
+> under the seeded `Emprendimiento Básico` KS template (e.g., `Finanzas` / `Mercadeo` topic
+> templates under module template `Ideación`). No rows go into `diagnostic.Questions` at seed
+> time — those are created only when a coordinator clones the FormTemplate into a project via
+> `CloneFormTemplateCommand`.
+
 **Files modified**:
 - `Mentoory.Db.PostDeployment/004.SeedTestData.sql` — add second incubator + `coord2` user
 - `Mentoory.Db.PostDeployment/005.SeedKnowledgeData.sql` — add one bound `FormTemplate`
@@ -48,29 +60,18 @@ Scripts run on every DACPAC publish; duplicate runs MUST NOT produce duplicate r
    - `ExternalId`: fixed Guid `33333333-3333-3333-3333-333333333333`
    - `DefaultKnowledgeStructureTemplateExternalId`: matches the seeded `Emprendimiento Básico` KS template's ExternalId.
    - `CreatedAt`: `SYSUTCDATETIME()`
-2. `diagnostic.Questions` rows (2–3 questions):
-   - Each question's `TopicId` (INTERNAL `BIGINT`) resolves to a Topic row under the seeded KS template's hierarchy (e.g., the `Finanzas` and `Mercadeo` topics under module `Ideación`).
-   - `Text`: Spanish question text (`"¿Cómo describe el flujo de caja actual de su proyecto?"`, etc.).
+2. `diagnostic.QuestionTemplates` rows (2–3 questions; **not** `Questions` — see T002 resolution above):
+   - Each question's `TopicId` (INTERNAL `BIGINT`) resolves to a TopicTemplate row under the seeded KS template (e.g., the `Finanzas` and `Mercadeo` topic templates under module template `Ideación`).
+   - `QuestionText`: Spanish question text (`"¿Cómo describe el flujo de caja actual de su proyecto?"`, etc.).
    - `QuestionType`: `0` (Text) or `1` (Numeric).
    - `StageApplicability`: `2` (Both).
    - `SortOrder`: 1, 2, 3.
-   - `IsRequired`: `0`.
+   - `IsOptional`: `0`.
 
 **Verification**:
 - `SELECT COUNT(*) FROM diagnostic.FormTemplates WHERE ExternalId = '33333333-...'` → 1
 - `SELECT DefaultKnowledgeStructureTemplateExternalId FROM diagnostic.FormTemplates WHERE ExternalId = '33333333-...'` → matches the seeded KS template ExternalId.
-- Every seeded Question's `TopicId` resolves through `JOIN knowledge.TopicTemplates tt ON tt.Id = q.TopicId` (NOT `Topics` — FormTemplate-side questions reference TEMPLATE topics per the ratified decision).
-
-**Wait — TopicId on template-side questions**: The spec clarifies that `diagnostic.Questions.TopicId` on **template-side** questions points at `knowledge.TopicTemplates.Id` (template topics, NOT project topics). The `CloneFormTemplateHandler` rewrites these at clone time. The seed must honor this: query against `knowledge.TopicTemplates`, not `knowledge.Topics`.
-
-Re-check the existing `diagnostic.Questions.TopicId` FK: the 016 branch adds the constraint `FK_diagnostic_Questions_knowledge_Topics`. **But the template-side questions reference TopicTemplates, not Topics**. This suggests either:
-- The FK is ONLY enforced on `ProjectForm.Questions` (via a filtered/conditional constraint), OR
-- The FK is a union/polymorphic constraint (both tables), OR
-- The 016 amendment replaces the FK with a soft-reference pattern.
-
-**Action item**: Before writing this seed, verify with the 016 plan's contracts (`specs/016-knowledge-module-core/contracts/diagnostic-cascade.md`) how the FK actually works on template-side questions. If the FK strictly points at `knowledge.Topics`, the seeded `FormTemplate.Questions.TopicId` values would violate it. The seed MUST use whatever id space the schema allows for template-side questions.
-
-> **Resolution needed during Phase 2 task implementation** — not a Phase 1 blocker. The risk is that the seed insert will fail DACPAC publish if the TopicId space is wrong. The tasks list will include a read-the-016-schema sub-task before writing this seed.
+- Every seeded `QuestionTemplates.TopicId` resolves through `JOIN knowledge.TopicTemplates tt ON tt.Id = qt.TopicId`. `QuestionTemplates.TopicId` has no DB-level FK, but application code + `CloneFormTemplateHandler.BuildTopicIdRewriteMap` expect the value to be a live `TopicTemplates.Id`.
 
 ---
 
