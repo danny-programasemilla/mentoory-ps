@@ -10,6 +10,8 @@ public sealed class LifecyclePageObject
     public const string StageStateInProgress = "En progreso";
     public const string StageStatePending = "Pendiente";
 
+    public const string ClosureFinalStageMessage = "El proyecto ya está en la etapa final (Cierre).";
+
     private readonly IPage _page;
     private readonly PlaywrightFixture _host;
 
@@ -64,6 +66,17 @@ public sealed class LifecyclePageObject
     {
         var button = AdvanceButton;
         return await button.CountAsync() > 0 && await button.IsVisibleAsync();
+    }
+
+    public async Task<string?> ReadCannotAdvanceReasonAsync()
+    {
+        var reason = _page.Locator("div.card:has(ul.steps) .card-footer span.text-muted").First;
+        if (await reason.CountAsync() == 0)
+        {
+            return null;
+        }
+
+        return (await reason.InnerTextAsync()).Trim();
     }
 
     public async Task ClickAdvanceAndConfirmAsync()
