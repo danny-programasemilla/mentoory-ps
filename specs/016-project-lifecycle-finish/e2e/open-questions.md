@@ -16,6 +16,28 @@ Execution-time parking lot. Populated as chunks run. **Not** used during the spe
 
 *(Populated if a test reveals a real bug. Each entry: test name, expected behavior, observed behavior, chunk, severity. Triage separately — do NOT fix during the E2E execution per R1/E2.)*
 
+### US3 §1 / §4 — Locked action cards have broken ARIA and tooltip attributes (C3)
+
+- **Tests** (both skipped):
+  - `WalkthroughGatedActionsTests.GatedActions_RegistrationStage_AllSixCardsLocked`
+  - `WalkthroughGatedActionsTests.GatedActions_LockedCardTooltipNamesUnlockingStage`
+- **Expected per parent spec US3 §1/§4 and Lifecycle.cshtml intent**: A locked action card renders `aria-disabled="true"`, `tabindex="-1"`, `data-bs-toggle="tooltip"`, and `data-bs-title="Disponible desde la etapa <Spanish stage name>"`.
+- **Observed**: `Mentoory.Web/Areas/Coordination/Views/Projects/Lifecycle.cshtml:145-147` emits the full attribute blob through `@(isLocked ? "aria-disabled=\"true\" ..." : "")`. Razor HTML-encodes the string, so the rendered HTML contains `aria-disabled=&quot;true&quot; tabindex=&quot;-1&quot; data-bs-toggle=&quot;tooltip&quot; data-bs-title=&quot;Disponible desde la etapa Formularios&quot;`. The HTML parser then reads each attribute value as unquoted, stopping at the first whitespace. Net effect:
+  - `aria-disabled` value parses as `"true"` (with literal quote chars, 6 chars long).
+  - `tabindex` value parses as `"-1"` (with literal quote chars).
+  - `data-bs-toggle` value parses as `"tooltip"` (with literal quote chars).
+  - `data-bs-title` value parses as `"Disponible` (truncated at whitespace, stage name lost).
+- **User-facing impact**:
+  - Bootstrap's tooltip initializer looks for `data-bs-toggle="tooltip"` (no literal quotes). Locked cards never get a tooltip in production.
+  - Screen readers receive `aria-disabled="true"` with extra quote chars — many ATs treat this as a malformed value and fall through to interactive semantics.
+  - Keyboard focus skipping (`tabindex="-1"`) is also malformed; browsers differ on recovery.
+- **Severity**: Real accessibility + UX regression on locked action cards, but silent because no existing test asserts these attributes. `ReadActionStateAsync` only checks CSS class (`border-secondary`), which is emitted correctly by `@cardClass`.
+- **Resolution options for triage**:
+  1. Wrap each `@(...)` in `Html.Raw(...)` so the attribute blob is emitted literally.
+  2. Replace the blob with individual Razor conditional attributes (`@(isLocked ? "true" : null)` bound to real attribute names).
+  3. Option 2 is the more idiomatic Razor fix and avoids the `Html.Raw` safety caveat since the interpolated value (`action.GatingStageDisplayName`) is static app-controlled Spanish.
+- **Current coverage** (C3): two tests kept in the suite as `[Fact(Skip = ...)]` with a pointer back to this entry. When the view is fixed, remove the `Skip` attribute in the same commit.
+
 ### US2 §3 — "all seven stages completed" state is unreachable (C2)
 
 - **Test**: `WalkthroughLifecyclePageTests.Lifecycle_ClosedProject_PriorStagesCompleted_ClosureInProgress`

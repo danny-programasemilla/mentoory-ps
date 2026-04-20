@@ -20,6 +20,7 @@ public sealed class LifecycleFixtures
     private const string IncubatorAName = IncubatorNamePrefix + "a";
     private const string IncubatorBName = IncubatorNamePrefix + "b";
     private const string SeededIncubatorAlphaName = "Incubadora Alpha";
+    private const string SeededInnovacionProjectName = "Proyecto Innovación";
     private const string GlobalAdminNormalizedEmail = "ADMIN@MENTOORY.COM";
 
     private readonly PlaywrightFixture _host;
@@ -155,6 +156,26 @@ public sealed class LifecycleFixtures
         {
             throw new InvalidOperationException(
                 $"Seeded incubator '{SeededIncubatorAlphaName}' not found. " +
+                "Confirm 004.SeedTestData.sql ran during DACPAC deployment.");
+        }
+
+        return (Guid)scalar;
+    }
+
+    // Proyecto Innovación is coord1's only RoleAssignment in seed data, so it becomes
+    // coord1's session-active project after the context selector auto-picks.
+    public async Task<Guid> GetSeededInnovacionProjectExternalIdAsync(CancellationToken ct = default)
+    {
+        await using var connection = new SqlConnection(_host.ConnectionString);
+        await connection.OpenAsync(ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT TOP 1 [ExternalId] FROM [tenant].[Projects] WHERE [Name] = @Name";
+        command.Parameters.AddWithValue("@Name", SeededInnovacionProjectName);
+        var scalar = await command.ExecuteScalarAsync(ct);
+        if (scalar is null or DBNull)
+        {
+            throw new InvalidOperationException(
+                $"Seeded project '{SeededInnovacionProjectName}' not found. " +
                 "Confirm 004.SeedTestData.sql ran during DACPAC deployment.");
         }
 

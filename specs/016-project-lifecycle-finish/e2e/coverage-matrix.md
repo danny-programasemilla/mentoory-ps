@@ -21,10 +21,10 @@ Populated incrementally by each chunk. One row per scenario in `specs/016-projec
 | 5 | US2 §1 | Mid-lifecycle rendering | C2 | `WalkthroughLifecyclePageTests.Lifecycle_MidProject_RegistrationCompleted_FormsInProgress` | ✅ |
 | 6 | US2 §2 | Brand-new project rendering | C2 | `WalkthroughLifecyclePageTests.Lifecycle_BrandNewProject_OnlyRegistrationInProgress` | ✅ |
 | 7 | US2 §3 | Closed project rendering | C2 | `WalkthroughLifecyclePageTests.Lifecycle_ClosedProject_PriorStagesCompleted_ClosureInProgress` | ✅ (see note A) |
-| 8 | US3 §1 | Registration → all 6 cards Locked | C3 | `WalkthroughGatedActionsTests.GatedActions_RegistrationStage_AllSixCardsLocked` | 🚧 |
-| 9 | US3 §2 | Cards flip states on advance | C3 | `WalkthroughGatedActionsTests.GatedActions_FlipStatesOnAdvance` | 🚧 |
-| 10 | US3 §3 | Direct URL to locked action | C3 | `WalkthroughGatedActionsTests.GatedActions_DirectUrlToLockedAction_RedirectsToLifecycleWithSpanishToast` | 🚧 |
-| 11 | US3 §4 | Locked-card tooltip names unlocking stage | C3 | `WalkthroughGatedActionsTests.GatedActions_LockedCardTooltipNamesUnlockingStage` | 🚧 |
+| 8 | US3 §1 | Registration → all 6 cards Locked | C3 | `WalkthroughGatedActionsTests.GatedActions_RegistrationStage_AllSixCardsLocked` | 🛑 (see note B) |
+| 9 | US3 §2 | Cards flip states on advance | C3 | `WalkthroughGatedActionsTests.GatedActions_FlipStatesOnAdvance` | ✅ |
+| 10 | US3 §3 | Direct URL to locked action | C3 | `WalkthroughGatedActionsTests.GatedActions_DirectUrlToLockedAction_RedirectsToLifecycleWithSpanishToast` | ✅ |
+| 11 | US3 §4 | Locked-card tooltip names unlocking stage | C3 | `WalkthroughGatedActionsTests.GatedActions_LockedCardTooltipNamesUnlockingStage` | 🛑 (see note B) |
 | 12 | Edge: cross-incubator | IncubatorAdmin A blocked from B's project | C4 | `WalkthroughRoleScopeTests.IncubatorAdminA_CannotFetchIncubatorBProjectLifecycle` | 🚧 |
 | 13 | Edge: no context | Coordinator without context redirected | C4 | `WalkthroughRoleScopeTests.Coordinator_WithoutIncubatorContext_RedirectedToSelector` | 🚧 |
 | 14 | US1 §4 (Mentor) | Mentor blocked at controller | C4 | `WalkthroughRoleScopeTests.Mentor_CannotAccessCoordinationProjectsList` | 🚧 |
@@ -35,6 +35,7 @@ Populated incrementally by each chunk. One row per scenario in `specs/016-projec
 ## Notes
 
 - **Note A (row 7 — US2 §3).** Parent spec says "all seven stages appear in the completed state with their timestamps." This state is unreachable through the product: `AdvanceProjectStageHandler.cs:48` rejects any 7th advance (`ProjectAlreadyClosed`), so the UI always renders Closure as `En progreso` once reached. The test asserts the renderable reality (6 stages `Completada` + Closure `En progreso` + advance button hidden + `El proyecto ya está en la etapa final (Cierre).` muted text). Spec/product discrepancy logged in `open-questions.md`.
+- **Note B (rows 8 & 11 — US3 §1 and §4).** `Mentoory.Web/Areas/Coordination/Views/Projects/Lifecycle.cshtml:145-147` emits the ARIA / `tabindex` / tooltip attribute blob through `@(...)`, so Razor HTML-encodes the inner quotes. The rendered markup parses as `aria-disabled="\"true\""`, `tabindex="\"-1\""`, `data-bs-toggle="\"tooltip\""`, and `data-bs-title="\"Disponible` (truncated at the first whitespace). Real product impact: locked cards never get Bootstrap tooltips in production, and the ARIA state is malformed. Per E2, tests kept in-suite as `[Fact(Skip=...)]`; full write-up in `open-questions.md`.
 
 ## Success Criteria — automated vs. not
 
@@ -43,7 +44,7 @@ Populated incrementally by each chunk. One row per scenario in `specs/016-projec
 | SC-001 | ✅ via row 1 | Happy-path UI advance covers "advanceable via coordinator UI, no DB tools needed" |
 | SC-002 | ⏭️ Not covered | Timing criterion (under 30s) — test-time timing depends on Testcontainers warm-up; not a useful assertion |
 | SC-003 | ⏭️ Not covered | Usability (human coordinators) — requires real user study |
-| SC-004 | ✅ via rows 8, 10 | Locked-URL rejection proves "zero stage-gated actions executable out-of-stage" |
+| SC-004 | ✅ via row 10 (row 8 blocked — see note B) | Row 10 proves server-side rejection covers "zero stage-gated actions executable out-of-stage." Row 8 would have added client-side ARIA/tooltip evidence; currently blocked by Razor-encoding bug in `Lifecycle.cshtml`. |
 | SC-005 | ✅ via row 15 | Audit trail visible without navigation |
 | SC-006 | ⏭️ Not covered | Usability (human identification) — requires real user study |
 | SC-007 | ⏭️ Not covered | Support-ticket metric — operational, not testable |
