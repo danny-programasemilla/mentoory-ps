@@ -1,6 +1,6 @@
 # Brainstorm Overview
 
-Last updated: 2026-04-18 (revised after PR #10 code review)
+Last updated: 2026-04-20 (added #11 cross-cutting code audit)
 
 ## Sessions
 
@@ -16,6 +16,7 @@ Last updated: 2026-04-18 (revised after PR #10 code review)
 | 08 | 2026-04-18 | mentoring-plan | parked | - |
 | 09 | 2026-04-18 | mentoring-execution | parked | - |
 | 10 | 2026-04-18 | cross-cutting-hardening | parked | - |
+| 11 | 2026-04-20 | cross-cutting-code-audit | spec-created | 017 |
 
 ## Open Threads
 
@@ -55,6 +56,13 @@ Last updated: 2026-04-18 (revised after PR #10 code review)
 - Notification template engine — inline vs Razor vs Scriban (from #10)
 - Audit pipeline mechanism — attribute-based vs explicit calls (from #10; v1 payload scope is decided)
 - Cross-cutting ship order: Subscription first vs Audit first (from #10)
+- CI rule failing build when `Mentoory.*.Tests` project has zero tests (OQ-1 from #11)
+- `RegisterUser` response-time equalization for timing-based enumeration (OQ-2 from #11)
+- `DbContextFactory` namespace-parsing rewrite — own spec (from #11)
+- `BaseController` introduction — driver not yet strong enough (from #11)
+- `System.TimeProvider` migration — fold into dependency-upgrade pass (from #11)
+- `Mentoory.Contracts` extraction — own brainstorm (from #11)
+- Correlation-ID propagation into `AuditEntry` and outbox rows (from #11; design during Audit spec)
 
 ## Decisions Ratified During Review
 
@@ -66,10 +74,14 @@ Decisions that were open during the initial roadmap (#06) and resolved via the P
 - **Authorization layering** (#06): `CheckPermission` is ADDITIVE to `[Authorize]` role guards, not a replacement.
 - **Tenant query filters** (#06): GlobalAdmin-aware filters with bypass, NOT blanket `OnModelCreating` filters.
 - **Phase placement of tests and `AsNoTracking` audit** (#06): tests ship with each feature; `AsNoTracking` compliance is a Phase A gate.
+- **Roles.cs location** (#11): lives in `Shared.Application/Authorization/`, not Domain — roles are tied to ASP.NET `[Authorize]` semantics.
+- **Spec bundling** (#11): seven code-quality quick wins bundled into spec 017 as a single PR (shared blast radius, shared rollback boundary). Strategic items (Outbox, Audit, Permissions) stay as separate specs per #10.
+- **Architecture test framework** (#11): NetArchTest.Rules with source-grep or Roslyn-analyzer fallback for rules that IL-level inspection cannot express (notably the `DateTime.UtcNow` prohibition).
+- **Domain-event adapter strategy** (#11): option (b) — a generic `DomainEventNotification<TEvent>` wrapper at the dispatch boundary. Domain events implement only `IDomainEvent`; no per-event double-implementation.
 
 ## Parked Ideas
 
 - **Knowledge module (US3)** (#07) — full hierarchical learning content domain. Reason: first focused brainstorm scheduled at start of Phase A hot stream.
 - **Mentoring Plan (US4)** (#08) — diagnostic scoring → priority plan. Reason: depends on Knowledge module; brainstorm at start of Phase B hot stream.
 - **Mentoring Execution (US5)** (#09) — scheduling + sessions + assignments. Reason: depends on Mentoring Plan; consider splitting into two specs. Brainstorm at start of Phase C.
-- **Cross-cutting Subscription + Notification + Audit** (#10) — three independent-but-related warm streams for Phases A–B. Reason: queued as AI-driven warm work alongside hot feature streams.
+- **Cross-cutting Subscription + Notification + Audit** (#10) — three independent-but-related warm streams for Phases A–B. Reason: queued as AI-driven warm work alongside hot feature streams. Ship order now recommended: Outbox → Audit → Permission layer, against the cleaner surface from spec 017.

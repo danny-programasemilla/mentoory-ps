@@ -85,6 +85,7 @@ Feature artifacts live in `specs/{###-feature-name}/`. See [`.specify/templates/
 - C# / .NET 10.0 + Razor Views + CSS + JavaScript + Tabler v1.4.0 (Bootstrap 5), DataTables 2.3.4, jQuery, Tabler Icons Webfont (012-table-polish)
 - C# / .NET 10.0 + JavaScript (vanilla, ES5-compatible) + DataTables 2.3.4, jQuery, Tabler v1.4.0 (Bootstrap 5), Tabler Icons Webfont (013-table-filtering)
 - N/A (no schema changes) (013-table-filtering)
+- SQL Server with SSDT/DACPAC (no schema changes in this feature) (017-crosscut-hardening-phase0)
 
 ## Code Review Standards
 After completing any implementation, review the code for:
@@ -100,6 +101,6 @@ After completing any implementation, review the code for:
 Run /simplify before presenting code to the user.
 
 ## Recent Changes
+- 017-crosscut-hardening-phase0: Added C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, MediatR 14.1, FluentValidation 12.1, Mapperly 4.x, EF Core 10.x
 - 013-table-filtering: Added C# / .NET 10.0 + JavaScript (vanilla, ES5-compatible) + DataTables 2.3.4, jQuery, Tabler v1.4.0 (Bootstrap 5), Tabler Icons Webfont
 - 012-table-polish: Added C# / .NET 10.0 + Razor Views + CSS + JavaScript + Tabler v1.4.0 (Bootstrap 5), DataTables 2.3.4, jQuery, Tabler Icons Webfont
-- 011-dashboard-ui-polish: Added C# / .NET 10.0 + Razor Views + CSS + Tabler v1.4.0 (Bootstrap 5), Tabler Icons Webfont, jQuery, DataTables 2.3.4
