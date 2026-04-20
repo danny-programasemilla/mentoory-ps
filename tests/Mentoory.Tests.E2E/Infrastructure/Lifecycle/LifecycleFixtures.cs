@@ -182,6 +182,31 @@ public sealed class LifecycleFixtures
         return (Guid)scalar;
     }
 
+    // Global-admin role assignment is seeded with IncubatorId=0 (global-scope sentinel from 002.SeedGlobalAdmin.sql).
+    public async Task<Guid> GetGlobalAdminRoleAssignmentExternalIdAsync(CancellationToken ct = default)
+    {
+        await using var connection = new SqlConnection(_host.ConnectionString);
+        await connection.OpenAsync(ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = @"
+            SELECT TOP 1 ra.[ExternalId]
+            FROM [access].[RoleAssignments] ra
+            INNER JOIN [access].[Users] u ON u.[Id] = ra.[UserId]
+            WHERE u.[NormalizedEmail] = @Email
+              AND ra.[Role] = N'GlobalAdmin'
+              AND ra.[IsActive] = 1";
+        command.Parameters.AddWithValue("@Email", GlobalAdminNormalizedEmail);
+        var scalar = await command.ExecuteScalarAsync(ct);
+        if (scalar is null or DBNull)
+        {
+            throw new InvalidOperationException(
+                "GlobalAdmin role assignment for admin@mentoory.com not found. " +
+                "Confirm 002.SeedGlobalAdmin.sql ran during DACPAC deployment.");
+        }
+
+        return (Guid)scalar;
+    }
+
     // Covers the StageNotInProgress invariant; the UI flow never produces this state.
     public async Task ForceCurrentStageStateCompletedAsync(Guid projectExternalId, CancellationToken ct = default)
     {

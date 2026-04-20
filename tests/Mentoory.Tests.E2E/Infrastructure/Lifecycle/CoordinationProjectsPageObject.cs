@@ -4,8 +4,9 @@ namespace Mentoory.Tests.E2E.Infrastructure.Lifecycle;
 
 public sealed class CoordinationProjectsPageObject
 {
-    private const string TableSelector = "#coordinationProjectsTable";
-    private const string DataRowSelector = "#coordinationProjectsTable tbody tr:not(.dataTables_empty)";
+    public const string TableElementId = "coordinationProjectsTable";
+    private const string TableSelector = "#" + TableElementId;
+    private const string DataRowSelector = TableSelector + " tbody tr:not(.dataTables_empty)";
 
     private readonly IPage _page;
     private readonly PlaywrightFixture _host;
