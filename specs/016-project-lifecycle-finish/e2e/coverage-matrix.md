@@ -14,10 +14,10 @@ Populated incrementally by each chunk. One row per scenario in `specs/016-projec
 | # | Parent spec ref | Scenario | Chunk | Test file | Status |
 |---|-----------------|----------|-------|-----------|--------|
 | — | SC-E-foundation | Fixtures wired correctly | C0 | `LifecycleSmokeTests.Fixtures_CanLoginAsCoordinatorAndOpenCoordinationProjectsList` | ✅ |
-| 1 | US1 §1 | Registration→Forms advance via UI | C1 | `WalkthroughAdvanceTests.Coordinator_AdvancesProjectFromRegistrationToForms` | 🚧 |
-| 2 | US1 §2 | Closure project rejects advance | C1 | `WalkthroughAdvanceTests.Coordinator_CannotAdvanceProjectAtClosure` | 🚧 |
-| 3 | US1 §3 | Completed stage rejects advance | C1 | `WalkthroughAdvanceTests.Coordinator_CannotAdvanceWhenCurrentStageIsCompleted` | 🚧 |
-| 4 | US1 §4 | Non-coordinator role blocked | C1 | `WalkthroughAdvanceTests.NonCoordinator_CannotSeeAdvanceButtonOrInvokeAdvance` | 🚧 |
+| 1 | US1 §1 | Registration→Forms advance via UI | C1 | `WalkthroughAdvanceTests.Coordinator_AdvancesProjectFromRegistrationToForms` | ✅ |
+| 2 | US1 §2 | Closure project rejects advance | C1 | `WalkthroughAdvanceTests.Coordinator_CannotAdvanceProjectAtClosure` | ✅ |
+| 3 | US1 §3 | Completed stage rejects advance | C1 | `WalkthroughAdvanceTests.Coordinator_CannotAdvanceWhenCurrentStageIsCompleted` | ✅ |
+| 4 | US1 §4 | Non-coordinator role blocked | C1 | `WalkthroughAdvanceTests.NonCoordinator_CannotSeeAdvanceButtonOrInvokeAdvance` | ✅ |
 | 5 | US2 §1 | Mid-lifecycle rendering | C2 | `WalkthroughLifecyclePageTests.Lifecycle_MidProject_RegistrationCompleted_FormsInProgress` | 🚧 |
 | 6 | US2 §2 | Brand-new project rendering | C2 | `WalkthroughLifecyclePageTests.Lifecycle_BrandNewProject_OnlyRegistrationInProgress` | 🚧 |
 | 7 | US2 §3 | Closed project rendering | C2 | `WalkthroughLifecyclePageTests.Lifecycle_ClosedProject_AllStagesCompleted` | 🚧 |

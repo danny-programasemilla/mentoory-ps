@@ -19,6 +19,7 @@ public sealed class LifecycleFixtures
 
     private const string IncubatorAName = IncubatorNamePrefix + "a";
     private const string IncubatorBName = IncubatorNamePrefix + "b";
+    private const string SeededIncubatorAlphaName = "Incubadora Alpha";
     private const string GlobalAdminNormalizedEmail = "ADMIN@MENTOORY.COM";
 
     private readonly PlaywrightFixture _host;
@@ -33,9 +34,18 @@ public sealed class LifecycleFixtures
         await using var connection = new SqlConnection(_host.ConnectionString);
         await connection.OpenAsync(ct);
         await using var command = connection.CreateCommand();
+        // FK order: child tables before Projects.
         command.CommandText = @"
-            DELETE FROM [tenant].[Projects]   WHERE [Name] LIKE @ProjectPrefix + '%';
-            DELETE FROM [tenant].[Incubators] WHERE [Name] LIKE @IncubatorPrefix + '%';";
+            DECLARE @TargetProjectIds TABLE ([Id] BIGINT NOT NULL);
+            INSERT INTO @TargetProjectIds ([Id])
+                SELECT [Id] FROM [tenant].[Projects] WHERE [Name] LIKE @ProjectPrefix + '%';
+
+            DELETE FROM [tenant].[ProjectStages]        WHERE [ProjectId] IN (SELECT [Id] FROM @TargetProjectIds);
+            DELETE FROM [tenant].[ProjectParticipants]  WHERE [ProjectId] IN (SELECT [Id] FROM @TargetProjectIds);
+            DELETE FROM [tenant].[MentorAssignments]    WHERE [ProjectId] IN (SELECT [Id] FROM @TargetProjectIds);
+            DELETE FROM [tenant].[ProjectInvitations]   WHERE [ProjectId] IN (SELECT [Id] FROM @TargetProjectIds);
+            DELETE FROM [tenant].[Projects]             WHERE [Id] IN (SELECT [Id] FROM @TargetProjectIds);
+            DELETE FROM [tenant].[Incubators]           WHERE [Name] LIKE @IncubatorPrefix + '%';";
         command.Parameters.AddWithValue("@ProjectPrefix", ProjectNamePrefix);
         command.Parameters.AddWithValue("@IncubatorPrefix", IncubatorNamePrefix);
         await command.ExecuteNonQueryAsync(ct);
@@ -132,6 +142,42 @@ public sealed class LifecycleFixtures
 
     public Task DeactivateProjectAsync(Guid projectExternalId, CancellationToken ct = default)
         => SetProjectActiveAsync(projectExternalId, isActive: false, ct);
+
+    public async Task<Guid> GetSeededIncubatorAlphaExternalIdAsync(CancellationToken ct = default)
+    {
+        await using var connection = new SqlConnection(_host.ConnectionString);
+        await connection.OpenAsync(ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT TOP 1 [ExternalId] FROM [tenant].[Incubators] WHERE [Name] = @Name";
+        command.Parameters.AddWithValue("@Name", SeededIncubatorAlphaName);
+        var scalar = await command.ExecuteScalarAsync(ct);
+        if (scalar is null or DBNull)
+        {
+            throw new InvalidOperationException(
+                $"Seeded incubator '{SeededIncubatorAlphaName}' not found. " +
+                "Confirm 004.SeedTestData.sql ran during DACPAC deployment.");
+        }
+
+        return (Guid)scalar;
+    }
+
+    // Covers the StageNotInProgress invariant; the UI flow never produces this state.
+    public async Task ForceCurrentStageStateCompletedAsync(Guid projectExternalId, CancellationToken ct = default)
+    {
+        await using var connection = new SqlConnection(_host.ConnectionString);
+        await connection.OpenAsync(ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            "UPDATE [tenant].[Projects] SET [CurrentStageState] = @State WHERE [ExternalId] = @ExternalId";
+        command.Parameters.AddWithValue("@State", (int)StageState.Completed);
+        command.Parameters.AddWithValue("@ExternalId", projectExternalId);
+        var rows = await command.ExecuteNonQueryAsync(ct);
+        if (rows == 0)
+        {
+            throw new InvalidOperationException(
+                $"Project with ExternalId '{projectExternalId}' not found; cannot force stage state.");
+        }
+    }
 
     private async Task SetProjectActiveAsync(Guid projectExternalId, bool isActive, CancellationToken ct)
     {
