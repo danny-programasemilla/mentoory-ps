@@ -87,7 +87,7 @@ public class WalkthroughAdvanceTests : IAsyncLifetime
 
             await lifecycle.GotoAsync(closureProjectId);
             var toast = await lifecycle.ReadErrorToastAsync();
-            toast.Should().Be("El proyecto ya está en la etapa final (Cierre).");
+            toast.Should().Be(LifecyclePageObject.ClosureFinalStageMessage);
         }
         finally
         {

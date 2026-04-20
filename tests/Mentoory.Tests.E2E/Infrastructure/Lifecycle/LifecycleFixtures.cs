@@ -16,11 +16,11 @@ public sealed class LifecycleFixtures
 {
     public const string ProjectNamePrefix = "e2e-lifecycle-";
     public const string IncubatorNamePrefix = "e2e-lifecycle-inc-";
+    public const string SeededInnovacionProjectName = "Proyecto Innovación";
 
     private const string IncubatorAName = IncubatorNamePrefix + "a";
     private const string IncubatorBName = IncubatorNamePrefix + "b";
     private const string SeededIncubatorAlphaName = "Incubadora Alpha";
-    private const string SeededInnovacionProjectName = "Proyecto Innovación";
     private const string GlobalAdminNormalizedEmail = "ADMIN@MENTOORY.COM";
 
     private readonly PlaywrightFixture _host;

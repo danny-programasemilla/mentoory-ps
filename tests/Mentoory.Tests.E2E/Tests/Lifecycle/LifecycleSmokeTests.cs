@@ -8,8 +8,6 @@ namespace Mentoory.Tests.E2E.Tests.Lifecycle;
 [Collection(E2ETestCollection.Name)]
 public class LifecycleSmokeTests : IAsyncLifetime
 {
-    private const string SeededProjectName = "Proyecto Innovación";
-
     private readonly PlaywrightFixture _host;
     private readonly LifecycleFixtures _fixtures;
 
@@ -36,8 +34,8 @@ public class LifecycleSmokeTests : IAsyncLifetime
             var content = await page.ContentAsync();
             content.Should().NotContain("Internal Server Error");
 
-            (await projects.ContainsProjectNamedAsync(SeededProjectName))
-                .Should().BeTrue($"coord1 is assigned to '{SeededProjectName}' and should see it in the projects list.");
+            (await projects.ContainsProjectNamedAsync(LifecycleFixtures.SeededInnovacionProjectName))
+                .Should().BeTrue($"coord1 is assigned to '{LifecycleFixtures.SeededInnovacionProjectName}' and should see it in the projects list.");
         }
         finally
         {

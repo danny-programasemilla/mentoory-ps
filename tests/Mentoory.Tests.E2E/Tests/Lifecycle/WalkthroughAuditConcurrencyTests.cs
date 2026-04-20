@@ -85,7 +85,8 @@ public class WalkthroughAuditConcurrencyTests : IAsyncLifetime
             LifecycleFixtures.ProjectNamePrefix + "concurrency",
             StageType.Registration);
 
-        var (page1, page2) = await CreatePagePairAsync();
+        var pages = await Task.WhenAll(_host.CreatePageAsync(), _host.CreatePageAsync());
+        var (page1, page2) = (pages[0], pages[1]);
         try
         {
             await Task.WhenAll(
@@ -181,12 +182,6 @@ public class WalkthroughAuditConcurrencyTests : IAsyncLifetime
         return (success, error);
     }
 
-    private async Task<(IPage Page1, IPage Page2)> CreatePagePairAsync()
-    {
-        var pages = await Task.WhenAll(_host.CreatePageAsync(), _host.CreatePageAsync());
-        return (pages[0], pages[1]);
-    }
-
     private async Task AdvanceAsCoordinatorAsync(Guid projectExternalId, int userNumber)
     {
         var page = await _host.CreatePageAsync();
@@ -199,6 +194,7 @@ public class WalkthroughAuditConcurrencyTests : IAsyncLifetime
         }
         finally
         {
+            await _host.TakeScreenshotOnFailureAsync(page, $"{nameof(AdvanceAsCoordinatorAsync)}_coord{userNumber}");
             await page.Context.DisposeAsync();
         }
     }
