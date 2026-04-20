@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Mentoory.Access.Application.StageActions;
 using Mentoory.Tenant.Domain.Enums;
 using Microsoft.Playwright;
@@ -86,6 +87,37 @@ public sealed class LifecyclePageObject
         await modal.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible, Timeout = 5000 });
         await modal.Locator("button[type='submit']").ClickAsync();
         await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+    }
+
+    public Task<string?> ReadAdvanceAntiforgeryTokenAsync()
+        => _page.Locator("#advanceStageModal input[name='__RequestVerificationToken']")
+            .First
+            .GetAttributeAsync("value");
+
+    public async Task<string?> HarvestAdvanceTokenFromAsync(Guid tokenCarrierProjectExternalId)
+    {
+        await GotoAsync(tokenCarrierProjectExternalId);
+        return await ReadAdvanceAntiforgeryTokenAsync();
+    }
+
+    // Posts via in-browser fetch so session cookies attach automatically; Playwright's
+    // IAPIRequestContext does not share cookies with the page context in this host setup.
+    // `followRedirects=false` keeps TempData intact for a subsequent page navigation to read
+    // the toast — TempData is consumed on the first GET after the POST.
+    public Task<JsonElement> PostAdvanceStageAsync(Guid projectExternalId, string? antiforgeryToken, bool followRedirects)
+    {
+        var relativeUrl = $"/Coordination/Projects/AdvanceStage/{projectExternalId}";
+        return _page.EvaluateAsync<JsonElement>(@"
+            async ({ url, token, followRedirects }) => {
+                const body = token ? ('__RequestVerificationToken=' + encodeURIComponent(token)) : '';
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: body,
+                    redirect: followRedirects ? 'follow' : 'manual',
+                });
+                return { type: res.type, url: res.url, status: res.status };
+            }", new { url = relativeUrl, token = antiforgeryToken, followRedirects });
     }
 
     public ILocator ActionCard(StageGatedAction action)

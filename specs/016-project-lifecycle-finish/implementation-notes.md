@@ -86,7 +86,7 @@ These projects exist but contain no tests. Nothing to add here.
   `StageActionRegistry.GetState`, which is exhaustively covered by
   `StageActionRegistryTests` (42 × 7 stages × 6 actions). The remaining filter surface
   (TempData warning + redirect) is verifiable through Walkthrough 3.
-- **T042, T051, T056 (walkthroughs)** — manual; not exercised in this automated session.
+- **T042, T051, T056 (walkthroughs)** — now closed by the E2E sub-feature (see § below). Per SC-E7.
 
 ## Constitution compliance quick-check
 
@@ -105,3 +105,32 @@ These projects exist but contain no tests. Nothing to add here.
 | Tenant isolation | PASS — handler checks `IncubatorId` unless caller is `GlobalAdmin` |
 | Backend authority for stage-gated actions | PASS — `RequiresStageAttribute` applied to `AnswerCorrectionController` (class-level) and `DiagnosticsController.Clone` (method-level) |
 | Audit trail | PASS — `ProjectStage.AdvancedByUserId/StartedAtUtc/CompletedAtUtc` populated by the domain method |
+
+## E2E coverage complete
+
+The `specs/016-project-lifecycle-finish/e2e/` sub-feature added a Playwright E2E suite
+(~17 tests) that covers every automatable acceptance scenario, edge case, and success
+criterion of the parent feature. Execution was split into six strictly-ordered chunks
+(C0–C5) with pre-authored resume prompts under `e2e/checkpoints/` so a fresh AI session
+could pick up each chunk without drift. Final state: 16 passing + 2 `[Fact(Skip=...)]`
+that document product-code bugs tracked in `e2e/open-questions.md` (blocked on T056b —
+Razor attribute-encoding fix in `Lifecycle.cshtml`).
+
+Per SC-E7, the E2E suite closes parent tasks T042 (Walkthrough 2), T051 (Walkthrough 3),
+and T056 (quickstart validation) — each was originally a manual verification step that
+the Playwright coverage now replaces. Coverage matrix (`e2e/coverage-matrix.md`) is 100%
+filled in with one row per spec scenario + one row per non-automatable success
+criterion (explicit "not covered" with rationale is a valid row).
+
+Non-product-code additions for this sub-feature:
+- `tests/Mentoory.Tests.E2E/Infrastructure/Lifecycle/` — fixtures, login helpers,
+  and `LifecyclePageObject`.
+- `tests/Mentoory.Tests.E2E/Tests/Lifecycle/` — five Walkthrough test classes plus one
+  smoke test.
+- `Mentoory.Db.PostDeployment/004.SeedTestData.sql` — added `coord3@test.mentoory.com`
+  user + ProjectCoordinator role assignment (idempotent `IF NOT EXISTS ... INSERT`)
+  so the SC-005 audit-trail test can observe three distinct names on one project.
+
+No product code was modified across C0–C5. Execution surfaced two real product bugs
+(ARIA/tooltip encoding in `Lifecycle.cshtml:145-147`, and TempData warning not rendered
+on `Context/Select.cshtml`) that are filed under `e2e/open-questions.md` for follow-up.

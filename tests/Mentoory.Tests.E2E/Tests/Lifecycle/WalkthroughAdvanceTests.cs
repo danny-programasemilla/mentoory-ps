@@ -1,4 +1,3 @@
-using System.Text.Json;
 using FluentAssertions;
 using Mentoory.Tenant.Domain.Enums;
 using Mentoory.Tests.E2E.Infrastructure;
@@ -81,9 +80,9 @@ public class WalkthroughAdvanceTests : IAsyncLifetime
             (await lifecycle.IsAdvanceButtonVisibleAsync())
                 .Should().BeFalse("el botón de avance no debe existir en la etapa final (Cierre).");
 
-            var token = await HarvestAntiforgeryTokenAsync(page, lifecycle, tokenCarrierProjectId);
-            var responseType = await PostAdvanceWithManualRedirectAsync(page, closureProjectId, token);
-            responseType.Should().Be("opaqueredirect",
+            var token = await HarvestAntiforgeryTokenAsync(lifecycle, tokenCarrierProjectId);
+            var response = await lifecycle.PostAdvanceStageAsync(closureProjectId, token, followRedirects: false);
+            response.GetProperty("type").GetString().Should().Be("opaqueredirect",
                 "el handler debe responder con redirección (302) a Lifecycle tras rechazar el avance.");
 
             await lifecycle.GotoAsync(closureProjectId);
@@ -118,9 +117,9 @@ public class WalkthroughAdvanceTests : IAsyncLifetime
             await LifecycleLoginHelpers.AsCoordinatorAsync(page, _host, userNumber: 1);
             var lifecycle = new LifecyclePageObject(page, _host);
 
-            var token = await HarvestAntiforgeryTokenAsync(page, lifecycle, tokenCarrierProjectId);
-            var responseType = await PostAdvanceWithManualRedirectAsync(page, brokenProjectId, token);
-            responseType.Should().Be("opaqueredirect",
+            var token = await HarvestAntiforgeryTokenAsync(lifecycle, tokenCarrierProjectId);
+            var response = await lifecycle.PostAdvanceStageAsync(brokenProjectId, token, followRedirects: false);
+            response.GetProperty("type").GetString().Should().Be("opaqueredirect",
                 "el handler debe responder con redirección (302) a Lifecycle tras rechazar el avance.");
 
             await lifecycle.GotoAsync(brokenProjectId);
@@ -155,8 +154,8 @@ public class WalkthroughAdvanceTests : IAsyncLifetime
                 $"/Coordination/Projects/Lifecycle/{projectExternalId}",
                 "el Mentor no está en la lista de roles del controlador y no debe poder cargar la vista de ciclo de vida.");
 
-            var finalUrl = await PostAdvanceFollowingRedirectsAsync(page, projectExternalId);
-            finalUrl.Should().NotContain(
+            var response = await lifecycle.PostAdvanceStageAsync(projectExternalId, antiforgeryToken: null, followRedirects: true);
+            response.GetProperty("url").GetString().Should().NotContain(
                 $"/Coordination/Projects/Lifecycle/{projectExternalId}",
                 "un POST directo de Mentor a AdvanceStage no debe aterrizar en la vista de Lifecycle del proyecto.");
         }
@@ -168,46 +167,12 @@ public class WalkthroughAdvanceTests : IAsyncLifetime
     }
 
     private static async Task<string> HarvestAntiforgeryTokenAsync(
-        IPage page,
         LifecyclePageObject lifecycle,
         Guid tokenCarrierProjectId)
     {
-        await lifecycle.GotoAsync(tokenCarrierProjectId);
-        var token = await page.Locator("#advanceStageModal input[name='__RequestVerificationToken']")
-            .First
-            .GetAttributeAsync("value");
+        var token = await lifecycle.HarvestAdvanceTokenFromAsync(tokenCarrierProjectId);
         token.Should().NotBeNullOrWhiteSpace(
             "la página de Lifecycle de un proyecto avanzable debe exponer el token antiforgery.");
         return token!;
-    }
-
-    // Posts via fetch inside the browser so the auth cookie is always attached;
-    // Playwright's IAPIRequestContext does not share cookies with the page context in this host setup.
-    private async Task<string> PostAdvanceWithManualRedirectAsync(IPage page, Guid projectExternalId, string antiforgeryToken)
-    {
-        var response = await ExecuteAdvancePostAsync(page, projectExternalId, antiforgeryToken, followRedirects: false);
-        return response.GetProperty("type").GetString() ?? string.Empty;
-    }
-
-    private async Task<string> PostAdvanceFollowingRedirectsAsync(IPage page, Guid projectExternalId)
-    {
-        var response = await ExecuteAdvancePostAsync(page, projectExternalId, antiforgeryToken: null, followRedirects: true);
-        return response.GetProperty("url").GetString() ?? string.Empty;
-    }
-
-    private Task<JsonElement> ExecuteAdvancePostAsync(IPage page, Guid projectExternalId, string? antiforgeryToken, bool followRedirects)
-    {
-        var relativeUrl = $"/Coordination/Projects/AdvanceStage/{projectExternalId}";
-        return page.EvaluateAsync<JsonElement>(@"
-            async ({ url, token, followRedirects }) => {
-                const body = token ? ('__RequestVerificationToken=' + encodeURIComponent(token)) : '';
-                const res = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: body,
-                    redirect: followRedirects ? 'follow' : 'manual',
-                });
-                return { type: res.type, url: res.url };
-            }", new { url = relativeUrl, token = antiforgeryToken, followRedirects });
     }
 }

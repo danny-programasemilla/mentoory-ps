@@ -25,6 +25,7 @@ DECLARE @IncAdmin1Id   BIGINT;
 DECLARE @IncAdmin2Id   BIGINT;
 DECLARE @Coord1Id      BIGINT;
 DECLARE @Coord2Id      BIGINT;
+DECLARE @Coord3Id      BIGINT;
 DECLARE @Mentor1Id     BIGINT;
 DECLARE @Entrep1Id     BIGINT;
 DECLARE @Entrep2Id     BIGINT;
@@ -94,6 +95,22 @@ BEGIN
 END
 ELSE
     SELECT @Coord2Id = [Id] FROM [access].[Users] WHERE [NormalizedEmail] = N'COORD2@TEST.MENTOORY.COM';
+
+-- ------------------------------------------------------------------------------------------
+-- User: Project Coordinator 3
+-- ------------------------------------------------------------------------------------------
+IF NOT EXISTS (SELECT 1 FROM [access].[Users] WHERE [NormalizedEmail] = N'COORD3@TEST.MENTOORY.COM')
+BEGIN
+    INSERT INTO [access].[Users] ([ExternalId], [Email], [NormalizedEmail], [Country], [NationalId], [FirstName], [LastName], [AccountStatus], [FailedLoginAttempts], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), N'coord3@test.mentoory.com', N'COORD3@TEST.MENTOORY.COM', N'Chile', N'TEST-COORD3', N'Sofía', N'Navarro', 1, 0, @Now, @Now);
+
+    SET @Coord3Id = SCOPE_IDENTITY();
+
+    INSERT INTO [access].[Credentials] ([UserId], [PasswordHash], [IsActive], [CreatedAtUtc])
+    VALUES (@Coord3Id, @PasswordHash, 1, @Now);
+END
+ELSE
+    SELECT @Coord3Id = [Id] FROM [access].[Users] WHERE [NormalizedEmail] = N'COORD3@TEST.MENTOORY.COM';
 
 -- ------------------------------------------------------------------------------------------
 -- User: Mentor
@@ -353,6 +370,18 @@ IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @Coord2
 BEGIN
     INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
     VALUES (NEWID(), @Coord2Id, @Incubator1Id, @Project2Id, N'ProjectCoordinator', 1, @Now, @Now);
+END
+
+-- ------------------------------------------------------------------------------------------
+-- ProjectCoordinator 3 -> Incubadora Alpha, Proyecto Innovación
+-- (single-role single-incubator; context selector auto-skips server-side, so coord3 logs in
+-- with ActiveIncubatorId = Alpha. Used by WalkthroughAuditConcurrencyTests so three distinct
+-- coordinators can advance the same Alpha-scoped test project and be attributed by name.)
+-- ------------------------------------------------------------------------------------------
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @Coord3Id AND [IncubatorId] = @Incubator1Id AND [ProjectId] = @Project1Id AND [Role] = N'ProjectCoordinator' AND [IsActive] = 1)
+BEGIN
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @Coord3Id, @Incubator1Id, @Project1Id, N'ProjectCoordinator', 1, @Now, @Now);
 END
 
 -- ------------------------------------------------------------------------------------------
