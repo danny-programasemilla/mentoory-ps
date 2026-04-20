@@ -84,6 +84,7 @@ public class RegistrationTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-03")]
     public async Task Register_SuccessfulRegistration_RedirectsToSuccessPage()
     {
         var page = await _fixture.CreatePageAsync();
@@ -109,6 +110,10 @@ public class RegistrationTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-03")]
+    [Trait("Spec", "FR-016-04")]
+    [Trait("Sc", "SC-016-01")]
+    [Trait("Floor", "response-indistinguishability")]
     public async Task Register_DuplicateEmail_RedirectsToSuccess_AndDoesNotRevealDuplicate()
     {
         var page = await _fixture.CreatePageAsync();
@@ -145,6 +150,10 @@ public class RegistrationTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-03")]
+    [Trait("Spec", "FR-016-04")]
+    [Trait("Sc", "SC-016-01")]
+    [Trait("Floor", "response-indistinguishability")]
     public async Task Register_DuplicateNationalId_RedirectsToSuccess_AndDoesNotRevealDuplicate()
     {
         var page = await _fixture.CreatePageAsync();
@@ -177,6 +186,7 @@ public class RegistrationTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-01")]
     public async Task Register_EmptyForm_ShowsValidationErrors()
     {
         var page = await _fixture.CreatePageAsync();
@@ -202,6 +212,7 @@ public class RegistrationTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-01")]
     public async Task Register_PasswordMismatch_ShowsValidationError()
     {
         var page = await _fixture.CreatePageAsync();
@@ -236,6 +247,7 @@ public class RegistrationTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-01")]
     public async Task Register_ShortPassword_ShowsValidationError()
     {
         var page = await _fixture.CreatePageAsync();
@@ -270,6 +282,15 @@ public class RegistrationTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-01")]
+    [Trait("Spec", "FR-016-02")]
+    [Trait("Spec", "FR-016-11")]
+    [Trait("Spec", "FR-016-13")]
+    [Trait("Spec", "FR-016-14")]
+    [Trait("Sc", "SC-016-02")]
+    [Trait("Sc", "SC-016-04")]
+    [Trait("Floor", "response-indistinguishability")]
+    [Trait("Floor", "content-policy-rules")]
     public async Task Register_PasswordContainsEmailLocalPart_ShowsGenericBanner_WithoutFieldAttribution()
     {
         var page = await _fixture.CreatePageAsync();
@@ -295,6 +316,106 @@ public class RegistrationTests
         finally
         {
             await _fixture.TakeScreenshotOnFailureAsync(page, nameof(Register_PasswordContainsEmailLocalPart_ShowsGenericBanner_WithoutFieldAttribution));
+            await page.Context.DisposeAsync();
+        }
+    }
+
+    [Fact]
+    [Trait("Spec", "FR-018-18")]
+    [Trait("Floor", "content-policy-rules")]
+    public async Task Register_PasswordContainsNationalId_ShowsGenericBanner()
+    {
+        var page = await _fixture.CreatePageAsync();
+        try
+        {
+            var email = $"e2e-pwd-nid-{Guid.NewGuid():N}@example.com";
+
+            await page.GotoAsync($"{_fixture.BaseUrl}/Access/Register");
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            await page.FillAsync("input[name='Email']", email);
+            await page.FillAsync("input[name='FirstName']", "E2E");
+            await page.FillAsync("input[name='LastName']", "Test");
+            await page.SelectOptionAsync("select[name='Country']", "CRI");
+            await page.FillAsync("input[name='NationalId']", "9-123-4567");
+            await page.FillAsync("input[name='Password']", "Secure9-123-4567!");
+            await page.FillAsync("input[name='ConfirmPassword']", "Secure9-123-4567!");
+
+            await page.ClickAsync("button[type='submit']");
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            page.Url.Should().NotContain("/Success",
+                "a password containing the national ID must fail the FluentValidation rule and stay on the Register page");
+
+            var bannerText = await page.Locator(".alert.alert-danger").TextContentAsync();
+            bannerText.Should().Contain(
+                "No fue posible completar el registro. Revise los datos e intente nuevamente.");
+
+            (await page.Locator("[data-valmsg-for].field-validation-error").CountAsync())
+                .Should().Be(0,
+                    "the public registration path must never surface a per-field error span — the validator failure must not leak which field failed");
+            (await page.Locator(".field-validation-error").CountAsync())
+                .Should().Be(0,
+                    "no per-field validation error span may render when the generic banner is shown on the public path");
+        }
+        finally
+        {
+            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(Register_PasswordContainsNationalId_ShowsGenericBanner));
+            await page.Context.DisposeAsync();
+        }
+    }
+
+    [Fact]
+    [Trait("Spec", "FR-018-20")]
+    [Trait("Floor", "form-state-preservation")]
+    public async Task Registration_GenericBannerRender_PreservesNonSecretFields()
+    {
+        var page = await _fixture.CreatePageAsync();
+        try
+        {
+            var email = $"e2e-formstate-{Guid.NewGuid():N}@example.com";
+            const string firstName = "Preserved-First";
+            const string lastName = "Preserved-Last";
+            const string country = "CRI";
+            const string nationalId = "9-123-4567";
+            const string password = "Secure9-123-4567!";
+
+            await page.GotoAsync($"{_fixture.BaseUrl}/Access/Register");
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            await page.FillAsync("input[name='Email']", email);
+            await page.FillAsync("input[name='FirstName']", firstName);
+            await page.FillAsync("input[name='LastName']", lastName);
+            await page.SelectOptionAsync("select[name='Country']", country);
+            await page.FillAsync("input[name='NationalId']", nationalId);
+            await page.FillAsync("input[name='Password']", password);
+            await page.FillAsync("input[name='ConfirmPassword']", password);
+
+            await page.ClickAsync("button[type='submit']");
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            page.Url.Should().NotContain("/Success",
+                "the password-contains-NID rule must trigger the generic banner re-render so we can inspect form-state preservation");
+
+            (await page.Locator("input[name='Email']").InputValueAsync())
+                .Should().Be(email, "the Email field must repopulate after the generic banner re-render");
+            (await page.Locator("input[name='FirstName']").InputValueAsync())
+                .Should().Be(firstName, "the FirstName field must repopulate after the generic banner re-render");
+            (await page.Locator("input[name='LastName']").InputValueAsync())
+                .Should().Be(lastName, "the LastName field must repopulate after the generic banner re-render");
+            (await page.Locator("select[name='Country']").InputValueAsync())
+                .Should().Be(country, "the Country select must repopulate after the generic banner re-render");
+            (await page.Locator("input[name='NationalId']").InputValueAsync())
+                .Should().Be(nationalId, "the NationalId field must repopulate after the generic banner re-render");
+
+            (await page.Locator("input[name='Password']").InputValueAsync())
+                .Should().BeEmpty("the Password field must NEVER be repopulated after a server-side failure");
+            (await page.Locator("input[name='ConfirmPassword']").InputValueAsync())
+                .Should().BeEmpty("the ConfirmPassword field must NEVER be repopulated after a server-side failure");
+        }
+        finally
+        {
+            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(Registration_GenericBannerRender_PreservesNonSecretFields));
             await page.Context.DisposeAsync();
         }
     }

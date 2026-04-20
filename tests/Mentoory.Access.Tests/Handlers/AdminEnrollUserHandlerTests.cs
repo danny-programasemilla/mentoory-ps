@@ -18,6 +18,7 @@ public class AdminEnrollUserHandlerTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-07")]
     public async Task Handle_Fresh_ReturnsSuccess()
     {
         _provisioning.Setup(p => p.ProvisionAsync(It.IsAny<UserProvisioningRequest>(), It.IsAny<CancellationToken>()))
@@ -29,6 +30,10 @@ public class AdminEnrollUserHandlerTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-07")]
+    [Trait("Spec", "FR-016-08")]
+    [Trait("Sc", "SC-016-03")]
+    [Trait("Floor", "public-vs-admin-attribution")]
     public async Task Handle_DuplicateEmail_ReturnsFailure_AttributedToEmail()
     {
         _provisioning.Setup(p => p.ProvisionAsync(It.IsAny<UserProvisioningRequest>(), It.IsAny<CancellationToken>()))
@@ -43,6 +48,10 @@ public class AdminEnrollUserHandlerTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-07")]
+    [Trait("Spec", "FR-016-08")]
+    [Trait("Sc", "SC-016-03")]
+    [Trait("Floor", "public-vs-admin-attribution")]
     public async Task Handle_DuplicateNationalId_ReturnsFailure_AttributedToNationalId()
     {
         _provisioning.Setup(p => p.ProvisionAsync(It.IsAny<UserProvisioningRequest>(), It.IsAny<CancellationToken>()))
@@ -57,6 +66,7 @@ public class AdminEnrollUserHandlerTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-10")]
     public async Task Handle_ForwardsAllFields_ToProvisioningRequest()
     {
         UserProvisioningRequest? captured = null;

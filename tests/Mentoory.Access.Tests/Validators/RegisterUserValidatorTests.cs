@@ -13,6 +13,7 @@ public class RegisterUserValidatorTests
         "jane.doe@example.com", "CO", "9-123-4567", "Juan", "Pérez", "SecureP@ss123!");
 
     [Fact]
+    [Trait("Spec", "FR-016-10")]
     public async Task Valid_Command_Passes()
     {
         var result = await _validator.ValidateAsync(ValidCommand);
@@ -23,6 +24,7 @@ public class RegisterUserValidatorTests
     [InlineData("")]
     [InlineData("   ")]
     [InlineData("not-an-email")]
+    [Trait("Spec", "FR-016-01")]
     public async Task Invalid_Email_Fails(string email)
     {
         var command = ValidCommand with { Email = email };
@@ -34,6 +36,7 @@ public class RegisterUserValidatorTests
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
+    [Trait("Spec", "FR-016-01")]
     public async Task Empty_Country_Fails(string country)
     {
         var command = ValidCommand with { Country = country };
@@ -45,6 +48,7 @@ public class RegisterUserValidatorTests
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
+    [Trait("Spec", "FR-016-01")]
     public async Task Empty_NationalId_Fails(string nationalId)
     {
         var command = ValidCommand with { NationalId = nationalId };
@@ -56,6 +60,7 @@ public class RegisterUserValidatorTests
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
+    [Trait("Spec", "FR-016-01")]
     public async Task Empty_FirstName_Fails(string firstName)
     {
         var command = ValidCommand with { FirstName = firstName };
@@ -70,6 +75,7 @@ public class RegisterUserValidatorTests
     [InlineData("UPPERCASEONLY1!")]
     [InlineData("NoDigitsHere!!!")]
     [InlineData("NoSpecial1chars")]
+    [Trait("Spec", "FR-016-01")]
     public async Task Weak_Password_Fails(string password)
     {
         var command = ValidCommand with { Password = password };
@@ -79,6 +85,7 @@ public class RegisterUserValidatorTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-01")]
     public async Task FirstName_Over100_Fails()
     {
         var command = ValidCommand with { FirstName = new string('A', 101) };
@@ -91,6 +98,12 @@ public class RegisterUserValidatorTests
     [InlineData("Myjane.doePassword1!")] // local-part match (>= 4 chars)
     [InlineData("Secure9-123-4567Pass!")] // verbatim national-ID match
     [InlineData("Secure91234567Pass!")] // stripped national-ID match
+    [Trait("Spec", "FR-016-11")]
+    [Trait("Spec", "FR-016-12")]
+    [Trait("Spec", "FR-016-13")]
+    [Trait("Spec", "FR-016-14")]
+    [Trait("Sc", "SC-016-04")]
+    [Trait("Floor", "content-policy-rules")]
     public async Task Password_Containing_Identifying_Data_Fails_With_Shared_Message(string password)
     {
         var command = ValidCommand with { Password = password };
@@ -103,6 +116,9 @@ public class RegisterUserValidatorTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-11")]
+    [Trait("Sc", "SC-016-04")]
+    [Trait("Floor", "content-policy-rules")]
     public async Task Password_With_Below_Threshold_Local_Part_Is_Accepted()
     {
         // Local part "abc" is below 4-char threshold → identifying-data check must skip it.
@@ -120,6 +136,9 @@ public class RegisterUserValidatorTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-12")]
+    [Trait("Sc", "SC-016-04")]
+    [Trait("Floor", "content-policy-rules")]
     public async Task Password_With_Below_Threshold_National_Id_Is_Accepted()
     {
         // National ID "91" is below 4-char threshold; stripped form also < 4.

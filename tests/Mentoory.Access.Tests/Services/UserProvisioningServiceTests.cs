@@ -42,6 +42,7 @@ public class UserProvisioningServiceTests
         "test@example.com", "CO", "123456789", "Juan", "Pérez", "SecureP@ss123!");
 
     [Fact]
+    [Trait("Spec", "FR-016-05")]
     public async Task ProvisionAsync_FreshCombination_ReturnsSuccess_AndPersists()
     {
         _userRepo.Setup(r => r.ExistsByNationalIdentityAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -58,6 +59,8 @@ public class UserProvisioningServiceTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-04")]
+    [Trait("Spec", "FR-016-05")]
     public async Task ProvisionAsync_DuplicateNationalId_ReturnsEarly_WithZeroWrites()
     {
         _userRepo.Setup(r => r.ExistsByNationalIdentityAsync("CO", "123456789", It.IsAny<CancellationToken>()))
@@ -72,6 +75,8 @@ public class UserProvisioningServiceTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-04")]
+    [Trait("Spec", "FR-016-05")]
     public async Task ProvisionAsync_DuplicateEmail_ReturnsEarly_WithZeroWrites()
     {
         _userRepo.Setup(r => r.ExistsByNationalIdentityAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -87,6 +92,7 @@ public class UserProvisioningServiceTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-05")]
     public async Task ProvisionAsync_Checks_NationalId_Before_Email()
     {
         var sequence = new MockSequence();

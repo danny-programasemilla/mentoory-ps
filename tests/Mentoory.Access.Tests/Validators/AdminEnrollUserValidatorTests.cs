@@ -13,6 +13,7 @@ public class AdminEnrollUserValidatorTests
         "admin@example.com", "CO", "99887766", "Ana", "Gómez", "SecureP@ss12345!");
 
     [Fact]
+    [Trait("Spec", "FR-016-10")]
     public async Task Valid_Command_Passes()
     {
         var result = await _validator.ValidateAsync(ValidCommand);
@@ -20,6 +21,12 @@ public class AdminEnrollUserValidatorTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-10")]
+    [Trait("Spec", "FR-016-11")]
+    [Trait("Spec", "FR-016-13")]
+    [Trait("Spec", "FR-016-14")]
+    [Trait("Sc", "SC-016-04")]
+    [Trait("Floor", "content-policy-rules")]
     public async Task Password_Containing_Email_LocalPart_Fails_With_Shared_Message()
     {
         // Local part "admin" is 5 chars ≥ 4, should trigger MustNotContainIdentifyingData.
@@ -33,6 +40,12 @@ public class AdminEnrollUserValidatorTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-10")]
+    [Trait("Spec", "FR-016-12")]
+    [Trait("Spec", "FR-016-13")]
+    [Trait("Spec", "FR-016-14")]
+    [Trait("Sc", "SC-016-04")]
+    [Trait("Floor", "content-policy-rules")]
     public async Task Password_Containing_National_Id_Fails_With_Shared_Message()
     {
         var command = ValidCommand with { Password = "Secure99887766!" };

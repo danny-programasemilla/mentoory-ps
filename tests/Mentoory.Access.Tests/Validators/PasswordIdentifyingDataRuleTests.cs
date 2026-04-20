@@ -7,6 +7,10 @@ namespace Mentoory.Access.Tests.Validators;
 public class PasswordIdentifyingDataRuleTests
 {
     [Fact]
+    [Trait("Spec", "FR-016-11")]
+    [Trait("Spec", "FR-016-14")]
+    [Trait("Sc", "SC-016-04")]
+    [Trait("Floor", "content-policy-rules")]
     public void Contains_Returns_True_When_Password_Contains_Full_Email()
     {
         var matched = PasswordIdentifyingDataRule.Contains(
@@ -16,6 +20,9 @@ public class PasswordIdentifyingDataRuleTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-11")]
+    [Trait("Sc", "SC-016-04")]
+    [Trait("Floor", "content-policy-rules")]
     public void Contains_Is_Case_Insensitive_For_Email()
     {
         var matched = PasswordIdentifyingDataRule.Contains(
@@ -25,6 +32,9 @@ public class PasswordIdentifyingDataRuleTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-11")]
+    [Trait("Sc", "SC-016-04")]
+    [Trait("Floor", "content-policy-rules")]
     public void Contains_Returns_True_When_Local_Part_Is_At_Least_Four_Chars()
     {
         var matched = PasswordIdentifyingDataRule.Contains(
@@ -34,6 +44,9 @@ public class PasswordIdentifyingDataRuleTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-11")]
+    [Trait("Sc", "SC-016-04")]
+    [Trait("Floor", "content-policy-rules")]
     public void Contains_Skips_Local_Part_Below_Minimum_Length()
     {
         var matched = PasswordIdentifyingDataRule.Contains(
@@ -43,6 +56,9 @@ public class PasswordIdentifyingDataRuleTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-12")]
+    [Trait("Sc", "SC-016-04")]
+    [Trait("Floor", "content-policy-rules")]
     public void Contains_Returns_True_When_National_Id_Verbatim_Matches()
     {
         var matched = PasswordIdentifyingDataRule.Contains(
@@ -52,6 +68,9 @@ public class PasswordIdentifyingDataRuleTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-12")]
+    [Trait("Sc", "SC-016-04")]
+    [Trait("Floor", "content-policy-rules")]
     public void Contains_Returns_True_When_National_Id_Stripped_Matches()
     {
         var matched = PasswordIdentifyingDataRule.Contains(
@@ -61,6 +80,9 @@ public class PasswordIdentifyingDataRuleTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-12")]
+    [Trait("Sc", "SC-016-04")]
+    [Trait("Floor", "content-policy-rules")]
     public void Contains_Skips_National_Id_Below_Minimum_Length()
     {
         var matched = PasswordIdentifyingDataRule.Contains(
@@ -70,6 +92,9 @@ public class PasswordIdentifyingDataRuleTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-12")]
+    [Trait("Sc", "SC-016-04")]
+    [Trait("Floor", "content-policy-rules")]
     public void Contains_Skips_Stripped_National_Id_When_Below_Minimum_Length()
     {
         // stripped form of "1-2-3" is "123" (3 chars, below threshold) — must not match.
@@ -80,6 +105,8 @@ public class PasswordIdentifyingDataRuleTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-12")]
+    [Trait("Floor", "content-policy-rules")]
     public void Contains_Is_Case_Sensitive_For_National_Id()
     {
         // National ID is stored as-given; compare ordinally. Lowercase password form must not match uppercase-stored ID.
@@ -90,6 +117,10 @@ public class PasswordIdentifyingDataRuleTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-11")]
+    [Trait("Spec", "FR-016-12")]
+    [Trait("Sc", "SC-016-04")]
+    [Trait("Floor", "content-policy-rules")]
     public void Contains_Accepts_Password_Without_Identifying_Data()
     {
         var matched = PasswordIdentifyingDataRule.Contains(
@@ -99,6 +130,9 @@ public class PasswordIdentifyingDataRuleTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-11")]
+    [Trait("Sc", "SC-016-04")]
+    [Trait("Floor", "content-policy-rules")]
     public void Contains_Full_Email_Check_Applies_Even_When_Local_Part_Below_Threshold()
     {
         // Local part "a" is below threshold; the full email "a@b.co" is still checked.

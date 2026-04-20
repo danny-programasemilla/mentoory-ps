@@ -18,6 +18,8 @@ public class RegistrationTests : IntegrationTestBase
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-03")]
+    [Trait("Spec", "FR-016-05")]
     public async Task Register_WithValidData_CreatesUserWithPendingVerificationStatus()
     {
         var result = await SendAsync(new RegisterUserCommand(
@@ -42,6 +44,11 @@ public class RegistrationTests : IntegrationTestBase
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-03")]
+    [Trait("Spec", "FR-016-04")]
+    [Trait("Spec", "FR-016-05")]
+    [Trait("Sc", "SC-016-01")]
+    [Trait("Floor", "response-indistinguishability")]
     public async Task Register_WithDuplicateEmail_ReturnsSuccess_AndDoesNotPersistSecondUser()
     {
         await RegisterUserAsync(email: "duplicate@example.com", nationalId: "111111111");
@@ -60,6 +67,11 @@ public class RegistrationTests : IntegrationTestBase
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-03")]
+    [Trait("Spec", "FR-016-04")]
+    [Trait("Spec", "FR-016-05")]
+    [Trait("Sc", "SC-016-01")]
+    [Trait("Floor", "response-indistinguishability")]
     public async Task Register_WithDuplicateNationalIdentity_ReturnsSuccess_AndDoesNotPersistSecondUser()
     {
         await RegisterUserAsync(email: "first@example.com", country: "CO", nationalId: "999888777");
@@ -78,6 +90,10 @@ public class RegistrationTests : IntegrationTestBase
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-03")]
+    [Trait("Spec", "FR-016-04")]
+    [Trait("Spec", "FR-016-05")]
+    [Trait("Floor", "response-indistinguishability")]
     public async Task Register_WithCaseVariantEmail_ReturnsSuccess_AndDoesNotPersistSecondUser()
     {
         await RegisterUserAsync(email: "Test@Example.COM", nationalId: "333444555");

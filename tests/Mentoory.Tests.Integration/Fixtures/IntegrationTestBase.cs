@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using MediatR;
 using Mentoory.Access.Application.Commands.LoginUser;
 using Mentoory.Access.Application.Commands.RegisterUser;
@@ -6,6 +7,7 @@ using Mentoory.Access.Domain.Enums;
 using Mentoory.Access.Infrastructure.Persistence;
 using Mentoory.Shared.Application;
 using Mentoory.Shared.Application.Interfaces;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -103,6 +105,48 @@ public abstract class IntegrationTestBase : IAsyncLifetime
 
         var loginResult = await SendAsync(new LoginUserCommand(email, password, "127.0.0.1", "TestAgent"));
         return (loginResult, userId);
+    }
+
+    /// <summary>
+    /// Returns an HttpClient that has performed cookie-based login against `/Access/Login`
+    /// using the supplied admin credentials. Subsequent requests on the returned client
+    /// carry both the antiforgery and authentication cookies. AllowAutoRedirect=false so
+    /// the caller can assert on the 302 directly.
+    /// </summary>
+    protected async Task<HttpClient> CreateAuthenticatedAdminClientAsync(
+        string email = "incadmin1@test.mentoory.com",
+        string password = "Test123!@#")
+    {
+        var client = Factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false,
+        });
+
+        var loginPage = await client.GetAsync("/Access/Login");
+        loginPage.EnsureSuccessStatusCode();
+        var loginPageHtml = await loginPage.Content.ReadAsStringAsync();
+        var antiforgeryToken = AntiforgeryHelper.ExtractToken(loginPageHtml);
+
+        var loginForm = new FormUrlEncodedContent(new[]
+        {
+            new KeyValuePair<string, string>("__RequestVerificationToken", antiforgeryToken),
+            new KeyValuePair<string, string>("Email", email),
+            new KeyValuePair<string, string>("Password", password),
+        });
+
+        var loginResponse = await client.PostAsync("/Access/Login", loginForm);
+
+        if (loginResponse.StatusCode != System.Net.HttpStatusCode.Redirect &&
+            loginResponse.StatusCode != System.Net.HttpStatusCode.Found &&
+            loginResponse.StatusCode != System.Net.HttpStatusCode.OK)
+        {
+            var body = await loginResponse.Content.ReadAsStringAsync();
+            throw new InvalidOperationException(
+                $"Admin login failed for '{email}' (status {(int)loginResponse.StatusCode}). " +
+                $"First 200 chars of response: {body[..Math.Min(200, body.Length)]}");
+        }
+
+        return client;
     }
 
     private async Task SeedSystemConfigurationAsync()

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using FluentAssertions;
+using Mentoory.Access.Application.Validation;
 using Mentoory.Tests.E2E.Infrastructure;
 using Microsoft.Playwright;
 using Xunit;
@@ -97,6 +98,10 @@ public class AdministrationUsersTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-07")]
+    [Trait("Spec", "FR-016-08")]
+    [Trait("Sc", "SC-016-03")]
+    [Trait("Floor", "public-vs-admin-attribution")]
     public async Task AdminEnroll_DuplicateEmail_ShowsFieldAttributedError()
     {
         var page = await _fixture.CreatePageAsync();
@@ -128,14 +133,49 @@ public class AdministrationUsersTests
         }
     }
 
-    private async Task EnrollUserAsync(IPage page, string email, string nationalId, string password)
+    [Fact]
+    [Trait("Spec", "FR-018-18")]
+    [Trait("Floor", "public-vs-admin-attribution")]
+    public async Task AdminEnroll_PasswordContainsIdentifyingData_ShowsAttributedError()
+    {
+        var page = await _fixture.CreatePageAsync();
+        try
+        {
+            await LoginAndSelectContextAsync(page, "incadmin1@test.mentoory.com", "Test123!@#");
+
+            var uniqueId = Guid.NewGuid().ToString("N");
+            var email = $"e2e-adminpwd-{uniqueId}@example.com";
+            var nationalId = $"9-{uniqueId[..4]}-{uniqueId[4..8]}";
+            // Password embeds the email local part (`e2e-adminpwd-...`) to trip the
+            // shared MustNotContainIdentifyingData rule.
+            var password = $"e2e-adminpwd-{uniqueId[..4]}-2024Secure!";
+
+            await EnrollUserAsync(page, email, nationalId, password, firstName: "Admin", lastName: "Pwd");
+
+            page.Url.Should().Contain("/Administration/Users/Enroll",
+                "an enrollment whose password contains identifying data must re-render the form, not redirect");
+
+            // The Razor `asp-validation-for="Password"` tag helper renders a span with
+            // `data-valmsg-for="Password"`. Locate the field-attributed error there
+            // (the inverse of the public path's masked banner).
+            var passwordError = page.Locator("[data-valmsg-for=\"Password\"]");
+            await Assertions.Expect(passwordError).ToHaveTextAsync(PasswordIdentifyingDataRule.Message);
+        }
+        finally
+        {
+            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(AdminEnroll_PasswordContainsIdentifyingData_ShowsAttributedError));
+            await page.Context.DisposeAsync();
+        }
+    }
+
+    private async Task EnrollUserAsync(IPage page, string email, string nationalId, string password, string firstName = "Admin", string lastName = "Enrolled")
     {
         await page.GotoAsync($"{_fixture.BaseUrl}/Administration/Users/Enroll");
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
         await page.FillAsync("input[name='Email']", email);
-        await page.FillAsync("input[name='FirstName']", "Admin");
-        await page.FillAsync("input[name='LastName']", "Enrolled");
+        await page.FillAsync("input[name='FirstName']", firstName);
+        await page.FillAsync("input[name='LastName']", lastName);
         await page.FillAsync("input[name='Country']", "CO");
         await page.FillAsync("input[name='NationalId']", nationalId);
         await page.FillAsync("input[name='Password']", password);

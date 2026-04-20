@@ -23,6 +23,10 @@ public class RegisterUserHandlerTests
     [InlineData(UserProvisioningOutcome.Success)]
     [InlineData(UserProvisioningOutcome.DuplicateEmail)]
     [InlineData(UserProvisioningOutcome.DuplicateNationalId)]
+    [Trait("Spec", "FR-016-01")]
+    [Trait("Spec", "FR-016-03")]
+    [Trait("Spec", "FR-016-04")]
+    [Trait("Floor", "response-indistinguishability")]
     public async Task Handle_AllOutcomes_ReturnSuccess_ToCloseEnumerationOracle(UserProvisioningOutcome outcome)
     {
         _provisioning.Setup(p => p.ProvisionAsync(It.IsAny<UserProvisioningRequest>(), It.IsAny<CancellationToken>()))
@@ -38,6 +42,8 @@ public class RegisterUserHandlerTests
     [InlineData(UserProvisioningOutcome.Success)]
     [InlineData(UserProvisioningOutcome.DuplicateEmail)]
     [InlineData(UserProvisioningOutcome.DuplicateNationalId)]
+    [Trait("Spec", "FR-016-06")]
+    [Trait("Floor", "outcome-audit-logging")]
     public async Task Handle_LogsOutcome_WithCorrelationAndClientIp(UserProvisioningOutcome outcome)
     {
         _provisioning.Setup(p => p.ProvisionAsync(It.IsAny<UserProvisioningRequest>(), It.IsAny<CancellationToken>()))
@@ -60,6 +66,7 @@ public class RegisterUserHandlerTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-05")]
     public async Task Handle_ForwardsCommandFields_ToProvisioningRequest()
     {
         UserProvisioningRequest? captured = null;
@@ -80,6 +87,8 @@ public class RegisterUserHandlerTests
     }
 
     [Fact]
+    [Trait("Spec", "FR-016-06")]
+    [Trait("Floor", "outcome-audit-logging")]
     public async Task Handle_NullCorrelationAndIp_AreLoggedAsEmptyStrings()
     {
         _provisioning.Setup(p => p.ProvisionAsync(It.IsAny<UserProvisioningRequest>(), It.IsAny<CancellationToken>()))
