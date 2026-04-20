@@ -143,7 +143,7 @@ Require that every access-security feature whose characteristics match a floor-c
 
 ## Assumptions
 
-- The branch for this work is cut from `develop` after PR #13 (feature 016) has merged; if PR #13 has not merged when this specification moves to implementation, the 016 test files it references must be taken from the `016-registration-access-hardening` branch state. This specification depends on the exact file set produced by 016.
+- Features 016 and 018 land together in PR #13 on branch `016-registration-access-hardening` — the 018 work is a linear continuation of 016 and is reviewed as one unified change set. The 016 test files this specification references are produced by the earlier commits on the same branch; no cross-branch coordination is required.
 - xUnit `TraitAttribute` behaves identically across `Mentoory.Access.Tests`, `Mentoory.Tests.Integration`, and `Mentoory.Tests.E2E` — all three are on xUnit 2.x.
 - The `System.Reflection.MetadataLoadContext` API in .NET 10 is sufficient for the coverage tool's reflection needs; no runtime assembly loading is required.
 - The existing `Mentoory.Tests.Integration` WebApplicationFactory + Testcontainers SQL Server harness is suitable for the new integration tests (FR-015 through FR-019, FR-021) without architectural change.
