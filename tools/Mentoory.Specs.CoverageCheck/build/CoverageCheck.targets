@@ -1,0 +1,40 @@
+<Project>
+    <!--
+        CoverageCheck.targets — fires the spec-coverage gate after the tool's own Build.
+
+        Imported at solution scope by repo-root Directory.Build.targets so any solution-level
+        `dotnet build` runs the gate exactly once, after every project (including all test
+        projects) has produced its assemblies. Building only the tool project on its own may
+        result in zero matching test assemblies and exit code 2 — that is intentional; the
+        gate is a solution-level signal.
+
+        Escape hatches (use sparingly, document in PR if relied on):
+          $(SkipCoverageCheck) = true          → skip entirely
+          $(CoverageCheckMode) = warn          → downgrade violations to warnings
+          MENTOORY_COVERAGECHECK_MODE = warn   → same, via env var
+    -->
+    <Target Name="CheckSpecCoverage"
+            AfterTargets="Build"
+            Condition=" '$(MSBuildProjectName)' == 'Mentoory.Specs.CoverageCheck' AND '$(SkipCoverageCheck)' != 'true' ">
+
+        <PropertyGroup>
+            <_CoverageCheckRepoRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)..', '..', '..'))</_CoverageCheckRepoRoot>
+            <_CoverageCheckSpecsRoot>$(_CoverageCheckRepoRoot)specs</_CoverageCheckSpecsRoot>
+            <!-- Two patterns to cover both naming styles in the repo:
+                 (a) `Mentoory.<Module>.Tests.dll` (Access.Tests, Specs.CoverageCheck.Tests, etc.)
+                 (b) `Mentoory.Tests.<Layer>.dll`  (Tests.Integration, Tests.E2E)
+            -->
+            <_CoverageCheckUnitGlob>$(_CoverageCheckRepoRoot)tests/**/bin/$(Configuration)/net10.0/Mentoory.*.Tests.dll</_CoverageCheckUnitGlob>
+            <_CoverageCheckLayerGlob>$(_CoverageCheckRepoRoot)tests/**/bin/$(Configuration)/net10.0/Mentoory.Tests.*.dll</_CoverageCheckLayerGlob>
+            <_CoverageCheckToolDll>$(TargetDir)Mentoory.Specs.CoverageCheck.dll</_CoverageCheckToolDll>
+            <_CoverageCheckModeArg Condition=" '$(CoverageCheckMode)' == 'warn' ">--mode warn</_CoverageCheckModeArg>
+        </PropertyGroup>
+
+        <Message Importance="high"
+                 Text="[CheckSpecCoverage] dotnet &quot;$(_CoverageCheckToolDll)&quot; --specs-root &quot;$(_CoverageCheckSpecsRoot)&quot; --test-assemblies &quot;$(_CoverageCheckUnitGlob)&quot; --test-assemblies &quot;$(_CoverageCheckLayerGlob)&quot; $(_CoverageCheckModeArg)" />
+
+        <Exec Command="dotnet &quot;$(_CoverageCheckToolDll)&quot; --specs-root &quot;$(_CoverageCheckSpecsRoot)&quot; --test-assemblies &quot;$(_CoverageCheckUnitGlob)&quot; --test-assemblies &quot;$(_CoverageCheckLayerGlob)&quot; $(_CoverageCheckModeArg)"
+              ConsoleToMSBuild="true"
+              ContinueOnError="false" />
+    </Target>
+</Project>

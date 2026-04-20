@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>false</IsTestProject>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <!-- Synthetic fixture only — never executed as tests, only inspected via MetadataLoadContext. -->
+        <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+        <NoWarn>CS1591;CA1822;CS8019;SA0001;SA1633;SA1600;SA1601;SA1602;SA1649;SA1402;SA1200;SA1101;SA1124;SA1309;SA1010;SA1011;SA1518;SA1505;SA1516;SA1515;SA1413;SA1116;SA1117;SA1118;SA1137;SA1210;CS8618</NoWarn>
+        <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+        <EnableNETAnalyzers>false</EnableNETAnalyzers>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+        <CodeAnalysisRuleSet></CodeAnalysisRuleSet>
+        <!-- We deliberately want runtime assemblies (xunit.core.dll etc.) copied next to our DLL
+             so that MetadataLoadContext's PathAssemblyResolver can resolve [Fact]/[Trait] attribute
+             types when the CoverageCheck tool reflects over us. -->
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="xunit" />
+    </ItemGroup>
+</Project>

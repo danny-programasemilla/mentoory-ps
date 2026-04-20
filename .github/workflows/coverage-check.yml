@@ -1,0 +1,65 @@
+name: coverage-check
+
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
+
+permissions:
+  contents: read
+
+jobs:
+  coverage-check:
+    name: Spec coverage gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore solution
+        run: dotnet restore Mentoory.sln
+
+      - name: Build solution (Release, skip the in-build gate)
+        # The MSBuild-integrated gate would also fire here, but we run it as
+        # a separate, dedicated step below to capture its output cleanly and
+        # to keep the build step's exit code distinct from the gate's exit code.
+        run: dotnet build Mentoory.sln --configuration Release --no-restore -p:SkipCoverageCheck=true
+
+      - name: Publish coverage tool
+        run: dotnet publish tools/Mentoory.Specs.CoverageCheck/Mentoory.Specs.CoverageCheck.csproj --configuration Release --no-build -o out/coverage-tool
+
+      - name: Run coverage check
+        id: coverage
+        run: |
+          set -o pipefail
+          dotnet out/coverage-tool/Mentoory.Specs.CoverageCheck.dll \
+            --specs-root specs/ \
+            --test-assemblies 'tests/**/bin/Release/net10.0/Mentoory.*.Tests.dll' \
+            --test-assemblies 'tests/**/bin/Release/net10.0/Mentoory.Tests.*.dll' \
+            --report-format text | tee coverage-check.log
+
+      - name: Verify NFR-001 runtime budget (≤ 2 s)
+        # Tool prints `Elapsed: <N>s` near the top of its output. Fail if elapsed seconds
+        # exceed 1.999 (i.e. starts with anything other than 0. or 1.).
+        run: |
+          if ! grep -E '^Elapsed: [0-1]\.' coverage-check.log >/dev/null; then
+            echo "::error::Coverage tool exceeded NFR-001 2-second runtime budget."
+            grep '^Elapsed:' coverage-check.log || echo "(no Elapsed line in output)"
+            exit 1
+          fi
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-check-report
+          path: coverage-check.log
+          retention-days: 14

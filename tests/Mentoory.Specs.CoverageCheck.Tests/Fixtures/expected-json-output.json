@@ -1,0 +1,65 @@
+{
+  "version": "1.0.0",
+  "elapsedMs": 123,
+  "scanned": {
+    "specs": 1,
+    "assemblies": 1,
+    "methods": 1,
+    "claims": 1
+  },
+  "unclaimedIds": [
+    {
+      "kind": "Fr",
+      "value": "FR-100-99",
+      "specPath": "specs/100-sample/spec.md",
+      "lineNumber": 110
+    }
+  ],
+  "danglingTraits": [
+    {
+      "key": "Spec",
+      "value": "FR-999",
+      "method": "Mentoory.Sample.Tests.SomeTestClass.DanglingTest"
+    }
+  ],
+  "duplicateIds": [
+    {
+      "kind": "Fr",
+      "value": "FR-100-01",
+      "specPaths": [
+        "specs/100-sample/spec.md",
+        "specs/199-other/spec.md"
+      ]
+    }
+  ],
+  "missingFloorCategories": [
+    {
+      "specPath": "specs/100-sample/spec.md",
+      "category": "form-state-preservation"
+    }
+  ],
+  "exclusions": [
+    {
+      "kind": "Fr",
+      "value": "FR-100-50",
+      "specPath": "specs/100-sample/spec.md",
+      "lineNumber": 119,
+      "justification": "covered exclusively by an external manual review process today"
+    }
+  ],
+  "malformedExclusions": [
+    {
+      "specPath": "specs/100-sample/spec.md",
+      "lineNumber": 93,
+      "reason": "justification shorter than 20 characters (got 9)"
+    }
+  ],
+  "reflectionErrors": [
+    {
+      "assemblyPath": "tests/Sample.Tests/bin/Debug/net10.0/Sample.Tests.dll",
+      "reason": "Could not resolve 'Some.Dependency' via configured PathAssemblyResolver"
+    }
+  ],
+  "result": "FAILED",
+  "exitCode": 1
+}
