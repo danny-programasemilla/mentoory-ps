@@ -7,7 +7,7 @@ description: "Task list for feature 016-registration-access-hardening"
 **Input**: Design documents from `/specs/016-registration-access-hardening/`
 **Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/public-register.http.md, contracts/admin-enroll.http.md, quickstart.md
 
-**Tests**: Tests are INCLUDED — this is a security-hardening feature where byte-for-byte response parity, outcome logging, and password-rule correctness are core contracts. Tests are the acceptance mechanism for SC-001…SC-005.
+**Tests**: Tests are INCLUDED — this is a security-hardening feature where byte-for-byte response parity, outcome logging, and password-rule correctness are core contracts. Tests are the acceptance mechanism for SC-016-01…SC-016-05.
 
 **Organization**: Tasks are grouped by user story so each story can be implemented, tested, and delivered independently.
 
@@ -145,7 +145,7 @@ Modular monolith layout:
 - [X] T032 `dotnet test tests/Mentoory.Access.Tests` — **124/124 passing** (Integration + E2E require Docker/Playwright runtime — compile-verified, deferred to CI)
 - [X] T033 [P] Spanish copy verified: generic banner, Success.cshtml recovery hint, and `PasswordIdentifyingDataRule.Message` all Spanish; no English leakage
 - [X] T034 [P] `/simplify` pass complete: extracted `PasswordStrengthRule.MustBeStrongPassword()` (removed 6-line copy-paste between the two validators), trimmed narrative comments in `RegisterUserHandler` / `RegisterController`, added field-name constants + fail-fast discard arm in `AdminEnrollUserHandler`, switched logger arg from `string` to `UserProvisioningOutcome` enum, minor `PasswordIdentifyingDataRule` allocation tightening. Out-of-scope findings (migrate `RegisterInternalUserHandler` onto provisioning service, introduce `IVerificationTokenFactory`, cache `ListCountriesQuery`) filed for follow-up
-- [ ] T035 Run 50-probe SC-001 evidence script against dev Aspire host. **BLOCKED** — same constraint as T030. Byte-equality is behaviourally covered by E2E `Register_DuplicateEmail_RedirectsToSuccess_AndDoesNotRevealDuplicate` + `Register_DuplicateNationalId_…` (compare Success-panel text for fresh vs. duplicate)
+- [ ] T035 Run 50-probe SC-016-01 evidence script against dev Aspire host. **BLOCKED** — same constraint as T030. Byte-equality is behaviourally covered by E2E `Register_DuplicateEmail_RedirectsToSuccess_AndDoesNotRevealDuplicate` + `Register_DuplicateNationalId_…` (compare Success-panel text for fresh vs. duplicate)
 - [X] T036 `CLAUDE.md` recent-changes bullet rewritten to describe the actual behavioural change (oracle close, split admin command, shared validation extensions) rather than the auto-generated tech list
 
 ---

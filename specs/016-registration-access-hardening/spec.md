@@ -1,3 +1,7 @@
+---
+access-security: true
+---
+
 # Feature Specification: Registration & Access Hardening
 
 **Feature Branch**: `016-registration-access-hardening`
@@ -123,11 +127,12 @@ A user choosing a password at registration (or at admin enrollment, or during a 
 
 ### Measurable Outcomes
 
-- **SC-001**: On the public registration endpoint, an automated probe that submits 50 distinct otherwise-valid submissions (mixing fresh, email-conflict, and national-ID-conflict combinations) finds **0** responses that differ in visible output (status, headers that affect rendering, rendered body text) — fresh-creation and uniqueness-conflict responses are indistinguishable.
-- **SC-002**: On the public registration endpoint, an automated probe that submits 50 distinct rule-level failure submissions finds **0** responses that differ from each other in visible output, and those responses are visibly distinct from the SC-001 confirmation response (users whose submissions have fixable rule-level problems are not misled into thinking registration succeeded).
-- **SC-003**: An authenticated admin user, when submitting an enrollment with a duplicate national ID, sees the conflict attributed to the national-ID field in **100%** of test runs; the same holds for the email field.
-- **SC-004**: A password that contains the user's full email address is rejected in **100%** of attempts. A password that contains the user's email local part (when the local part is 4+ characters) is rejected in **100%** of attempts. A password that contains the user's national ID (when the national ID is 4+ characters) is rejected in **100%** of attempts. A password that contains only a below-threshold local part or below-threshold national ID, with no full-email match, is **not** rejected by this rule. The rejection message never identifies which of the three checks matched.
-- **SC-005**: Legitimate users completing a fresh valid registration see **no regression** in flow completion time or UX compared to the current behaviour (they still receive a verification email and land on the confirmation page). Users who are already registered and attempt to register again ALSO land on the same confirmation page without the system confirming that fact to them — their recovery path is via password reset or by following the original verification email, which they can do without the site disclosing the account's existence.
+- **SC-016-01**: On the public registration endpoint, an automated probe that submits 50 distinct otherwise-valid submissions (mixing fresh, email-conflict, and national-ID-conflict combinations) finds **0** responses that differ in visible output (status, headers that affect rendering, rendered body text) — fresh-creation and uniqueness-conflict responses are indistinguishable.
+- **SC-016-02**: On the public registration endpoint, an automated probe that submits 50 distinct rule-level failure submissions finds **0** responses that differ from each other in visible output, and those responses are visibly distinct from the SC-016-01 confirmation response (users whose submissions have fixable rule-level problems are not misled into thinking registration succeeded).
+- **SC-016-03**: An authenticated admin user, when submitting an enrollment with a duplicate national ID, sees the conflict attributed to the national-ID field in **100%** of test runs; the same holds for the email field.
+- **SC-016-04**: A password that contains the user's full email address is rejected in **100%** of attempts. A password that contains the user's email local part (when the local part is 4+ characters) is rejected in **100%** of attempts. A password that contains the user's national ID (when the national ID is 4+ characters) is rejected in **100%** of attempts. A password that contains only a below-threshold local part or below-threshold national ID, with no full-email match, is **not** rejected by this rule. The rejection message never identifies which of the three checks matched.
+- **SC-016-05**: Legitimate users completing a fresh valid registration see **no regression** in flow completion time or UX compared to the current behaviour (they still receive a verification email and land on the confirmation page). Users who are already registered and attempt to register again ALSO land on the same confirmation page without the system confirming that fact to them — their recovery path is via password reset or by following the original verification email, which they can do without the site disclosing the account's existence.
+  *Coverage: N/A — Performance-regression assertions are tracked in CI runtime budgets, not as a feature test.*
 
 ## Assumptions
 

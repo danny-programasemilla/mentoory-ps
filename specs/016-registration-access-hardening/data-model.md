@@ -120,7 +120,7 @@ public enum UserProvisioningOutcome
 }
 ```
 
-**Invariant ordering**: the service checks uniqueness in the order `NationalId` then `Email` (matching the existing handler's order; keeps the existing pattern for FR-006/FR-007 from platform core). On first conflict, returns immediately. On full success, creates the `User` aggregate, hashes the password, generates the verification token, persists, and returns `Success`.
+**Invariant ordering**: the service checks uniqueness in the order `NationalId` then `Email` (matching the existing handler's order; keeps the existing pattern for FR-016-06/FR-016-07 from platform core). On first conflict, returns immediately. On full success, creates the `User` aggregate, hashes the password, generates the verification token, persists, and returns `Success`.
 
 **Side effects**:
 

@@ -61,7 +61,7 @@ Follow-up GET: **byte-for-byte identical** to Class A. Same view, same HTML, sam
 
 Side effects: none. No user is created, no verification email is sent, no other notification is emitted.
 
-**Invariant (SC-001)**: An HTTP observer comparing two submissions that differ only in whether they are fresh or conflicting cannot tell them apart from the response.
+**Invariant (SC-016-01)**: An HTTP observer comparing two submissions that differ only in whether they are fresh or conflicting cannot tell them apart from the response.
 
 ### Class C — Generic failure (validator-rule failure)
 
@@ -72,7 +72,7 @@ Triggered when any validator rule fails — missing field, bad email format, wea
 - **Body**: re-rendered `Index.cshtml` with a single generic banner: `"No fue posible completar el registro. Revise los datos e intente nuevamente."`
 - **No field-level error attribution is rendered.** No ModelState errors are surfaced to the view beyond the generic banner. The form values the user submitted ARE preserved in the fields (so they do not have to re-type).
 
-**Invariant (SC-002)**: Two Class-C responses are byte-for-byte identical. A Class-C response is visibly distinct from Class A/B (status 200 vs 302, body = form re-render vs redirect).
+**Invariant (SC-016-02)**: Two Class-C responses are byte-for-byte identical. A Class-C response is visibly distinct from Class A/B (status 200 vs 302, body = form re-render vs redirect).
 
 ---
 

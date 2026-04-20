@@ -8,8 +8,8 @@ The tool recognises exactly four trait keys. All other keys are ignored (but not
 
 | Key | Value format | Value regex | Purpose |
 |-----|--------------|-------------|---------|
-| `Spec` | `FR-###` | `^FR-\d{3}$` | Test claims it covers this functional-requirement identifier. |
-| `Sc` | `SC-###` | `^SC-\d{3}$` | Test claims it covers this success-criterion identifier. |
+| `Spec` | `FR-DDD` or `FR-DDD-DD` | `^FR-\d{3}(-\d{2})?$` | Test claims it covers this functional-requirement identifier. Examples: `FR-052` (legacy unprefixed), `FR-016-01` (feature-prefixed convention for opted-in specs). |
+| `Sc` | `SC-DDD` or `SC-DDD-DD` | `^SC-\d{3}(-\d{2})?$` | Test claims it covers this success-criterion identifier. Examples: `SC-016-05`, `SC-018-01`. |
 | `Floor` | kebab-case | `^[a-z][a-z0-9-]+$` + membership in the canonical list | Test contributes to this floor category. |
 | `Flaky` | literal `true` | `^true$` | Quarantines the test (NFR-002). |
 
@@ -32,9 +32,9 @@ Standard xUnit `TraitAttribute` applied to a test method. Multiple attributes on
 
 ```csharp
 [Fact]
-[Trait("Spec", "FR-015")]
-[Trait("Sc", "SC-002")]
-[Trait("Floor", "response-indistinguishability")]
+[Trait("Spec", "FR-016-08")]
+[Trait("Sc", "SC-016-03")]
+[Trait("Floor", "public-vs-admin-attribution")]
 public async Task Handle_DuplicateNationalId_ReturnsFieldAttributedError() { ... }
 ```
 

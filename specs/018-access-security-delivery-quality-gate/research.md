@@ -191,14 +191,18 @@ No DOM parsing — the antiforgery token format is stable and unambiguous; a reg
 ## 10. `Coverage: N/A` exclusion marker format (resolves EH-004 detail)
 
 **Decision**: Exact line format immediately after the identifier definition:
-`- **FR-003** …requirement text…  \n  *Coverage: N/A — <justification sentence>.*`
+`- **FR-018-03** …requirement text…  \n  *Coverage: N/A — <justification sentence>.*`
 
 The trailing italicised note must be on the line **immediately following** the identifier line (or nested under the same list bullet), must start with the literal `*Coverage: N/A — ` (dash is an em-dash or two hyphens; parser accepts both), and must end with a full sentence of at least 20 characters of justification text.
+
+**Identifier format**: Per the prefixed-ID convention adopted for opted-in specs, the parser recognises `**(FR|SC)-DDD**` and `**(FR|SC)-DDD-DD**` (the second form embeds the feature number, e.g., `**FR-016-01**`, `**SC-018-05**`). Both formats are first-class; collisions are detected by exact-string equality so the two formats never overlap.
 
 **Rationale**:
 - Italic emphasis in Markdown renders clearly in GitHub's PR diff viewer; reviewers see it inline.
 - Enforcing a minimum justification length (20 chars) catches `Coverage: N/A — todo.` and similar empty excuses.
-- Parser regex: `\*Coverage:\s*N/A\s*[—-]{1,2}\s*(.{20,}?)\.\s*\*`. If the regex does not match a specification line declaring an exclusion intent, the identifier is treated as NOT excluded (FR-006 + EH-004).
+- Parser regex for exclusion line: `\*Coverage:\s*N/A\s*[—-]{1,2}\s*(.{20,}?)\.\s*\*`.
+- Parser regex for identifier extraction: `\*\*(FR|SC)-\d{3}(?:-\d{2})?\*\*`.
+- If the exclusion regex does not match a specification line declaring an exclusion intent, the identifier is treated as NOT excluded (FR-018-06 + EH-004).
 
 **Alternatives considered**:
 - Free-text `(Coverage: N/A)` marker anywhere in the section — rejected; ambiguous positioning, hard to parse deterministically.
@@ -213,12 +217,12 @@ The trailing italicised note must be on the line **immediately following** the i
 
 ## 11. Trait attribute conventions (resolves cross-cutting question)
 
-**Decision**: Exactly three trait kinds recognised by the tool:
+**Decision**: Exactly four trait kinds recognised by the tool:
 
 | Trait key | Value format | Purpose |
 |-----------|-------------|---------|
-| `Spec` | `FR-###` (e.g., `FR-015`) | Claims a functional-requirement identifier |
-| `Sc` | `SC-###` (e.g., `SC-002`) | Claims a success-criterion identifier |
+| `Spec` | `FR-DDD` or `FR-DDD-DD` (e.g., `FR-016-01`, `FR-018-15`) | Claims a functional-requirement identifier |
+| `Sc` | `SC-DDD` or `SC-DDD-DD` (e.g., `SC-016-05`, `SC-018-01`) | Claims a success-criterion identifier |
 | `Floor` | kebab-case category name (e.g., `response-indistinguishability`) | Claims a floor-category contribution |
 | `Flaky` | literal `true` | Quarantines the test; tool treats as non-claiming (NFR-002) |
 
@@ -227,7 +231,7 @@ Other trait keys (`Category`, `Priority`, etc.) are ignored by the tool.
 **Rationale**:
 - Short, memorable, consistent PascalCase on key and kebab-case on value for floor names. Values for Spec/Sc preserve the spec's literal ID format (uppercase prefix).
 - Distinguishing `Spec` and `Sc` rather than a single `Id` trait avoids overloading — FR and SC are semantically distinct contract surfaces.
-- The tool's value-validation regex is tight: `^FR-\d{3}$`, `^SC-\d{3}$`, `^[a-z][a-z0-9-]+$` for Floor. Malformed values fail the build with a clear message.
+- The tool's value-validation regex: `^FR-\d{3}(-\d{2})?$`, `^SC-\d{3}(-\d{2})?$`, `^[a-z][a-z0-9-]+$` for Floor. Both the unprefixed and prefixed identifier shapes are accepted; the prefixed shape is the convention for opted-in specs (016, 018, ...). Malformed values fail the build with a clear message.
 
 **Alternatives considered**:
 - Single `Id` trait carrying any identifier — rejected; value regex becomes loose; FR/SC ambiguity.

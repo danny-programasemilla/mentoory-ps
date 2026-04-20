@@ -37,7 +37,7 @@ A single `FR-###` or `SC-###` token declared in a spec.
 | Field | Type | Notes |
 |-------|------|-------|
 | `Kind` | enum `{ Fr, Sc }` | Determines which trait key claims it. |
-| `Value` | `string` | The 6-character literal token (e.g., `FR-015`, `SC-002`). |
+| `Value` | `string` | Literal token in either unprefixed (`FR-015`) or feature-prefixed (`FR-016-01`, `SC-018-05`) form. Equality is exact-string. |
 | `SpecPath` | `string` | Back-reference to the owning spec file. |
 | `LineNumber` | `int` | 1-based line in the spec where the identifier is first declared. |
 
@@ -101,8 +101,8 @@ A single `[Trait(key, value)]` attribute instance.
 | `Method` | `TestMethodMetadata` | Back-reference. |
 
 **Validation** (per research.md #11):
-- `Spec` value must match `^FR-\d{3}$` → otherwise build-fail with clear message naming method + offending trait.
-- `Sc` value must match `^SC-\d{3}$` → same treatment.
+- `Spec` value must match `^FR-\d{3}(-\d{2})?$` → otherwise build-fail with clear message naming method + offending trait.
+- `Sc` value must match `^SC-\d{3}(-\d{2})?$` → same treatment.
 - `Floor` value must match `^[a-z][a-z0-9-]+$` AND be in the canonical list (see FloorCategory) → otherwise build-fail.
 - `Flaky` value must be literal `true` → other values treated as absence (no effect).
 
