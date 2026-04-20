@@ -337,9 +337,13 @@ public class RegistrationTests
             await page.FillAsync("input[name='FirstName']", "E2E");
             await page.FillAsync("input[name='LastName']", "Test");
             await page.SelectOptionAsync("select[name='Country']", "CRI");
-            await page.FillAsync("input[name='NationalId']", "9-123-4567");
-            await page.FillAsync("input[name='Password']", "Secure9-123-4567!");
-            await page.FillAsync("input[name='ConfirmPassword']", "Secure9-123-4567!");
+            // CRI mask is `0-0000-0000` (regex `^\d-\d{4}-\d{4}$`); the registration
+            // form's input-mask JS reformats anything else before submission, so we
+            // must use a NID already in the canonical mask shape and embed it
+            // verbatim in the password to trigger MustNotContainIdentifyingData.
+            await page.FillAsync("input[name='NationalId']", "9-1234-5678");
+            await page.FillAsync("input[name='Password']", "Secure9-1234-5678!");
+            await page.FillAsync("input[name='ConfirmPassword']", "Secure9-1234-5678!");
 
             await page.ClickAsync("button[type='submit']");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
@@ -377,8 +381,12 @@ public class RegistrationTests
             const string firstName = "Preserved-First";
             const string lastName = "Preserved-Last";
             const string country = "CRI";
-            const string nationalId = "9-123-4567";
-            const string password = "Secure9-123-4567!";
+            // CRI mask is `0-0000-0000`; use a NID already matching the canonical
+            // mask shape so the form's input-mask JS does not reformat it before
+            // submission. The password embeds it verbatim to trip
+            // MustNotContainIdentifyingData and force the server-side re-render.
+            const string nationalId = "9-1234-5678";
+            const string password = "Secure9-1234-5678!";
 
             await page.GotoAsync($"{_fixture.BaseUrl}/Access/Register");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);

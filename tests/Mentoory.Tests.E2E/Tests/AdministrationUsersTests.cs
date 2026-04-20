@@ -145,10 +145,12 @@ public class AdministrationUsersTests
 
             var uniqueId = Guid.NewGuid().ToString("N");
             var email = $"e2e-adminpwd-{uniqueId}@example.com";
-            var nationalId = $"9-{uniqueId[..4]}-{uniqueId[4..8]}";
-            // Password embeds the email local part (`e2e-adminpwd-...`) to trip the
-            // shared MustNotContainIdentifyingData rule.
-            var password = $"e2e-adminpwd-{uniqueId[..4]}-2024Secure!";
+            var nationalId = $"NID-{uniqueId[..8]}";
+            // Password embeds the verbatim national ID to trip the shared
+            // MustNotContainIdentifyingData rule. The admin Enroll form has no
+            // input mask on NationalId (free-text input), so the value POSTs
+            // unchanged and `password.Contains(nationalId)` matches.
+            var password = $"AdminPwd{nationalId}Test!";
 
             await EnrollUserAsync(page, email, nationalId, password, firstName: "Admin", lastName: "Pwd");
 
@@ -181,7 +183,10 @@ public class AdministrationUsersTests
         await page.FillAsync("input[name='Password']", password);
         await page.FillAsync("input[name='ConfirmPassword']", password);
 
-        await page.ClickAsync("button[type='submit']");
+        // The shared layout has hidden submit buttons (e.g. logout form inside the
+        // user-menu dropdown), so a bare `button[type='submit']` resolves to multiple
+        // elements. Target the Enroll form's primary action by its visible label.
+        await page.ClickAsync("button[type='submit']:has-text('Inscribir Usuario')");
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
     }
 
