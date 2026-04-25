@@ -10,6 +10,7 @@ namespace Mentoory.Tests.E2E.Tests;
 /// validation errors, and backend uniqueness constraints.
 /// </summary>
 [Collection(E2ETestCollection.Name)]
+[Trait("Category", "E2E")]
 public class RegistrationTests
 {
     private readonly PlaywrightFixture _fixture;

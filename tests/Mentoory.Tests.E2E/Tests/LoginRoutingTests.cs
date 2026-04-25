@@ -9,6 +9,7 @@ namespace Mentoory.Tests.E2E.Tests;
 /// T046 - Validates that each role lands on the correct dashboard after login and context selection.
 /// </summary>
 [Collection(E2ETestCollection.Name)]
+[Trait("Category", "E2E")]
 public class LoginRoutingTests
 {
     private readonly PlaywrightFixture _fixture;

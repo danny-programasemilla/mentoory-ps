@@ -17,6 +17,7 @@ public class Project : Entity, IAggregateRoot
     public long IncubatorId { get; private set; }
     public string Name { get; private set; } = null!;
     public string? Description { get; private set; }
+    public Guid KnowledgeStructureTemplateExternalId { get; private set; }
     public StageType CurrentStageType { get; private set; }
     public StageState CurrentStageState { get; private set; }
     public bool IsPublic { get; private set; }
@@ -33,6 +34,7 @@ public class Project : Entity, IAggregateRoot
         long incubatorId,
         string name,
         string? description,
+        Guid knowledgeStructureTemplateExternalId,
         DateTime utcNow,
         bool isPublic = false,
         EnrollmentVariant enrollmentVariant = EnrollmentVariant.FullFlow)
@@ -42,12 +44,18 @@ public class Project : Entity, IAggregateRoot
             throw new ArgumentException("Project name is required.", nameof(name));
         }
 
+        if (knowledgeStructureTemplateExternalId == Guid.Empty)
+        {
+            throw new ArgumentException("Knowledge structure template is required.", nameof(knowledgeStructureTemplateExternalId));
+        }
+
         var project = new Project
         {
             ExternalId = Guid.NewGuid(),
             IncubatorId = incubatorId,
             Name = name.Trim(),
             Description = description?.Trim(),
+            KnowledgeStructureTemplateExternalId = knowledgeStructureTemplateExternalId,
             CurrentStageType = StageType.Registration,
             CurrentStageState = StageState.InProgress,
             IsPublic = isPublic,

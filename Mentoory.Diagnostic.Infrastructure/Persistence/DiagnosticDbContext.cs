@@ -68,6 +68,14 @@ public class DiagnosticDbContext : SharedAbstractDbContext
             entity.Property(e => e.IsActive).IsRequired().HasDefaultValue(true);
             entity.Property(e => e.CreatedAtUtc).IsRequired();
 
+            // Cross-schema cascade binding (spec 016). Persisted as UNIQUEIDENTIFIER matching the
+            // physical column; the SSDT FK_FormTemplates_DefaultKnowledgeStructureTemplate references
+            // knowledge.KnowledgeStructureTemplates(ExternalId) — which has a unique constraint —
+            // avoiding a redundant BIGINT shadow. No EF navigation is configured on purpose; the
+            // cascade handler loads the target aggregate explicitly via
+            // IKnowledgeStructureTemplateRepository.GetByExternalIdAsync.
+            entity.Property(e => e.DefaultKnowledgeStructureTemplateExternalId);
+
             entity.HasMany(e => e.Questions)
                 .WithOne()
                 .HasForeignKey("FormTemplateId")

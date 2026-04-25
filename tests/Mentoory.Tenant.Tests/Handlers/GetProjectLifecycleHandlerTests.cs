@@ -16,6 +16,7 @@ namespace Mentoory.Tenant.Tests.Handlers;
 public class GetProjectLifecycleHandlerTests
 {
     private static readonly DateTime UtcNow = new(2026, 4, 18, 10, 0, 0, DateTimeKind.Utc);
+    private static readonly Guid KsTemplateId = Guid.Parse("11111111-1111-1111-1111-111111111111");
 
     private readonly Mock<IProjectRepository> _projectRepo = new();
     private readonly Mock<IIncubatorRepository> _incubatorRepo = new();
@@ -114,7 +115,7 @@ public class GetProjectLifecycleHandlerTests
 
     private Project SeedProject(long incubatorId = 10, int advanceTimes = 0)
     {
-        var project = Project.Create(incubatorId, "Test Project", "Description", UtcNow);
+        var project = Project.Create(incubatorId, "Test Project", "Description", KsTemplateId, UtcNow);
         for (var i = 0; i < advanceTimes; i++)
         {
             project.AdvanceStage(1, UtcNow.AddHours(i + 1));

@@ -1,0 +1,203 @@
+@using Mentoory.Knowledge.Application.Queries.GetKnowledgeStructureTemplate
+@using Mentoory.Knowledge.Domain.Enums
+@model ModuleTemplateDto
+
+<div class="accordion-item module-item" data-module-id="@Model.ExternalId">
+    <h2 class="accordion-header" id="module-header-@Model.ExternalId">
+        <button class="accordion-button collapsed" type="button"
+                data-bs-toggle="collapse" data-bs-target="#module-body-@Model.ExternalId"
+                aria-expanded="false">
+            <span class="badge bg-primary me-2">@(Model.SortOrder + 1)</span>
+            <strong class="me-2">@Model.Name</strong>
+            <span class="badge bg-secondary ms-auto me-3">@Model.Topics.Count tema(s)</span>
+        </button>
+    </h2>
+    <div id="module-body-@Model.ExternalId" class="accordion-collapse collapse">
+        <div class="accordion-body">
+            @if (!string.IsNullOrWhiteSpace(Model.Description))
+            {
+                <p class="text-secondary">@Model.Description</p>
+            }
+
+            <div class="btn-list mb-3">
+                <button type="button" class="btn btn-sm btn-outline-primary"
+                        data-action="edit-module" data-module-id="@Model.ExternalId"
+                        data-name="@Model.Name" data-description="@Model.Description">
+                    <i class="ti ti-pencil me-1"></i>Editar módulo
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-success"
+                        data-action="add-topic" data-module-id="@Model.ExternalId">
+                    <i class="ti ti-plus me-1"></i>Agregar tema
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger"
+                        data-action="delete-module" data-module-id="@Model.ExternalId"
+                        data-name="@Model.Name">
+                    <i class="ti ti-trash me-1"></i>Eliminar módulo
+                </button>
+            </div>
+
+            @if (!Model.Topics.Any())
+            {
+                <div class="empty py-2">
+                    <p class="empty-subtitle text-secondary mb-0">
+                        <i class="ti ti-list-details me-1"></i>Este módulo aún no tiene temas.
+                    </p>
+                </div>
+            }
+            else
+            {
+                <div class="accordion" id="topics-@Model.ExternalId">
+                    @foreach (var topic in Model.Topics)
+                    {
+                        <div class="accordion-item topic-item"
+                             data-topic-id="@topic.ExternalId"
+                             data-module-id="@Model.ExternalId">
+                            <h2 class="accordion-header" id="topic-header-@topic.ExternalId">
+                                <button class="accordion-button collapsed" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#topic-body-@topic.ExternalId"
+                                        aria-expanded="false">
+                                    <span class="badge bg-info me-2">@(topic.SortOrder + 1)</span>
+                                    <span class="me-2">@topic.Name</span>
+                                    <span class="badge bg-secondary ms-auto me-3">@topic.Subjects.Count asignatura(s)</span>
+                                </button>
+                            </h2>
+                            <div id="topic-body-@topic.ExternalId" class="accordion-collapse collapse"
+                                 data-bs-parent="#topics-@Model.ExternalId">
+                                <div class="accordion-body">
+                                    @if (!string.IsNullOrWhiteSpace(topic.Description))
+                                    {
+                                        <p class="text-secondary">@topic.Description</p>
+                                    }
+
+                                    <div class="btn-list mb-3">
+                                        <button type="button" class="btn btn-sm btn-outline-primary"
+                                                data-action="edit-topic" data-topic-id="@topic.ExternalId"
+                                                data-name="@topic.Name" data-description="@topic.Description">
+                                            <i class="ti ti-pencil me-1"></i>Editar tema
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-success"
+                                                data-action="add-subject" data-topic-id="@topic.ExternalId">
+                                            <i class="ti ti-plus me-1"></i>Agregar asignatura
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                data-action="delete-topic" data-topic-id="@topic.ExternalId"
+                                                data-name="@topic.Name">
+                                            <i class="ti ti-trash me-1"></i>Eliminar tema
+                                        </button>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        @await Html.PartialAsync("_PriorityRangeEditor", topic)
+                                    </div>
+
+                                    @if (!topic.Subjects.Any())
+                                    {
+                                        <div class="empty py-2">
+                                            <p class="empty-subtitle text-secondary mb-0">
+                                                <i class="ti ti-book me-1"></i>Este tema aún no tiene asignaturas.
+                                            </p>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="list-group mb-0">
+                                            @foreach (var subject in topic.Subjects)
+                                            {
+                                                <div class="list-group-item subject-item"
+                                                     data-subject-id="@subject.ExternalId"
+                                                     data-topic-id="@topic.ExternalId">
+                                                    <div class="d-flex align-items-center">
+                                                        <span class="badge bg-secondary me-2">@(subject.SortOrder + 1)</span>
+                                                        <div class="flex-fill">
+                                                            <div class="fw-bold">@subject.Name</div>
+                                                            @if (!string.IsNullOrWhiteSpace(subject.Description))
+                                                            {
+                                                                <div class="text-secondary small">@subject.Description</div>
+                                                            }
+                                                        </div>
+                                                        <div class="btn-list">
+                                                            <button type="button" class="btn btn-sm btn-outline-primary"
+                                                                    data-action="edit-subject" data-subject-id="@subject.ExternalId"
+                                                                    data-name="@subject.Name" data-description="@subject.Description">
+                                                                <i class="ti ti-pencil"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-sm btn-outline-success"
+                                                                    data-action="add-resource" data-subject-id="@subject.ExternalId">
+                                                                <i class="ti ti-link"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                                                    data-action="delete-subject" data-subject-id="@subject.ExternalId"
+                                                                    data-name="@subject.Name">
+                                                                <i class="ti ti-trash"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                    @if (subject.Resources.Any())
+                                                    {
+                                                        <div class="mt-2 ms-4">
+                                                            <table class="table table-sm table-vcenter mb-0">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th style="width: 60px;">Orden</th>
+                                                                        <th>Título</th>
+                                                                        <th>Tipo</th>
+                                                                        <th>URL</th>
+                                                                        <th class="text-end" style="width: 200px;">Acciones</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    @foreach (var resource in subject.Resources)
+                                                                    {
+                                                                        var typeLabel = resource.ResourceType switch
+                                                                        {
+                                                                            ResourceType.Video => "Video",
+                                                                            ResourceType.File => "Archivo",
+                                                                            _ => "Enlace"
+                                                                        };
+                                                                        <tr data-resource-id="@resource.ExternalId"
+                                                                            data-subject-id="@subject.ExternalId">
+                                                                            <td>@(resource.SortOrder + 1)</td>
+                                                                            <td>@resource.Title</td>
+                                                                            <td><span class="badge bg-info">@typeLabel</span></td>
+                                                                            <td>
+                                                                                <a href="@resource.Url" target="_blank" rel="noopener">
+                                                                                    @resource.Url
+                                                                                </a>
+                                                                            </td>
+                                                                            <td class="text-end">
+                                                                                <div class="btn-list justify-content-end">
+                                                                                    <button type="button" class="btn btn-sm btn-outline-primary"
+                                                                                            data-action="edit-resource" data-resource-id="@resource.ExternalId"
+                                                                                            data-title="@resource.Title"
+                                                                                            data-description="@resource.Description"
+                                                                                            data-url="@resource.Url"
+                                                                                            data-type="@((int)resource.ResourceType)">
+                                                                                        <i class="ti ti-pencil"></i>
+                                                                                    </button>
+                                                                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                                                                            data-action="delete-resource" data-resource-id="@resource.ExternalId"
+                                                                                            data-title="@resource.Title">
+                                                                                        <i class="ti ti-trash"></i>
+                                                                                    </button>
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                    }
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>

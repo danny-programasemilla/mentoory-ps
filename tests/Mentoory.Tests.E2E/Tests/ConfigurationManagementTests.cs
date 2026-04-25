@@ -10,6 +10,7 @@ namespace Mentoory.Tests.E2E.Tests;
 /// and non-GlobalAdmin users cannot access the configuration page.
 /// </summary>
 [Collection(E2ETestCollection.Name)]
+[Trait("Category", "E2E")]
 public class ConfigurationManagementTests
 {
     private readonly PlaywrightFixture _fixture;

@@ -124,11 +124,14 @@ public class PlaywrightFixture : WebApplicationFactory<Program>, IAsyncLifetime
 
         await _kestrelHost.StartAsync();
 
-        // 6. Launch Playwright browser
+        // 6. Launch Playwright browser.
+        //    Set E2E_HEADED=1 to run headed with slow-motion for local debugging.
+        var headed = Environment.GetEnvironmentVariable("E2E_HEADED") == "1";
         Playwright = await Microsoft.Playwright.Playwright.CreateAsync();
         Browser = await Playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
         {
-            Headless = true
+            Headless = !headed,
+            SlowMo = headed ? 250 : 0,
         });
     }
 

@@ -9,6 +9,7 @@ namespace Mentoory.Tests.E2E.Tests;
 /// E2E-T002 - Validates login page rendering, credential validation, and navigation.
 /// </summary>
 [Collection(E2ETestCollection.Name)]
+[Trait("Category", "E2E")]
 public class LoginFlowTests
 {
     private readonly PlaywrightFixture _fixture;

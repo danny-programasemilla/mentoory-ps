@@ -11,6 +11,7 @@ namespace Mentoory.Tests.E2E.Tests;
 /// and disabled users get redirected to login.
 /// </summary>
 [Collection(E2ETestCollection.Name)]
+[Trait("Category", "E2E")]
 public class SessionInvalidationTests
 {
     private readonly PlaywrightFixture _fixture;

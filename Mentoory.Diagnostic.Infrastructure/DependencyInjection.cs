@@ -1,6 +1,8 @@
 using Mentoory.Diagnostic.Domain.Repositories;
+using Mentoory.Diagnostic.Infrastructure.CrossModule;
 using Mentoory.Diagnostic.Infrastructure.Persistence;
 using Mentoory.Diagnostic.Infrastructure.Persistence.Repositories;
+using Mentoory.Knowledge.Application.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,6 +34,8 @@ public static class DependencyInjection
         builder.Services.AddScoped<IFormTemplateRepository, FormTemplateRepository>();
         builder.Services.AddScoped<IProjectFormRepository, ProjectFormRepository>();
         builder.Services.AddScoped<IDiagnosticResponseRepository, DiagnosticResponseRepository>();
+
+        builder.Services.AddScoped<ITopicUsageQuery, DiagnosticTopicUsageQuery>();
 
         return builder;
     }

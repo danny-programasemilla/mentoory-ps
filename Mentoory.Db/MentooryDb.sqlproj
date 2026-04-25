@@ -29,6 +29,9 @@
       <None Include="..\Mentoory.Db.PostDeployment\004.SeedTestData.sql">
           <Link>PostDeploymentReferences\004.SeedTestData.sql</Link>
       </None>
+      <None Include="..\Mentoory.Db.PostDeployment\005.SeedKnowledgeData.sql">
+          <Link>PostDeploymentReferences\005.SeedKnowledgeData.sql</Link>
+      </None>
       <None Include="..\Mentoory.Db.PostDeployment\016.SeedCountries.sql">
           <Link>PostDeploymentReferences\016.SeedCountries.sql</Link>
       </None>

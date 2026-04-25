@@ -1,6 +1,6 @@
 # Brainstorm Overview
 
-Last updated: 2026-04-19 (bundle 019 — combined #11 e2e-quality-gate → 018, #12 e2e-lifecycle-coverage → 016/e2e, #13 audit-pipeline → 016, #14 audit-e2e → 017; renumbered audit sessions from #11/#12 to #13/#14 to avoid collision; intra-document references "(from #11)/(from #12)" carrying audit context have been retargeted to "(from #13)/(from #14)")
+Last updated: 2026-04-19 (bundle 019 — sessions #11 e2e-quality-gate → 018, #12 e2e-lifecycle-coverage → 016/e2e, #13 audit-pipeline → 016, #14 audit-e2e → 017, #15 knowledge-module-binding-redesign → 016 amended; audit sessions renumbered from #11/#12 to #13/#14, knowledge from #11 to #15 to avoid collision; intra-document references retargeted accordingly)
 
 ## Sessions
 
@@ -12,7 +12,7 @@ Last updated: 2026-04-19 (bundle 019 — combined #11 e2e-quality-gate → 018, 
 | 04 | 2026-04-13 | table-polish | spec-created | 012 |
 | 05 | 2026-04-13 | table-filtering | spec-created | 013 |
 | 06 | 2026-04-18 | platform-roadmap-gap-analysis | active | - |
-| 07 | 2026-04-18 | knowledge-module | parked | - |
+| 07 | 2026-04-18 | knowledge-module | spec-created (revisited 2026-04-18) | 016 |
 | 08 | 2026-04-18 | mentoring-plan | parked | - |
 | 09 | 2026-04-18 | mentoring-execution | parked | - |
 | 10 | 2026-04-18 | cross-cutting-hardening | parked | - |
@@ -20,6 +20,7 @@ Last updated: 2026-04-19 (bundle 019 — combined #11 e2e-quality-gate → 018, 
 | 12 | 2026-04-19 | e2e-lifecycle-coverage | spec-created | 016/e2e |
 | 13 | 2026-04-18 | audit-pipeline | spec-created | 016 |
 | 14 | 2026-04-19 | audit-e2e | spec-created | 017 |
+| 15 | 2026-04-19 | knowledge-module-binding-redesign | spec-created | 016 (amended) |
 
 ## Open Threads
 
@@ -42,9 +43,11 @@ Last updated: 2026-04-19 (bundle 019 — combined #11 e2e-quality-gate → 018, 
 - Scheduling engine (FR-028) — rule-based vs constraint solver (from #06)
 - Answer-correction regenerates plan vs "stale plan" badge UX (from #06)
 - Phase A-α bundling: one PR for R-SEC-1/2/3 + FR-053/056 vs per-FR specs (from #06)
-- Knowledge clone depth (deep vs reference) (from #07)
-- Knowledge partial sync semantics at module/topic/subject/resource levels (from #07)
-- Resource file storage approach — URL only vs blob (from #07)
+- Knowledge `TopicPriorityRangesChanged` outbox upgrade when Mentoring Plan consumer lands (from #07 revisit)
+- Knowledge topic score normalization (0–100 vs raw) — verify against `GetTopicScoreAggregationHandler` during `/speckit-plan` (from #07 revisit)
+- Knowledge concurrent-edit semantics on project clones (from #07 revisit)
+- Cross-module transaction semantics for project-creation-plus-KS-materialization — shared `DbContextTransaction` vs transient NULL window (from #15)
+- Fate of `CloneKnowledgeStructureTemplateCommand` after the binding redesign — keep as internal/Tenant-side entry point or fold into domain factory (from #15)
 - SWOT/ODSR summary algorithm per topic (from #08)
 - Mentoring plan snapshot scope — does it copy topic priority ranges too? (from #08)
 - Mentor/entrepreneur concurrent-edit policy (from #08)
@@ -92,7 +95,6 @@ Decisions that were open during earlier sessions and resolved later. See the ind
 
 ## Parked Ideas
 
-- **Knowledge module (US3)** (#07) — full hierarchical learning content domain. Reason: first focused brainstorm scheduled at start of Phase A hot stream.
 - **Mentoring Plan (US4)** (#08) — diagnostic scoring → priority plan. Reason: depends on Knowledge module; brainstorm at start of Phase B hot stream.
 - **Mentoring Execution (US5)** (#09) — scheduling + sessions + assignments. Reason: depends on Mentoring Plan; consider splitting into two specs. Brainstorm at start of Phase C.
 - **Cross-cutting Subscription + Notification** (#10) — Subscription (Section 1) and Notification (Section 2) remain as warm streams. Reason: Section 3 (Audit) was extracted into spec 016 via brainstorm #11; Subscription + Notification still queued as AI-driven warm work.

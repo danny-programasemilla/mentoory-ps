@@ -47,12 +47,12 @@ public class Question : Entity
         };
     }
 
-    internal static Question CloneFromTemplate(QuestionTemplate template)
+    internal static Question CloneFromTemplate(QuestionTemplate template, long? topicIdOverride = null)
     {
         var question = new Question
         {
             ExternalId = Guid.NewGuid(),
-            TopicId = template.TopicId,
+            TopicId = topicIdOverride ?? template.TopicId,
             QuestionText = template.QuestionText,
             QuestionType = template.QuestionType,
             StageApplicability = template.StageApplicability,

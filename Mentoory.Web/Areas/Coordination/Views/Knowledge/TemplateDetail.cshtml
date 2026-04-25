@@ -1,0 +1,163 @@
+@using Mentoory.Knowledge.Application.Queries.GetKnowledgeStructureTemplate
+@model KnowledgeStructureTemplateDetailDto
+@{
+    ViewData["Title"] = Model?.Name ?? "Plantilla de Conocimiento";
+}
+
+@if (Model is null)
+{
+    <div class="empty">
+        <div class="empty-icon">
+            <i class="ti ti-file-off" style="font-size: 3rem;"></i>
+        </div>
+        <p class="empty-title">Plantilla no encontrada</p>
+        <div class="empty-action">
+            <a asp-action="Templates" class="btn btn-primary">
+                <i class="ti ti-arrow-left me-1"></i>Volver al listado
+            </a>
+        </div>
+    </div>
+    return;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-0">@Model.Name</h2>
+        <div class="text-secondary small">
+            <span class="badge bg-info">v@(Model.Version)</span>
+            @if (Model.IsArchived)
+            {
+                <span class="badge bg-secondary ms-1">Archivada</span>
+            }
+            else
+            {
+                <span class="badge bg-success ms-1">Activa</span>
+            }
+            <span class="ms-2">Creada el @Model.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</span>
+        </div>
+    </div>
+    <a asp-action="Templates" class="btn btn-ghost-secondary">
+        <i class="ti ti-arrow-left me-1"></i>Volver al listado
+    </a>
+</div>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @successMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+}
+
+<div class="card mb-4"
+     data-template-id="@Model.ExternalId"
+     data-module-count="@Model.Modules.Count"
+     data-guid-placeholder="00000000-0000-0000-0000-000000000000"
+     data-url-update-template="@Url.Action("UpdateTemplate", "Knowledge", new { area = "Coordination", externalId = Model.ExternalId })"
+     data-url-add-module="@Url.Action("AddModule", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId })"
+     data-url-update-module="@Url.Action("UpdateModule", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId, moduleExternalId = System.Guid.Empty })"
+     data-url-delete-module="@Url.Action("DeleteModule", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId, moduleExternalId = System.Guid.Empty })"
+     data-url-add-topic="@Url.Action("AddTopic", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId })"
+     data-url-update-topic="@Url.Action("UpdateTopic", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId, topicExternalId = System.Guid.Empty })"
+     data-url-delete-topic="@Url.Action("DeleteTopic", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId, topicExternalId = System.Guid.Empty })"
+     data-url-update-topic-ranges="@Url.Action("UpdateTopicPriorityRanges", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId, topicExternalId = System.Guid.Empty })"
+     data-url-add-subject="@Url.Action("AddSubject", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId })"
+     data-url-update-subject="@Url.Action("UpdateSubject", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId, subjectExternalId = System.Guid.Empty })"
+     data-url-delete-subject="@Url.Action("DeleteSubject", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId, subjectExternalId = System.Guid.Empty })"
+     data-url-add-resource="@Url.Action("AddResource", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId })"
+     data-url-update-resource="@Url.Action("UpdateResource", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId, resourceExternalId = System.Guid.Empty })"
+     data-url-delete-resource="@Url.Action("DeleteResource", "Knowledge", new { area = "Coordination", templateExternalId = Model.ExternalId, resourceExternalId = System.Guid.Empty })">
+    <div class="card-header">
+        <h3 class="card-title">Información de la Plantilla</h3>
+        <div class="card-actions">
+            <button type="button" class="btn btn-sm btn-outline-primary"
+                    data-action="edit-template"
+                    data-template-id="@Model.ExternalId"
+                    data-name="@Model.Name"
+                    data-description="@Model.Description">
+                <i class="ti ti-pencil me-1"></i>Editar
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="datagrid">
+            <div class="datagrid-item">
+                <div class="datagrid-title">Nombre</div>
+                <div class="datagrid-content" data-field="template-name">@Model.Name</div>
+            </div>
+            <div class="datagrid-item">
+                <div class="datagrid-title">Descripción</div>
+                <div class="datagrid-content" data-field="template-description">
+                    @(string.IsNullOrWhiteSpace(Model.Description) ? "—" : Model.Description)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Estructura (Módulos / Temas / Asignaturas / Recursos)</h3>
+        <div class="card-actions">
+            <button type="button" class="btn btn-primary btn-sm"
+                    data-action="add-module" data-template-id="@Model.ExternalId">
+                <i class="ti ti-plus me-1"></i>Agregar módulo
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        @if (!Model.Modules.Any())
+        {
+            <div class="empty">
+                <div class="empty-icon">
+                    <i class="ti ti-stack" style="font-size: 3rem;"></i>
+                </div>
+                <p class="empty-title">Sin módulos</p>
+                <p class="empty-subtitle text-secondary">
+                    Esta plantilla aún no tiene módulos. Agregue el primero para comenzar.
+                </p>
+            </div>
+        }
+        else
+        {
+            <div class="accordion" id="modules-tree" data-template-id="@Model.ExternalId">
+                @foreach (var module in Model.Modules)
+                {
+                    @await Html.PartialAsync("_TemplateTree", module)
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Generic form modal used for all create/edit dialogs -->
+<div class="modal modal-blur fade" id="knowledgeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="knowledgeModalTitle">Formulario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body" id="knowledgeModalBody">
+                <!-- Populated dynamically by template-editor.js -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="knowledgeModalSubmit">
+                    <i class="ti ti-check me-1"></i>Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form id="antiForgeryForm">
+    @Html.AntiForgeryToken()
+</form>
+
+<div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+@section Scripts {
+    <script src="~/js/site.js"></script>
+    <script src="~/js/knowledge/template-editor.js"></script>
+}

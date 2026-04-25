@@ -10,6 +10,7 @@ namespace Mentoory.Tests.E2E.Tests;
 /// status-dot rendering, and info-line padding across DataTable and static table views.
 /// </summary>
 [Collection(E2ETestCollection.Name)]
+[Trait("Category", "E2E")]
 public class TablePolishTests
 {
     private readonly PlaywrightFixture _fixture;

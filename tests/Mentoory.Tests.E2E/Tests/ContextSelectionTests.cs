@@ -10,6 +10,7 @@ namespace Mentoory.Tests.E2E.Tests;
 /// tenant isolation, and returnUrl preservation.
 /// </summary>
 [Collection(E2ETestCollection.Name)]
+[Trait("Category", "E2E")]
 public class ContextSelectionTests
 {
     private readonly PlaywrightFixture _fixture;

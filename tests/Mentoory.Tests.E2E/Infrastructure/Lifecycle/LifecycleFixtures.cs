@@ -102,7 +102,9 @@ public sealed class LifecycleFixtures
             var time = scope.ServiceProvider.GetRequiredService<ITimeProvider>();
 
             var incubator = await db.Incubators.FirstAsync(i => i.ExternalId == incubatorExternalId, ct);
-            var project = Project.Create(incubator.Id, name, description: null, time.UtcNow);
+            // Knowledge structure template seeded by 005.SeedKnowledgeData.sql ("Emprendimiento Básico").
+            var ksTemplateExternalId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+            var project = Project.Create(incubator.Id, name, description: null, ksTemplateExternalId, time.UtcNow);
             db.Projects.Add(project);
             await db.SaveChangesAsync(ct);
             projectExternalId = project.ExternalId;

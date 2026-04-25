@@ -7,5 +7,6 @@
         <ProjectReference Include="..\Mentoory.Tenant.Domain\Mentoory.Tenant.Domain.csproj"/>
         <ProjectReference Include="..\Mentoory.Shared.Application\Mentoory.Shared.Application.csproj"/>
         <ProjectReference Include="..\Mentoory.Access.Application\Mentoory.Access.Application.csproj"/>
+        <ProjectReference Include="..\Mentoory.Knowledge.Domain\Mentoory.Knowledge.Domain.csproj"/>
     </ItemGroup>
 </Project>

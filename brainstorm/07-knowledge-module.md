@@ -1,8 +1,8 @@
 # Brainstorm Seed: Knowledge Module (US3)
 
 **Date:** 2026-04-18
-**Status:** parked
-**Spec:** —
+**Status:** spec-created
+**Spec:** [specs/016-knowledge-module-core/](../specs/016-knowledge-module-core/)
 **Parent roadmap:** [06-platform-roadmap-gap-analysis.md](./06-platform-roadmap-gap-analysis.md) (Phase A, hot stream)
 
 > This is a **seed document** produced during the roadmap brainstorm. It captures everything known about the Knowledge module before a focused `/spex:brainstorm` session is opened. When you start the Knowledge stream, read this, then invoke `/spex:brainstorm` with this file as context.
@@ -109,6 +109,51 @@ Today the module is an empty scaffold: three `.csproj` projects with no code, an
 
 ## Open Threads
 
-- Clone depth decision (deep vs reference)
-- Partial sync semantics at module/topic/subject/resource levels
-- Resource file storage approach (URL only vs blob)
+- Clone depth decision (deep vs reference) — **resolved in revisit 2026-04-18**
+- Partial sync semantics at module/topic/subject/resource levels — **resolved in revisit 2026-04-18**
+- Resource file storage approach (URL only vs blob) — **resolved in revisit 2026-04-18**
+
+---
+
+## Revisit: 2026-04-18
+
+Focused brainstorm opened against this seed. Produced spec [016-knowledge-module-core](../specs/016-knowledge-module-core/).
+
+### Resolved Design Questions
+
+| Seed Q | Decision | Rationale |
+|---|---|---|
+| Q1 Clone depth | **Deep copy** | Mirrors `ProjectForm.CloneFromTemplate` precedent; deep copy keeps clones independent at creation and simplifies tenancy |
+| Q2 PartialSync semantics | **All four levels, append-only** | Matches how curriculum evolves in practice; templates grow through additions at every depth |
+| Q2b PartialSync match key | **Stamped source template item ExternalId** | Rename-safe and reorder-safe. New precedent (Diagnostic uses parent+text) but the four-level tree makes the robustness worth the extra column |
+| Q3 Priority ranges at clone | Inherited, editable per project | Spec requires per-project configurability |
+| Q4 Resource storage v1 | **URL/reference only** | Keeps scope tight; `ResourceType.File` is semantically "URL pointing at a file"; blob storage deferred |
+| Q5 `FormTemplate.DefaultKnowledgeStructureTemplateId` cardinality | **1:1 (nullable)** | Simplest; no concrete use case for 1:N |
+| Q6 Topic reordering | Yes | Standard UX pattern; mirrors `ProjectForm.ReorderQuestions` |
+| Q7 Module "learning route" | **Ordered via `SortOrder`**, no gated sequencing | Display order only; completion/gating is out of scope for v1 |
+| Clone mutability | **Full CRUD on clone** | Items added on the clone carry no `SourceTemplateXExternalId`; they are clone-only. Matches the `ProjectForm` precedent |
+| Form-clone orchestration | **Auto-cascade with reuse-on-existing** | Coordinator does one thing; if the project already has a clone of the same knowledge template, it is reused (avoids split topic scoring when a project has multiple forms sharing one knowledge tree) |
+
+### Updated Open Questions (captured in spec, deferred to plan phase)
+
+- Topic score normalization — the spec assumes 0–100; verify against `GetTopicScoreAggregationHandler` during `/speckit-plan`.
+- Event delivery mechanism — v1 uses in-process MediatR `INotification`; upgrade to outbox (per cross-cutting hardening #10) deferred to when the Mentoring Plan consumer lands.
+- PartialSync UX — v1 is apply-and-summarize; per-item diff preview is a future UX polish.
+- Template archival visibility — hidden from the clone picker by default with a "Show archived" toggle.
+
+### New Design Decisions Made During Revisit
+
+- **Single transaction for cascade and sync** — the form-clone auto-cascade (FR-K21) and `SyncFromTemplate` (FR-K15) each run inside a single transaction; no partial commit. Made explicit in the spec after review.
+- **Authorization role sets** — global-template CRUD requires `"GlobalAdmin"`; project-clone CRUD requires `"ProjectCoordinator,IncubatorAdmin,GlobalAdmin"` (per constitution Principle X, which was initially under-surfaced in NFR-K05 and was corrected in the spec review loop).
+- **Menu entries and seed data** — `MenuConfiguration.cs` must carry Knowledge entries with GlobalAdmin inclusion (NFR-K10); PostDeployment seed for one sample global template (FR-K50) was added after the review to ensure smoke testability in fresh environments.
+
+### Spec Review Outcome
+
+One pass through `spex:review-spec`. Initial status was ⚠ NEEDS WORK against the constitution (Principles IV, X, XI). All Important-severity issues were fixed inline; final status ✅ SOUND. See [REVIEW-SPEC.md](../specs/016-knowledge-module-core/REVIEW-SPEC.md) for the full audit trail.
+
+### Open Threads (remaining after revisit)
+
+- **Outbox upgrade for `TopicPriorityRangesChanged`** — deferred, not a blocker until Mentoring Plan consumer is built.
+- **Topic score range (0–100 vs raw)** — verification task for `/speckit-plan`.
+- **Concurrent-edit semantics on clones** — not addressed in v1; flag if it becomes a real user problem.
+- **Form-to-KS binding cardinality (FR-K20 series)** — ✅ **resolved 2026-04-19**: moved from `FormTemplate` to `Project` (1 KS per project), see [AMENDMENT-PROJECT-KS-BINDING.md](../specs/016-knowledge-module-core/AMENDMENT-PROJECT-KS-BINDING.md) and brainstorm [11](./11-knowledge-module-binding-redesign.md). Form-template binding is now compatibility metadata only; KS materializes at project creation.

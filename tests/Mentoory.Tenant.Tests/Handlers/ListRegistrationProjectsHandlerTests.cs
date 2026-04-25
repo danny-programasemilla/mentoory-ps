@@ -124,7 +124,7 @@ public class ListRegistrationProjectsHandlerTests
         var result = new List<Project>();
         foreach (var (id, name) in projects)
         {
-            var project = Project.Create(incubatorId, name, null, UtcNow);
+            var project = Project.Create(incubatorId, name, null, Guid.Parse("11111111-1111-1111-1111-111111111111"), UtcNow);
             typeof(Mentoory.Shared.Domain.SeedWork.Entity)
                 .GetProperty(nameof(Mentoory.Shared.Domain.SeedWork.Entity.Id))!
                 .SetValue(project, id);
@@ -169,7 +169,7 @@ public class ListRegistrationProjectsHandlerTests
         var allProjects = new List<Project>();
         foreach (var (id, incubatorId, name) in projects)
         {
-            var project = Project.Create(incubatorId, name, null, UtcNow);
+            var project = Project.Create(incubatorId, name, null, Guid.Parse("11111111-1111-1111-1111-111111111111"), UtcNow);
             typeof(Mentoory.Shared.Domain.SeedWork.Entity)
                 .GetProperty(nameof(Mentoory.Shared.Domain.SeedWork.Entity.Id))!
                 .SetValue(project, id);

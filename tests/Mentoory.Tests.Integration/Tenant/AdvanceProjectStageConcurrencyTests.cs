@@ -35,8 +35,10 @@ public class AdvanceProjectStageConcurrencyTests : IntegrationTestBase
         var incubatorResult = await SendAsync(new CreateIncubatorCommand("Concurrency Inc", null));
         incubatorResult.IsSuccess.Should().BeTrue();
 
+        // Knowledge structure template seeded by 005.SeedKnowledgeData.sql ("Emprendimiento Básico").
+        var ksTemplateExternalId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         var projectResult = await SendAsync(new CreateProjectCommand(
-            incubatorResult.Value!, "Concurrency Project", null));
+            incubatorResult.Value!, "Concurrency Project", null, ksTemplateExternalId));
         projectResult.IsSuccess.Should().BeTrue();
 
         var projectExternalId = projectResult.Value!;

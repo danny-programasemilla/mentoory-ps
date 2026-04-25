@@ -1,6 +1,8 @@
+using Mentoory.Knowledge.Domain.Repositories;
 using Mentoory.Shared.Application;
 using Mentoory.Shared.Application.MediatR;
 using Mentoory.Shared.Application.TimeProvider;
+using Mentoory.Tenant.Application.Abstractions;
 using Mentoory.Tenant.Domain.Aggregates.Project;
 using Mentoory.Tenant.Domain.Repositories;
 using Microsoft.Extensions.Logging;
@@ -8,16 +10,16 @@ using Microsoft.Extensions.Logging;
 namespace Mentoory.Tenant.Application.Commands.CreateProject;
 
 /// <summary>
-/// Handler for creating a new project within an incubator.
+/// Handler for creating a new project within an incubator. Each project is bound 1:1 to
+/// a <c>KnowledgeStructure</c> materialized from a caller-selected template via the
+/// cross-module <see cref="IKnowledgeStructureProvisioner"/>.
 /// </summary>
-/// <param name="logger">Logger instance for tracking operations.</param>
-/// <param name="incubatorRepository">The repository for accessing incubator entities.</param>
-/// <param name="projectRepository">The repository for persisting project entities.</param>
-/// <param name="timeProvider">The time provider for getting the current UTC time.</param>
 public partial class CreateProjectHandler(
     ILogger<CreateProjectHandler> logger,
     IIncubatorRepository incubatorRepository,
     IProjectRepository projectRepository,
+    IKnowledgeStructureTemplateRepository knowledgeStructureTemplateRepository,
+    IKnowledgeStructureProvisioner knowledgeStructureProvisioner,
     ITimeProvider timeProvider)
     : BaseCommandHandler<CreateProjectCommand, Guid>
 {
@@ -33,14 +35,39 @@ public partial class CreateProjectHandler(
                 (nameof(request.IncubatorExternalId), "Incubator not found"));
         }
 
+        var templateExists = await knowledgeStructureTemplateRepository.ExistsByExternalIdAsync(
+            request.KnowledgeStructureTemplateExternalId, cancellationToken);
+        if (!templateExists)
+        {
+            LogTemplateNotFound(request.KnowledgeStructureTemplateExternalId);
+            return Failure(ResultErrorCodes.GenericError,
+                ("KnowledgeStructureTemplate", "La plantilla de conocimiento no fue encontrada."));
+        }
+
         var project = Project.Create(
             incubator.Id,
             request.Name,
             request.Description,
+            request.KnowledgeStructureTemplateExternalId,
             timeProvider.UtcNow,
             request.IsPublic,
             request.EnrollmentVariant);
         projectRepository.Add(project);
+
+        await projectRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
+
+        var ksResult = await knowledgeStructureProvisioner.CloneForProjectAsync(
+            request.KnowledgeStructureTemplateExternalId,
+            project.Id,
+            incubator.Id,
+            cancellationToken);
+
+        if (ksResult.IsFailure)
+        {
+            LogKnowledgeProvisioningFailed(project.ExternalId, request.KnowledgeStructureTemplateExternalId);
+            return Failure(ResultErrorCodes.GenericError,
+                ("KnowledgeStructure", "Proyecto creado pero falló la creación de la estructura de conocimiento. Contacte a un administrador."));
+        }
 
         LogProjectCreated(project.ExternalId, request.IncubatorExternalId);
 
@@ -49,6 +76,12 @@ public partial class CreateProjectHandler(
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "Incubator not found with ExternalId {ExternalId}")]
     partial void LogIncubatorNotFound(Guid externalId);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "KnowledgeStructureTemplate not found with ExternalId {ExternalId}")]
+    partial void LogTemplateNotFound(Guid externalId);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Project {ProjectExternalId} saved but KS provisioning failed for template {TemplateExternalId}; project persists without a knowledge structure")]
+    partial void LogKnowledgeProvisioningFailed(Guid projectExternalId, Guid templateExternalId);
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Project created with ExternalId {ExternalId} in incubator {IncubatorExternalId}")]
     partial void LogProjectCreated(Guid externalId, Guid incubatorExternalId);

@@ -9,6 +9,7 @@ namespace Mentoory.Tests.E2E.Tests;
 /// T049 - Validates authorization boundaries: roles cannot access areas they lack permissions for.
 /// </summary>
 [Collection(E2ETestCollection.Name)]
+[Trait("Category", "E2E")]
 public class AuthorizationTests
 {
     private readonly PlaywrightFixture _fixture;

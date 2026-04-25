@@ -14,6 +14,7 @@ namespace Mentoory.Tests.E2E.Tests;
 /// so tests must intercept the network response — not just check the page HTTP status.
 /// </summary>
 [Collection(E2ETestCollection.Name)]
+[Trait("Category", "E2E")]
 public class AdministrationUsersTests
 {
     private readonly PlaywrightFixture _fixture;

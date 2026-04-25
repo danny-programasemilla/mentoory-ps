@@ -26,6 +26,7 @@ DECLARE @IncAdmin2Id   BIGINT;
 DECLARE @Coord1Id      BIGINT;
 DECLARE @Coord2Id      BIGINT;
 DECLARE @Coord3Id      BIGINT;
+DECLARE @CoordNorteId  BIGINT;  -- spec 017 (knowledge-e2e-tests): coordinator in Incubadora Norte (US6-3 tenant isolation)
 DECLARE @Mentor1Id     BIGINT;
 DECLARE @Entrep1Id     BIGINT;
 DECLARE @Entrep2Id     BIGINT;
@@ -111,6 +112,25 @@ BEGIN
 END
 ELSE
     SELECT @Coord3Id = [Id] FROM [access].[Users] WHERE [NormalizedEmail] = N'COORD3@TEST.MENTOORY.COM';
+
+-- ------------------------------------------------------------------------------------------
+-- User: Project Coordinator Norte (spec 017 — US6-3 tenant isolation)
+-- Lives only in Incubadora Norte (seeded in §2). Deliberately separate from coord2 to
+-- avoid breaking the "coord2 is in exactly one project (Sostenibilidad, Alpha)" invariant
+-- asserted by BatchUploadScopeTests.ProjectCoordinator2_SeesOnlyTheirProject.
+-- ------------------------------------------------------------------------------------------
+IF NOT EXISTS (SELECT 1 FROM [access].[Users] WHERE [NormalizedEmail] = N'COORDNORTE@TEST.MENTOORY.COM')
+BEGIN
+    INSERT INTO [access].[Users] ([ExternalId], [Email], [NormalizedEmail], [Country], [NationalId], [FirstName], [LastName], [AccountStatus], [FailedLoginAttempts], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), N'coordnorte@test.mentoory.com', N'COORDNORTE@TEST.MENTOORY.COM', N'Chile', N'TEST-COORDNORTE', N'Camila', N'Riquelme', 1, 0, @Now, @Now);
+
+    SET @CoordNorteId = SCOPE_IDENTITY();
+
+    INSERT INTO [access].[Credentials] ([UserId], [PasswordHash], [IsActive], [CreatedAtUtc])
+    VALUES (@CoordNorteId, @PasswordHash, 1, @Now);
+END
+ELSE
+    SELECT @CoordNorteId = [Id] FROM [access].[Users] WHERE [NormalizedEmail] = N'COORDNORTE@TEST.MENTOORY.COM';
 
 -- ------------------------------------------------------------------------------------------
 -- User: Mentor
@@ -199,6 +219,7 @@ ELSE
 
 DECLARE @Incubator1Id BIGINT;
 DECLARE @Incubator2Id BIGINT;
+DECLARE @IncubatorNorteId BIGINT;  -- spec 017: third incubator for tenant isolation (US6-3)
 DECLARE @SubscriptionPlanId BIGINT;
 
 -- Resolve subscription plan seeded by 003.SeedDefaultSubscriptionPlan.sql
@@ -230,29 +251,62 @@ END
 ELSE
     SELECT @Incubator2Id = [Id] FROM [tenant].[Incubators] WHERE [Name] = N'Incubadora Beta';
 
+-- ------------------------------------------------------------------------------------------
+-- Incubator: Incubadora Norte (spec 017, Addition 1 — for US6-3 tenant isolation)
+-- ExternalId collides with ModuleTemplate "Ideación" in 005 — legal (different table).
+-- ------------------------------------------------------------------------------------------
+DECLARE @IncubatorNorteExternalId UNIQUEIDENTIFIER = CAST('22222222-2222-2222-2222-222222222222' AS UNIQUEIDENTIFIER);
+
+IF NOT EXISTS (SELECT 1 FROM [tenant].[Incubators] WHERE [ExternalId] = @IncubatorNorteExternalId)
+BEGIN
+    INSERT INTO [tenant].[Incubators] ([ExternalId], [Name], [Description], [SubscriptionPlanId], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (@IncubatorNorteExternalId, N'Incubadora Norte', N'Incubadora regional del norte para pruebas de aislamiento de inquilinos.', @SubscriptionPlanId, 1, @Now, @Now);
+
+    SET @IncubatorNorteId = SCOPE_IDENTITY();
+END
+ELSE
+    SELECT @IncubatorNorteId = [Id] FROM [tenant].[Incubators] WHERE [ExternalId] = @IncubatorNorteExternalId;
+
+
+-- ==========================================================================================
+-- SECTION 2.5: Knowledge structure template (required by tenant.Projects FK)
+-- ------------------------------------------------------------------------------------------
+-- Seeded inline here (before §3 Projects) because each project now references the
+-- "Emprendimiento Básico" template via KnowledgeStructureTemplateExternalId (NOT NULL).
+-- 005.SeedKnowledgeData.sql re-seeds the template idempotently (IF NOT EXISTS) — safe.
+-- ==========================================================================================
+
+DECLARE @TemplateExternalId UNIQUEIDENTIFIER = CAST('11111111-1111-1111-1111-111111111111' AS UNIQUEIDENTIFIER);
+DECLARE @StructureTemplateId BIGINT;
+
+IF NOT EXISTS (SELECT 1 FROM [knowledge].[KnowledgeStructureTemplates] WHERE [ExternalId] = @TemplateExternalId)
+BEGIN
+    INSERT INTO [knowledge].[KnowledgeStructureTemplates] ([ExternalId], [Name], [Description], [IsArchived], [Version], [CreatedAtUtc])
+    VALUES (@TemplateExternalId, N'Emprendimiento Básico', N'Plantilla de ejemplo para proyectos de emprendimiento en etapa temprana.', 0, 1, @Now);
+
+    SET @StructureTemplateId = SCOPE_IDENTITY();
+END
+ELSE
+    SELECT @StructureTemplateId = [Id] FROM [knowledge].[KnowledgeStructureTemplates] WHERE [ExternalId] = @TemplateExternalId;
+
 
 -- ==========================================================================================
 -- SECTION 3: Projects
 -- ==========================================================================================
 
--- Fix existing seed projects that were incorrectly created with CurrentStageState = 0 (NotStarted)
--- Domain model creates projects with Registration + InProgress (CurrentStageState = 1)
-UPDATE [tenant].[Projects]
-SET [CurrentStageState] = 1
-WHERE [CurrentStageType] = 0 AND [CurrentStageState] = 0;
-
 DECLARE @Project1Id BIGINT;  -- Proyecto Innovación (Incubator 1)
 DECLARE @Project2Id BIGINT;  -- Proyecto Sostenibilidad (Incubator 1)
 DECLARE @Project3Id BIGINT;  -- Proyecto Digital (Incubator 2)
 DECLARE @Project4Id BIGINT;  -- Proyecto Comunitario (Incubator 2)
+DECLARE @ProjectNorteId BIGINT;  -- Proyecto Norte Uno (Incubadora Norte; spec 017 US6-3)
 
 -- ------------------------------------------------------------------------------------------
 -- Project: Proyecto Innovación (Incubadora Alpha)
 -- ------------------------------------------------------------------------------------------
 IF NOT EXISTS (SELECT 1 FROM [tenant].[Projects] WHERE [Name] = N'Proyecto Innovación' AND [IncubatorId] = @Incubator1Id)
 BEGIN
-    INSERT INTO [tenant].[Projects] ([ExternalId], [IncubatorId], [Name], [Description], [CurrentStageType], [CurrentStageState], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
-    VALUES (NEWID(), @Incubator1Id, N'Proyecto Innovación', N'Proyecto piloto de innovación tecnológica aplicada al sector agrícola', 0, 1, 1, @Now, @Now);
+    INSERT INTO [tenant].[Projects] ([ExternalId], [IncubatorId], [Name], [Description], [KnowledgeStructureTemplateExternalId], [CurrentStageType], [CurrentStageState], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @Incubator1Id, N'Proyecto Innovación', N'Proyecto piloto de innovación tecnológica aplicada al sector agrícola', @TemplateExternalId, 0, 1, 1, @Now, @Now);
 
     SET @Project1Id = SCOPE_IDENTITY();
 END
@@ -264,8 +318,8 @@ ELSE
 -- ------------------------------------------------------------------------------------------
 IF NOT EXISTS (SELECT 1 FROM [tenant].[Projects] WHERE [Name] = N'Proyecto Sostenibilidad' AND [IncubatorId] = @Incubator1Id)
 BEGIN
-    INSERT INTO [tenant].[Projects] ([ExternalId], [IncubatorId], [Name], [Description], [CurrentStageType], [CurrentStageState], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
-    VALUES (NEWID(), @Incubator1Id, N'Proyecto Sostenibilidad', N'Desarrollo de modelo de negocio sostenible con impacto medioambiental positivo', 0, 1, 1, @Now, @Now);
+    INSERT INTO [tenant].[Projects] ([ExternalId], [IncubatorId], [Name], [Description], [KnowledgeStructureTemplateExternalId], [CurrentStageType], [CurrentStageState], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @Incubator1Id, N'Proyecto Sostenibilidad', N'Desarrollo de modelo de negocio sostenible con impacto medioambiental positivo', @TemplateExternalId, 0, 1, 1, @Now, @Now);
 
     SET @Project2Id = SCOPE_IDENTITY();
 END
@@ -277,8 +331,8 @@ ELSE
 -- ------------------------------------------------------------------------------------------
 IF NOT EXISTS (SELECT 1 FROM [tenant].[Projects] WHERE [Name] = N'Proyecto Digital' AND [IncubatorId] = @Incubator2Id)
 BEGIN
-    INSERT INTO [tenant].[Projects] ([ExternalId], [IncubatorId], [Name], [Description], [CurrentStageType], [CurrentStageState], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
-    VALUES (NEWID(), @Incubator2Id, N'Proyecto Digital', N'Plataforma digital para conectar emprendedores con mentores especializados', 0, 1, 1, @Now, @Now);
+    INSERT INTO [tenant].[Projects] ([ExternalId], [IncubatorId], [Name], [Description], [KnowledgeStructureTemplateExternalId], [CurrentStageType], [CurrentStageState], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @Incubator2Id, N'Proyecto Digital', N'Plataforma digital para conectar emprendedores con mentores especializados', @TemplateExternalId, 0, 1, 1, @Now, @Now);
 
     SET @Project3Id = SCOPE_IDENTITY();
 END
@@ -290,13 +344,142 @@ ELSE
 -- ------------------------------------------------------------------------------------------
 IF NOT EXISTS (SELECT 1 FROM [tenant].[Projects] WHERE [Name] = N'Proyecto Comunitario' AND [IncubatorId] = @Incubator2Id)
 BEGIN
-    INSERT INTO [tenant].[Projects] ([ExternalId], [IncubatorId], [Name], [Description], [CurrentStageType], [CurrentStageState], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
-    VALUES (NEWID(), @Incubator2Id, N'Proyecto Comunitario', N'Iniciativa de desarrollo comunitario para fortalecer redes de emprendimiento local', 0, 1, 1, @Now, @Now);
+    INSERT INTO [tenant].[Projects] ([ExternalId], [IncubatorId], [Name], [Description], [KnowledgeStructureTemplateExternalId], [CurrentStageType], [CurrentStageState], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @Incubator2Id, N'Proyecto Comunitario', N'Iniciativa de desarrollo comunitario para fortalecer redes de emprendimiento local', @TemplateExternalId, 0, 1, 1, @Now, @Now);
 
     SET @Project4Id = SCOPE_IDENTITY();
 END
 ELSE
     SELECT @Project4Id = [Id] FROM [tenant].[Projects] WHERE [Name] = N'Proyecto Comunitario' AND [IncubatorId] = @Incubator2Id;
+
+-- ------------------------------------------------------------------------------------------
+-- Project: Proyecto Norte Uno (Incubadora Norte) — spec 017 US6-3 tenant isolation fixture
+-- ------------------------------------------------------------------------------------------
+DECLARE @ProjectNorteExternalId UNIQUEIDENTIFIER = CAST('88888888-8888-8888-8888-888888880001' AS UNIQUEIDENTIFIER);
+
+IF NOT EXISTS (SELECT 1 FROM [tenant].[Projects] WHERE [ExternalId] = @ProjectNorteExternalId)
+BEGIN
+    INSERT INTO [tenant].[Projects] ([ExternalId], [IncubatorId], [Name], [Description], [KnowledgeStructureTemplateExternalId], [CurrentStageType], [CurrentStageState], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (@ProjectNorteExternalId, @IncubatorNorteId, N'Proyecto Norte Uno', N'Proyecto del norte vinculado a la plantilla Emprendimiento Básico.', @TemplateExternalId, 0, 1, 1, @Now, @Now);
+
+    SET @ProjectNorteId = SCOPE_IDENTITY();
+END
+ELSE
+    SELECT @ProjectNorteId = [Id] FROM [tenant].[Projects] WHERE [ExternalId] = @ProjectNorteExternalId;
+
+
+-- ==========================================================================================
+-- SECTION 3.5: Knowledge topics referenced by test diagnostic questions
+-- ------------------------------------------------------------------------------------------
+-- The FK diagnostic.Questions.TopicId -> knowledge.Topics.Id (spec 016) requires that
+-- Topic Ids 1-5 exist BEFORE Section 8 inserts diagnostic.Questions with those literal
+-- TopicIds. We seed them here (inside this script) so the FK resolves mid-batch.
+-- Parent rows: knowledge.KnowledgeStructures (for Proyecto Innovación) + knowledge.Modules.
+-- SourceTemplateId references the "Emprendimiento Básico" template seeded in §2.5
+-- (every project KS is sourced from a template under spec 016 Phase 9 — no NULL path).
+-- Convention: 1=Modelo de Negocio, 2=Equipo, 3=Mercado, 4=Finanzas, 5=Impacto
+-- ==========================================================================================
+
+DECLARE @ProjectStructureExternalId UNIQUEIDENTIFIER = CAST('99999999-9999-9999-9999-999999999901' AS UNIQUEIDENTIFIER);
+DECLARE @ProjectStructureId BIGINT;
+
+IF NOT EXISTS (SELECT 1 FROM [knowledge].[KnowledgeStructures] WHERE [ExternalId] = @ProjectStructureExternalId)
+BEGIN
+    INSERT INTO [knowledge].[KnowledgeStructures] ([ExternalId], [ProjectId], [IncubatorId], [Name], [Description],
+        [SourceTemplateId], [SourceTemplateVersion], [SyncMode], [CreatedAtUtc])
+    VALUES (@ProjectStructureExternalId, @Project1Id, @Incubator1Id,
+        N'Estructura de Conocimiento - Proyecto Innovación',
+        N'Estructura de conocimiento sembrada para alinear con los temas del diagnóstico de prueba.',
+        @StructureTemplateId, 1, 0, @Now);
+
+    SET @ProjectStructureId = SCOPE_IDENTITY();
+END
+ELSE
+    SELECT @ProjectStructureId = [Id] FROM [knowledge].[KnowledgeStructures] WHERE [ExternalId] = @ProjectStructureExternalId;
+
+DECLARE @ProjectModuleExternalId UNIQUEIDENTIFIER = CAST('99999999-9999-9999-9999-999999999902' AS UNIQUEIDENTIFIER);
+DECLARE @ProjectModuleId BIGINT;
+
+IF NOT EXISTS (SELECT 1 FROM [knowledge].[Modules] WHERE [ExternalId] = @ProjectModuleExternalId)
+BEGIN
+    INSERT INTO [knowledge].[Modules] ([ExternalId], [KnowledgeStructureId], [SourceTemplateModuleExternalId],
+        [Name], [Description], [SortOrder])
+    VALUES (@ProjectModuleExternalId, @ProjectStructureId, NULL,
+        N'Diagnóstico', N'Módulo agrupador de los temas referenciados por el diagnóstico.', 1);
+
+    SET @ProjectModuleId = SCOPE_IDENTITY();
+END
+ELSE
+    SELECT @ProjectModuleId = [Id] FROM [knowledge].[Modules] WHERE [ExternalId] = @ProjectModuleExternalId;
+
+DECLARE @TopicExternalId1 UNIQUEIDENTIFIER = CAST('99999999-9999-9999-9999-999999990001' AS UNIQUEIDENTIFIER);
+DECLARE @TopicExternalId2 UNIQUEIDENTIFIER = CAST('99999999-9999-9999-9999-999999990002' AS UNIQUEIDENTIFIER);
+DECLARE @TopicExternalId3 UNIQUEIDENTIFIER = CAST('99999999-9999-9999-9999-999999990003' AS UNIQUEIDENTIFIER);
+DECLARE @TopicExternalId4 UNIQUEIDENTIFIER = CAST('99999999-9999-9999-9999-999999990004' AS UNIQUEIDENTIFIER);
+DECLARE @TopicExternalId5 UNIQUEIDENTIFIER = CAST('99999999-9999-9999-9999-999999990005' AS UNIQUEIDENTIFIER);
+
+SET IDENTITY_INSERT [knowledge].[Topics] ON;
+
+IF NOT EXISTS (SELECT 1 FROM [knowledge].[Topics] WHERE [Id] = 1)
+    INSERT INTO [knowledge].[Topics] ([Id], [ExternalId], [ModuleId], [SourceTemplateTopicExternalId],
+        [Name], [Description], [SortOrder],
+        [HighRangeMin], [HighRangeMax], [MediumRangeMin], [MediumRangeMax], [LowRangeMin], [LowRangeMax])
+    VALUES (1, @TopicExternalId1, @ProjectModuleId, NULL,
+        N'Modelo de Negocio', N'Tema referenciado por preguntas de diagnóstico.', 1,
+        8.00, 10.00, 5.00, 7.99, 0.00, 4.99);
+
+IF NOT EXISTS (SELECT 1 FROM [knowledge].[Topics] WHERE [Id] = 2)
+    INSERT INTO [knowledge].[Topics] ([Id], [ExternalId], [ModuleId], [SourceTemplateTopicExternalId],
+        [Name], [Description], [SortOrder],
+        [HighRangeMin], [HighRangeMax], [MediumRangeMin], [MediumRangeMax], [LowRangeMin], [LowRangeMax])
+    VALUES (2, @TopicExternalId2, @ProjectModuleId, NULL,
+        N'Equipo', N'Tema referenciado por preguntas de diagnóstico.', 2,
+        8.00, 10.00, 5.00, 7.99, 0.00, 4.99);
+
+IF NOT EXISTS (SELECT 1 FROM [knowledge].[Topics] WHERE [Id] = 3)
+    INSERT INTO [knowledge].[Topics] ([Id], [ExternalId], [ModuleId], [SourceTemplateTopicExternalId],
+        [Name], [Description], [SortOrder],
+        [HighRangeMin], [HighRangeMax], [MediumRangeMin], [MediumRangeMax], [LowRangeMin], [LowRangeMax])
+    VALUES (3, @TopicExternalId3, @ProjectModuleId, NULL,
+        N'Mercado', N'Tema referenciado por preguntas de diagnóstico.', 3,
+        8.00, 10.00, 5.00, 7.99, 0.00, 4.99);
+
+IF NOT EXISTS (SELECT 1 FROM [knowledge].[Topics] WHERE [Id] = 4)
+    INSERT INTO [knowledge].[Topics] ([Id], [ExternalId], [ModuleId], [SourceTemplateTopicExternalId],
+        [Name], [Description], [SortOrder],
+        [HighRangeMin], [HighRangeMax], [MediumRangeMin], [MediumRangeMax], [LowRangeMin], [LowRangeMax])
+    VALUES (4, @TopicExternalId4, @ProjectModuleId, NULL,
+        N'Finanzas', N'Tema referenciado por preguntas de diagnóstico.', 4,
+        8.00, 10.00, 5.00, 7.99, 0.00, 4.99);
+
+IF NOT EXISTS (SELECT 1 FROM [knowledge].[Topics] WHERE [Id] = 5)
+    INSERT INTO [knowledge].[Topics] ([Id], [ExternalId], [ModuleId], [SourceTemplateTopicExternalId],
+        [Name], [Description], [SortOrder],
+        [HighRangeMin], [HighRangeMax], [MediumRangeMin], [MediumRangeMax], [LowRangeMin], [LowRangeMax])
+    VALUES (5, @TopicExternalId5, @ProjectModuleId, NULL,
+        N'Impacto', N'Tema referenciado por preguntas de diagnóstico.', 5,
+        8.00, 10.00, 5.00, 7.99, 0.00, 4.99);
+
+SET IDENTITY_INSERT [knowledge].[Topics] OFF;
+
+
+-- ------------------------------------------------------------------------------------------
+-- KnowledgeStructure for Proyecto Norte Uno (spec 017 US6-3)
+-- Materialized here at seed time; no Modules/Topics under it (the tenant-isolation tests
+-- only need the KS row to exist so its ExternalId is resolvable).
+-- UNIQUE constraint on ProjectId means each project has exactly one KS row.
+-- ------------------------------------------------------------------------------------------
+DECLARE @ProjectNorteKsExternalId UNIQUEIDENTIFIER = CAST('88888888-8888-8888-8888-888888880002' AS UNIQUEIDENTIFIER);
+
+IF NOT EXISTS (SELECT 1 FROM [knowledge].[KnowledgeStructures] WHERE [ExternalId] = @ProjectNorteKsExternalId)
+BEGIN
+    INSERT INTO [knowledge].[KnowledgeStructures] ([ExternalId], [ProjectId], [IncubatorId], [Name], [Description],
+        [SourceTemplateId], [SourceTemplateVersion], [SyncMode], [CreatedAtUtc])
+    VALUES (@ProjectNorteKsExternalId, @ProjectNorteId, @IncubatorNorteId,
+        N'Estructura de Conocimiento - Proyecto Norte Uno',
+        N'Estructura vacía usada como fixture de aislamiento de inquilinos.',
+        @StructureTemplateId, 1, 0, @Now);
+END
 
 
 -- ------------------------------------------------------------------------------------------
@@ -382,6 +565,22 @@ IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @Coord3
 BEGIN
     INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
     VALUES (NEWID(), @Coord3Id, @Incubator1Id, @Project1Id, N'ProjectCoordinator', 1, @Now, @Now);
+END
+
+-- ------------------------------------------------------------------------------------------
+-- ProjectCoordinator Norte -> Incubadora Norte (incubator-level base) + Proyecto Norte Uno
+-- Spec 017 (knowledge-e2e-tests): required by US6-3 tenant-isolation E2E tests.
+-- ------------------------------------------------------------------------------------------
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @CoordNorteId AND [IncubatorId] = @IncubatorNorteId AND [ProjectId] IS NULL AND [Role] = N'ProjectCoordinator' AND [IsActive] = 1)
+BEGIN
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @CoordNorteId, @IncubatorNorteId, NULL, N'ProjectCoordinator', 1, @Now, @Now);
+END
+
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @CoordNorteId AND [IncubatorId] = @IncubatorNorteId AND [ProjectId] = @ProjectNorteId AND [Role] = N'ProjectCoordinator' AND [IsActive] = 1)
+BEGIN
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @CoordNorteId, @IncubatorNorteId, @ProjectNorteId, N'ProjectCoordinator', 1, @Now, @Now);
 END
 
 -- ------------------------------------------------------------------------------------------

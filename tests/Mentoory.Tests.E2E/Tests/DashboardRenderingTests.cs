@@ -9,6 +9,7 @@ namespace Mentoory.Tests.E2E.Tests;
 /// T053 - Validates that each role's dashboard loads with correct content.
 /// </summary>
 [Collection(E2ETestCollection.Name)]
+[Trait("Category", "E2E")]
 public class DashboardRenderingTests
 {
     private readonly PlaywrightFixture _fixture;

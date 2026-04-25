@@ -1,7 +1,9 @@
+@using Mentoory.Knowledge.Application.Queries.ListKnowledgeStructureTemplates
 @model CreateProjectViewModel
 
 @{
     ViewData["Title"] = "Nuevo Proyecto";
+    var knowledgeTemplates = (ViewBag.KnowledgeTemplates as IReadOnlyList<KnowledgeStructureTemplateListItemDto>) ?? Array.Empty<KnowledgeStructureTemplateListItemDto>();
 }
 
 <div class="row justify-content-center">
@@ -26,6 +28,18 @@
                         <textarea asp-for="Description" class="form-control" rows="3"
                                   placeholder="Descripción del proyecto (opcional)"></textarea>
                         <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="KnowledgeStructureTemplateExternalId" class="form-label"></label>
+                        <select asp-for="KnowledgeStructureTemplateExternalId" class="form-select" required>
+                            <option value="">-- Seleccione una plantilla --</option>
+                            @foreach (var template in knowledgeTemplates)
+                            {
+                                <option value="@template.ExternalId">@template.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="KnowledgeStructureTemplateExternalId" class="text-danger"></span>
                     </div>
 
                     <div class="hr-text">Configuración</div>

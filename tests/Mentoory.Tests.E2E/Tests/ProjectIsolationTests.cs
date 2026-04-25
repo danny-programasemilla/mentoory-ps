@@ -9,6 +9,7 @@ namespace Mentoory.Tests.E2E.Tests;
 /// T051 - Validates project isolation: users cannot access forms from other projects.
 /// </summary>
 [Collection(E2ETestCollection.Name)]
+[Trait("Category", "E2E")]
 public class ProjectIsolationTests
 {
     private readonly PlaywrightFixture _fixture;
