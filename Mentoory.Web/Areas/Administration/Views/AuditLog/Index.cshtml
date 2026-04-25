@@ -1,0 +1,27 @@
+@{
+    ViewData["Title"] = "Registro de auditoría";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Registro de auditoría</h2>
+</div>
+
+@await Component.InvokeAsync("DataTable", new
+{
+    tableId = "auditLogTable",
+    columns = new[] { "Fecha (UTC)", "Evento", "Usuario", "Acción", "Resultado", "Rol", "" }
+})
+
+<form id="antiForgeryForm">
+    @Html.AntiForgeryToken()
+</form>
+
+@section Scripts {
+    <script src="~/js/datatable-helper.js"></script>
+    <script src="~/js/audit-log.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            initAuditLogTable('@Url.Action("Data", "AuditLog", new { area = "Administration" })');
+        });
+    </script>
+}

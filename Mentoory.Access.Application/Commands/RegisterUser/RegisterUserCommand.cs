@@ -1,3 +1,4 @@
+using Mentoory.Shared.Application.Audit;
 using Mentoory.Shared.Application.MediatR;
 
 namespace Mentoory.Access.Application.Commands.RegisterUser;
@@ -13,6 +14,7 @@ namespace Mentoory.Access.Application.Commands.RegisterUser;
 /// <param name="Password">The plaintext password to hash and store.</param>
 /// <param name="CorrelationId">HTTP trace identifier; logged alongside the public-registration outcome. Never surfaced in any response.</param>
 /// <param name="ClientIpAddress">Remote IP string; logged alongside the public-registration outcome. Never surfaced in any response.</param>
+[Audited(AuditEventTypes.UserRegistered, EntityType = "User")]
 public sealed record RegisterUserCommand(
     string Email,
     string Country,

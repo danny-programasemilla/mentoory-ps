@@ -2,9 +2,9 @@
   ============================================================
   SYNC IMPACT REPORT
   ============================================================
-  Version: 1.1.0 (feature 018 amendment)
+  Version: 1.2.0 (combined feature-018 + feature-016-audit amendment, integration bundle 019)
 
-  Added sections:
+  Added sections (from feature 018-access-security-delivery-quality-gate):
     - 11.9 Response Indistinguishability (floor category)
     - 11.10 Outcome Audit Logging (floor category)
     - 11.11 Public-vs-Admin Attribution (floor category)
@@ -13,8 +13,19 @@
     - 11.14 Content-Policy Rules (floor category)
     - 13. Delivery Quality Gate (CI workflow governance)
 
+  Added sections (from feature 016-audit-pipeline):
+    - Audit Trail Obligations (between § 12 and Appendix A)
+
   Sections preserved without renumbering:
     - 1-10 unchanged; 11.1-11.8 unchanged; 12 unchanged; Appendices A/B/C unchanged.
+
+  Rationale: Feature 018 introduces the coverage-enforcement gate (Section 13
+  + floor categories). Feature 016-audit-pipeline introduces the AuditingBehavior +
+  [Audited] attribute + architecture-test enforcement (Audit Trail Obligations).
+  Both amendments are additive and compose without renumbering. The combined
+  bump to 1.2.0 reflects two simultaneous minor amendments shipped together
+  in bundle PR #019.
+
 
   Follow-up TODOs:
     - Configure `coverage-check` as a required status check on `develop` (DEP-005).
@@ -26,7 +37,7 @@
 
 # Mentoory Access & Security Constitution
 
-**Version**: 1.1.0 | **Ratified**: 2026-04-08 | **Last Amended**: 2026-04-19  
+**Version**: 1.2.0 | **Ratified**: 2026-04-08 | **Last Amended**: 2026-04-19  
 **Status**: Draft — Pending Stakeholder Ratification  
 **Linked from**: [constitution.md](constitution.md)
 
@@ -1129,6 +1140,58 @@ The exclusion is parsed by regex `\*Coverage:\s*N/A\s*[—-]{1,2}\s*(.{20,}?)\.\
 ### 13.6 Flaky-test policy
 
 A test that fails non-deterministically in CI MUST be quarantined within 24 hours by adding `[Trait("Flaky", "true")]` to the method. Once tagged, the coverage tool treats the test as **non-claiming** for every other trait it carries. If the quarantined test was the only claimant for an identifier, the gate immediately reports that identifier as Unclaimed → build-fail → the team is forced to repair the test, find another claim, or mark the identifier `Coverage: N/A` with a justification. This behaviour is intentional: quarantine without immediate visibility is silent erosion. The 24-hour quarantine clock starts when CI surfaces the first non-deterministic failure of an identifier-claiming test.
+
+## Audit Trail Obligations
+
+### Scope
+
+A **sensitive command** is any MediatR command class whose name matches the pattern:
+
+```
+^(Assign|Approve|Correct|Advance|Login|Register|SetActive).*Command$
+```
+
+This pattern is the canonical definition. The architecture test `Mentoory.Tests.Architecture.AuditCoverageTests` enforces it at build time.
+
+Current categories and their intent:
+
+- `Assign*` — granting access or responsibility (roles, mentors, ...).
+- `Approve*` — endorsing an artifact for progression (plans, advancements, ...).
+- `Correct*` — altering a recorded value after the fact.
+- `Advance*` — transitioning a workflow forward (stages, phases).
+- `Login*` — authentication attempts.
+- `Register*` — user / entity onboarding.
+- `SetActive*` — selecting operational context (tenants, projects, roles).
+
+### Obligation
+
+Every sensitive command MUST be decorated with `[Audited]` (`Mentoory.Shared.Application.Audit.AuditedAttribute`). The architecture test fails CI if the obligation is violated.
+
+- **Default mode** (`AuditMode.Automatic`): the `AuditingBehavior` captures a uniform payload (user, tenant, role, correlation, outcome, redacted command payload).
+- **Escape hatch** (`AuditMode.Manual`): used when the entry needs domain-specific detail (e.g., before/after text from an aggregate). The handler calls `IAuditService.LogAsync` directly and is responsible for its own audit entry.
+
+### Extension procedure
+
+When a new sensitive command category enters the codebase (e.g., `Delete*`, `Revoke*`, `Reset*`):
+
+1. Extend the regex in `Mentoory.Tests.Architecture.AuditCoverageTests` AND this section's scope list, in the same pull request.
+2. Add the new event-type constant to `Mentoory.Shared.Application.Audit.AuditEventTypes`.
+3. Apply `[Audited]` to the new command.
+4. Update this document's version footer per its SemVer policy.
+
+Extending the regex WITHOUT updating this section (or vice versa) constitutes a constitution violation and MUST be rejected in code review.
+
+### Non-obligations
+
+- Query handlers are NOT audited in v1.
+- `ValidationException`s (short-circuited by `ValidatorBehavior`) are NOT audited — they represent input noise, not security events.
+- Audit failures MUST NOT fail the wrapped business command (best-effort semantics preserved from the pre-016 `AuditService`).
+
+### Audience
+
+All contributors writing new commands. Reviewers enforce this at code-review time; CI enforces at build time; the constitution is the canonical reference.
+
+---
 
 ## Appendix A: Permission Matrix (Compact)
 

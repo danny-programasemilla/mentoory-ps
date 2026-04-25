@@ -24,7 +24,7 @@ public class AuthorizationTests
         var page = await _fixture.CreatePageAsync();
         try
         {
-            await LoginAsync(page, "entrepreneur1@test.mentoory.com", "Test123!@#");
+            await LoginHelper.LoginAsync(page, "entrepreneur1@test.mentoory.com", "Test123!@#", _fixture.BaseUrl);
 
             // Attempt to navigate to the Administration area
             var response = await page.GotoAsync($"{_fixture.BaseUrl}/Administration/Dashboard");
@@ -51,7 +51,7 @@ public class AuthorizationTests
         var page = await _fixture.CreatePageAsync();
         try
         {
-            await LoginAsync(page, "incadmin1@test.mentoory.com", "Test123!@#");
+            await LoginHelper.LoginAsync(page, "incadmin1@test.mentoory.com", "Test123!@#", _fixture.BaseUrl);
 
             // Attempt to navigate to the Platform-level Incubators page (GlobalAdmin only)
             var response = await page.GotoAsync($"{_fixture.BaseUrl}/Platform/Incubators");
@@ -77,7 +77,7 @@ public class AuthorizationTests
         var page = await _fixture.CreatePageAsync();
         try
         {
-            await LoginAsync(page, "admin@mentoory.com", "123abc987");
+            await LoginHelper.LoginAsync(page, "admin@mentoory.com", "123abc987", _fixture.BaseUrl);
 
             // Platform area
             var platformResponse = await page.GotoAsync($"{_fixture.BaseUrl}/Platform/Incubators");
@@ -102,7 +102,7 @@ public class AuthorizationTests
         var page = await _fixture.CreatePageAsync();
         try
         {
-            await LoginAsync(page, "sponsor1@test.mentoory.com", "Test123!@#");
+            await LoginHelper.LoginAsync(page, "sponsor1@test.mentoory.com", "Test123!@#", _fixture.BaseUrl);
 
             var response = await page.GotoAsync($"{_fixture.BaseUrl}/Coordination/Diagnostics");
 
@@ -118,45 +118,6 @@ public class AuthorizationTests
         {
             await _fixture.TakeScreenshotOnFailureAsync(page, nameof(Sponsor_ShouldNotAccess_CoordinationArea));
             await page.Context.DisposeAsync();
-        }
-    }
-
-    private async Task LoginAsync(IPage page, string email, string password)
-    {
-        await page.GotoAsync($"{_fixture.BaseUrl}/Access/Login");
-        await page.FillAsync("input[name='Email']", email);
-        await page.FillAsync("input[name='Password']", password);
-        await page.ClickAsync("button[type='submit']");
-        await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-
-        // GlobalAdmin sees context selection with incubator choices; pick the first one
-        if (page.Url.Contains("/Context/Select"))
-        {
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-            var roleDropdown = page.Locator("[data-mode='page'] [data-cs='role']");
-            await page.WaitForFunctionAsync(
-                "sel => sel.options.length > 1",
-                await roleDropdown.ElementHandleAsync(),
-                new() { Timeout = 10000 });
-            if (await roleDropdown.IsEnabledAsync())
-            {
-                await roleDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
-            }
-
-            var incubatorDropdown = page.Locator("[data-mode='page'] [data-cs='incubator']");
-            await page.WaitForFunctionAsync(
-                "sel => sel.options.length > 1",
-                await incubatorDropdown.ElementHandleAsync(),
-                new() { Timeout = 10000 });
-            if (await incubatorDropdown.IsEnabledAsync())
-            {
-                await incubatorDropdown.SelectOptionAsync(new SelectOptionValue { Index = 1 });
-            }
-
-            var confirmBtn = page.Locator("[data-mode='page'] [data-cs='confirm']");
-            await Assertions.Expect(confirmBtn).ToBeEnabledAsync(new() { Timeout = 15000 });
-            await confirmBtn.ClickAsync();
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         }
     }
 }

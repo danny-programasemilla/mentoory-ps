@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Mentoory.Shared.Application.Interfaces;
 using Mentoory.Shared.Infrastructure.Services;
 
@@ -14,13 +15,19 @@ public class TenantContextMiddleware
 
     public async Task InvokeAsync(HttpContext context, ITenantContext tenantContext)
     {
-        if (context.User.Identity?.IsAuthenticated == true)
+        if (context.User.Identity?.IsAuthenticated == true
+            && tenantContext is TenantContextService tenantService)
         {
             var incubatorId = context.User.GetActiveIncubatorId();
-            if (incubatorId > 0 && tenantContext is TenantContextService tenantService)
+            if (incubatorId > 0)
             {
                 tenantService.CurrentIncubatorId = incubatorId;
             }
+
+            tenantService.UserId = context.User.GetUserId();
+            tenantService.UserEmail = context.User.FindFirstValue(ClaimTypes.Email);
+            tenantService.ProjectId = context.User.GetActiveProjectId();
+            tenantService.Role = context.User.GetActiveRole();
         }
 
         await _next(context);

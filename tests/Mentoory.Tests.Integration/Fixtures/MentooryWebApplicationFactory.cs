@@ -140,7 +140,7 @@ public class MentooryWebApplicationFactory : WebApplicationFactory<Program>, IAs
         connection.Open();
         _respawner = Respawner.CreateAsync(connection, new RespawnerOptions
         {
-            SchemasToInclude = ["access", "tenant", "diagnostic", "example", "subscription"],
+            SchemasToInclude = ["access", "tenant", "diagnostic", "example", "subscription", "audit"],
             DbAdapter = DbAdapter.SqlServer,
         }).GetAwaiter().GetResult();
     }

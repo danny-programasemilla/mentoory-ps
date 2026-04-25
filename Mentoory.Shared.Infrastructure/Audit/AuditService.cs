@@ -7,10 +7,21 @@ namespace Mentoory.Shared.Infrastructure.Audit;
 
 /// <summary>
 /// Writes audit log entries directly to the [audit].[AuditLog] table via ADO.NET
-/// to avoid circular DbContext dependencies.
+/// to avoid circular DbContext dependencies. Best-effort: failures are logged, not thrown.
 /// </summary>
 public class AuditService : IAuditService
 {
+    private const string InsertSql = """
+        INSERT INTO [audit].[AuditLog]
+            ([EventType], [UserId], [IncubatorId], [ProjectId], [EntityType], [EntityId],
+             [Action], [Details], [IpAddress], [OccurredAtUtc],
+             [CorrelationId], [Outcome], [ExceptionType], [UserEmail], [RoleContext])
+        VALUES
+            (@EventType, @UserId, @IncubatorId, @ProjectId, @EntityType, @EntityId,
+             @Action, @Details, @IpAddress, @OccurredAtUtc,
+             @CorrelationId, @Outcome, @ExceptionType, @UserEmail, @RoleContext)
+        """;
+
     private readonly string _connectionString;
     private readonly ILogger<AuditService> _logger;
 
@@ -29,18 +40,11 @@ public class AuditService : IAuditService
     /// <inheritdoc />
     public async Task LogAsync(AuditEntry entry, CancellationToken cancellationToken = default)
     {
-        const string sql = """
-            INSERT INTO [audit].[AuditLog]
-                ([EventType], [UserId], [IncubatorId], [ProjectId], [EntityType], [EntityId], [Action], [Details], [IpAddress], [OccurredAtUtc])
-            VALUES
-                (@EventType, @UserId, @IncubatorId, @ProjectId, @EntityType, @EntityId, @Action, @Details, @IpAddress, @OccurredAtUtc)
-            """;
-
         try
         {
             await using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync(cancellationToken);
-            await using var command = new SqlCommand(sql, connection);
+            await using var command = new SqlCommand(InsertSql, connection);
             command.Parameters.AddWithValue("@EventType", entry.EventType);
             command.Parameters.AddWithValue("@UserId", (object?)entry.UserId ?? DBNull.Value);
             command.Parameters.AddWithValue("@IncubatorId", (object?)entry.IncubatorId ?? DBNull.Value);
@@ -51,6 +55,11 @@ public class AuditService : IAuditService
             command.Parameters.AddWithValue("@Details", (object?)entry.Details ?? DBNull.Value);
             command.Parameters.AddWithValue("@IpAddress", (object?)entry.IpAddress ?? DBNull.Value);
             command.Parameters.AddWithValue("@OccurredAtUtc", entry.OccurredAtUtc);
+            command.Parameters.AddWithValue("@CorrelationId", (object?)entry.CorrelationId ?? DBNull.Value);
+            command.Parameters.AddWithValue("@Outcome", entry.Outcome);
+            command.Parameters.AddWithValue("@ExceptionType", (object?)entry.ExceptionType ?? DBNull.Value);
+            command.Parameters.AddWithValue("@UserEmail", (object?)entry.UserEmail ?? DBNull.Value);
+            command.Parameters.AddWithValue("@RoleContext", (object?)entry.RoleContext ?? DBNull.Value);
             await command.ExecuteNonQueryAsync(cancellationToken);
         }
         catch (Exception ex)

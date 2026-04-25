@@ -91,6 +91,10 @@ Feature artifacts live in `specs/{###-feature-name}/`. See [`.specify/templates/
 - N/A for the tool. Integration tests use the existing Testcontainers SQL Server fixture; no new tables, no new seed data. (018-access-security-delivery-quality-gate)
 - C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, MediatR 14.1, FluentValidation 12.1, Riok.Mapperly 4.x, EF Core 10.x, Tabler Admin Template (Bootstrap 5), DataTables 2.3.4, jQuery, Tabler Icons Webfont (016-project-lifecycle-finish)
 - SQL Server with SSDT/DACPAC schema (`Mentoory.Db`). Existing tables `tenant.Projects` and `tenant.ProjectStages` are reused. One additive schema change: add `RowVersion` optimistic-concurrency column to `tenant.Projects`. (016-project-lifecycle-finish)
+- C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, MediatR 14.1, FluentValidation 12.1, Mapperly 4.x, EF Core 10.x, System.Text.Json (BCL), Microsoft.Data.SqlClient, Tabler v1.4.0 + DataTables 2.3.4 + jQuery (016-audit-pipeline)
+- SQL Server via SSDT/DACPAC — `[audit].[AuditLog]` extended with CorrelationId, Outcome, ExceptionType, UserEmail, RoleContext + `IX_AuditLog_CorrelationId` filtered index (016-audit-pipeline)
+- C# / .NET 10.0 (SDK 10.0.0) + Microsoft.Playwright (already referenced by `Mentoory.Tests.E2E`), xUnit, FluentAssertions, Microsoft.AspNetCore.Mvc.Testing, existing `PlaywrightFixture` + Testcontainers (MsSql) (017-audit-e2e)
+- Read-only access to `[audit].[AuditLog]` via the existing admin viewer endpoints; no schema changes, no writes outside the feature 016 pipeline (017-audit-e2e)
 
 ## Code Review Standards
 After completing any implementation, review the code for:
@@ -110,4 +114,6 @@ Run /simplify before presenting code to the user.
 - 016-registration-access-hardening: Closed the public-registration enumeration oracle (`RegisterUserHandler` now always returns `Success()` and logs the real outcome); split admin enrollment into a dedicated `AdminEnrollUserCommand` that keeps field-attributed duplicate errors; extracted a shared `IUserProvisioningService`, `MustBeStrongPassword()` and `MustNotContainIdentifyingData()` FluentValidation extensions under `Mentoory.Access.Application/Validation/`.
 - 016-project-lifecycle-finish/e2e: Added Microsoft.Playwright E2E coverage for the coordinator UI — fixtures + page objects via PlaywrightFixture's WebApplicationFactory.Services, chunked multi-session execution protocol at specs/016-project-lifecycle-finish/e2e/
 - 016-project-lifecycle-finish: Added C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, MediatR 14.1, FluentValidation 12.1, Riok.Mapperly 4.x, EF Core 10.x, Tabler Admin Template (Bootstrap 5), DataTables 2.3.4, jQuery, Tabler Icons Webfont
+- 017-audit-e2e: Added C# / .NET 10.0 (SDK 10.0.0) + Microsoft.Playwright (already referenced by `Mentoory.Tests.E2E`), xUnit, FluentAssertions, Microsoft.AspNetCore.Mvc.Testing, existing `PlaywrightFixture` + Testcontainers (MsSql)
+- 016-audit-pipeline: Added C# / .NET 10.0 (SDK 10.0.0) + ASP.NET Core MVC, MediatR 14.1, FluentValidation 12.1, Mapperly 4.x, EF Core 10.x, `System.Text.Json` (BCL), `Microsoft.Data.SqlClient` (already in use by `AuditService`), Tabler v1.4.0 + DataTables 2.3.4 + jQuery for the admin viewer (consistent with feature 013)
 - 013-table-filtering: Added C# / .NET 10.0 + JavaScript (vanilla, ES5-compatible) + DataTables 2.3.4, jQuery, Tabler v1.4.0 (Bootstrap 5), Tabler Icons Webfont
