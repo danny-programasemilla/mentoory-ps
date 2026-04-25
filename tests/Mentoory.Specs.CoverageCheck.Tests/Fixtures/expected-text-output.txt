@@ -1,0 +1,36 @@
+Mentoory.Specs.CoverageCheck v1.0.0
+Scanned: 1 spec files, 1 test assemblies, 1 test methods, 1 trait claims
+Elapsed: 0.123s
+
+== Unclaimed Identifiers (coverage violation) ==
+  [FR-100-99] specs/100-sample/spec.md:110
+    Note: no test carries [Trait("Spec","FR-100-99")]
+
+== Dangling Traits (coverage violation) ==
+  [Trait("Spec","FR-999")]
+    on Mentoory.Sample.Tests.SomeTestClass.DanglingTest
+    Note: no spec declares FR-999
+
+== Duplicate Identifiers (coverage violation) ==
+  FR-100-01 declared in:
+    specs/100-sample/spec.md
+    specs/199-other/spec.md
+
+== Missing Floor Categories (coverage violation) ==
+  specs/100-sample/spec.md — access-security: true
+    - form-state-preservation
+      No test carries [Trait("Floor","form-state-preservation")] referencing this feature's types.
+
+== Exclusions (audit only — not a violation) ==
+  [FR-100-50] specs/100-sample/spec.md:119
+    Justification: "covered exclusively by an external manual review process today"
+
+== Malformed Exclusions (parse violation) ==
+  specs/100-sample/spec.md:93
+    Reason: justification shorter than 20 characters (got 9)
+
+== Reflection Errors (reflection violation) ==
+  tests/Sample.Tests/bin/Debug/net10.0/Sample.Tests.dll
+    Reason: Could not resolve 'Some.Dependency' via configured PathAssemblyResolver
+
+RESULT: FAILED (exit code 1)

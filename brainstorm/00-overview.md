@@ -1,6 +1,6 @@
 # Brainstorm Overview
 
-Last updated: 2026-04-18 (revised after PR #10 code review)
+Last updated: 2026-04-19
 
 ## Sessions
 
@@ -16,6 +16,7 @@ Last updated: 2026-04-18 (revised after PR #10 code review)
 | 08 | 2026-04-18 | mentoring-plan | parked | - |
 | 09 | 2026-04-18 | mentoring-execution | parked | - |
 | 10 | 2026-04-18 | cross-cutting-hardening | parked | - |
+| 11 | 2026-04-19 | e2e-quality-gate | spec-created | 018 |
 
 ## Open Threads
 
@@ -55,6 +56,11 @@ Last updated: 2026-04-18 (revised after PR #10 code review)
 - Notification template engine — inline vs Razor vs Scriban (from #10)
 - Audit pipeline mechanism — attribute-based vs explicit calls (from #10; v1 payload scope is decided)
 - Cross-cutting ship order: Subscription first vs Audit first (from #10)
+- `Coverage: N/A` escape hatch — require reviewer approval per occurrence, or is inline justification sufficient? (from #11, OQ-001)
+- Coverage tool project path — `tools/`, `build/`, or `specs/tooling/`? (from #11, OQ-002)
+- 50-probe sweep count — configurable for nightly deep-run? (from #11, OQ-003)
+- Floor-category enforcement — opt-in via `access-security: true` vs heuristic-detected? (from #11)
+- Retroactive trait retrofit for features 001–015 — organic migration expected (from #11)
 
 ## Decisions Ratified During Review
 

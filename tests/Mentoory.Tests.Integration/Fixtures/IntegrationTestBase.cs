@@ -1,4 +1,7 @@
+using System.Text.RegularExpressions;
 using MediatR;
+using Mentoory.Access.Application.Commands.AdminEnrollUser;
+using Mentoory.Access.Application.Commands.AssignRole;
 using Mentoory.Access.Application.Commands.LoginUser;
 using Mentoory.Access.Application.Commands.RegisterUser;
 using Mentoory.Access.Domain.Aggregates.SystemConfiguration;
@@ -6,6 +9,10 @@ using Mentoory.Access.Domain.Enums;
 using Mentoory.Access.Infrastructure.Persistence;
 using Mentoory.Shared.Application;
 using Mentoory.Shared.Application.Interfaces;
+using Mentoory.Shared.Domain.Constants;
+using Mentoory.Tenant.Domain.Aggregates.Incubator;
+using Mentoory.Tenant.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -103,6 +110,175 @@ public abstract class IntegrationTestBase : IAsyncLifetime
 
         var loginResult = await SendAsync(new LoginUserCommand(email, password, "127.0.0.1", "TestAgent"));
         return (loginResult, userId);
+    }
+
+    /// <summary>
+    /// Returns an HttpClient that has performed cookie-based login against `/Access/Login`
+    /// AND auto-applied a single IncubatorAdmin context via `/Context/Select`, so the
+    /// returned client's auth cookie carries the `ActiveRole` + `ActiveIncubatorId`
+    /// claims that downstream `[Authorize(Roles = "IncubatorAdmin,GlobalAdmin")]`
+    /// checks rely on. Self-seeds the admin user (Respawn truncates seed data
+    /// before every test, so the helper must reseed). AllowAutoRedirect=false so
+    /// the caller can assert on the 302 directly.
+    /// </summary>
+    protected async Task<HttpClient> CreateAuthenticatedAdminClientAsync(
+        string email = "auto-admin@test.mentoory.com",
+        string password = "AutoAdminTest123!@#")
+    {
+        await EnsureSeedAdminAsync(email, password);
+
+        // BaseAddress = https://localhost so the CookieContainer accepts the Secure auth
+        // cookie that ASP.NET Core Identity emits — over plain http the cookie would
+        // be silently dropped from subsequent requests, breaking auth.
+        var client = Factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false,
+            BaseAddress = new Uri("https://localhost"),
+        });
+
+        var loginPage = await client.GetAsync("/Access/Login");
+        loginPage.EnsureSuccessStatusCode();
+        var loginPageHtml = await loginPage.Content.ReadAsStringAsync();
+        var antiforgeryToken = AntiforgeryHelper.ExtractToken(loginPageHtml);
+
+        var loginForm = new FormUrlEncodedContent(new[]
+        {
+            new KeyValuePair<string, string>("__RequestVerificationToken", antiforgeryToken),
+            new KeyValuePair<string, string>("Email", email),
+            new KeyValuePair<string, string>("Password", password),
+        });
+
+        var loginResponse = await client.PostAsync("/Access/Login", loginForm);
+
+        if (loginResponse.StatusCode != System.Net.HttpStatusCode.Redirect &&
+            loginResponse.StatusCode != System.Net.HttpStatusCode.Found)
+        {
+            var body = await loginResponse.Content.ReadAsStringAsync();
+            throw new InvalidOperationException(
+                $"Admin login failed for '{email}' (expected 302; got {(int)loginResponse.StatusCode}). " +
+                $"First 300 chars of response: {body[..Math.Min(300, body.Length)]}");
+        }
+
+        // ContextController.Select auto-applies the (single) role assignment
+        // and updates the auth cookie with the ActiveRole + ActiveIncubatorId
+        // claims. Without this hop, [Authorize(Roles=...)] checks fail.
+        var selectLocation = loginResponse.Headers.Location?.ToString() ?? "/Context/Select";
+        var selectResponse = await client.GetAsync(selectLocation);
+        if (selectResponse.StatusCode != System.Net.HttpStatusCode.Redirect &&
+            selectResponse.StatusCode != System.Net.HttpStatusCode.Found &&
+            selectResponse.StatusCode != System.Net.HttpStatusCode.OK)
+        {
+            var body = await selectResponse.Content.ReadAsStringAsync();
+            throw new InvalidOperationException(
+                $"Context selection failed for '{email}' (status {(int)selectResponse.StatusCode}). " +
+                $"First 300 chars of response: {body[..Math.Min(300, body.Length)]}");
+        }
+
+        return client;
+    }
+
+    private async Task EnsureSeedAdminAsync(string email, string password)
+    {
+        var normalizedEmail = email.Trim().ToUpperInvariant();
+        long userId;
+
+        using (var scope = CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<AccessDbContext>();
+            var existing = await dbContext.Users
+                .Where(u => u.Email.NormalizedValue == normalizedEmail)
+                .Select(u => new { u.Id, IsActive = u.EmailVerifiedAtUtc != null })
+                .FirstOrDefaultAsync();
+
+            if (existing is not null && existing.IsActive)
+            {
+                var hasActiveRole = await dbContext.RoleAssignments
+                    .AnyAsync(r => r.UserId == existing.Id
+                                   && r.Role == Roles.IncubatorAdmin
+                                   && r.IsActive);
+                if (hasActiveRole)
+                {
+                    return;
+                }
+
+                userId = existing.Id;
+            }
+            else
+            {
+                userId = 0;
+            }
+        }
+
+        if (userId == 0)
+        {
+            // Use AdminEnrollUserCommand rather than RegisterUserCommand: the public
+            // path masks every outcome to Success() (016 enumeration-oracle hardening),
+            // so a failing registration is invisible. The admin path returns real
+            // errors so a misconfigured fixture surfaces immediately.
+            var enrollResult = await SendAsync(new AdminEnrollUserCommand(
+                email,
+                "CO",
+                $"AUTO-{Guid.NewGuid():N}",
+                "Auto",
+                "Admin",
+                password));
+            if (enrollResult.IsFailure)
+            {
+                var detail = enrollResult.ErrorMessages is null
+                    ? "(no error details)"
+                    : string.Join(",", enrollResult.ErrorMessages.Select(e => $"{e.Context}:{e.Message}"));
+                throw new InvalidOperationException($"AdminEnrollUserCommand failed for seed admin '{email}': {detail}");
+            }
+
+            using var scope = CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<AccessDbContext>();
+            var user = await dbContext.Users.FirstAsync(u => u.Email.NormalizedValue == normalizedEmail);
+            if (user.EmailVerifiedAtUtc is null)
+            {
+                user.Activate(DateTime.UtcNow);
+                await dbContext.SaveChangesAsync();
+            }
+
+            userId = user.Id;
+        }
+
+        long incubatorId;
+        using (var scope = CreateScope())
+        {
+            var tenantDb = scope.ServiceProvider.GetRequiredService<TenantDbContext>();
+            var existing = await tenantDb.Incubators
+                .Select(i => new { i.Id })
+                .FirstOrDefaultAsync();
+            if (existing is not null)
+            {
+                incubatorId = existing.Id;
+            }
+            else
+            {
+                // Insert directly via DbContext rather than dispatching CreateIncubatorCommand.
+                // The mediator path goes through TransactionBehavior, which commits in a fresh
+                // scope's DbContext — but the entity instance lives on that scope's tracker,
+                // and the new scope we'd use to read back the generated identity column may
+                // not see the row before the commit fully drains. Direct insert here is
+                // self-contained: one scope, one Add, one SaveChangesAsync, identity populated.
+                var inc = Incubator.Create(
+                    "Test Auto Incubator",
+                    "Auto-seeded for integration tests",
+                    DateTime.UtcNow);
+                tenantDb.Incubators.Add(inc);
+                await tenantDb.SaveChangesAsync();
+                incubatorId = inc.Id;
+            }
+        }
+
+        var roleResult = await SendAsync(new AssignRoleCommand(userId, incubatorId, null, Roles.IncubatorAdmin));
+        if (roleResult.IsFailure)
+        {
+            var detail = roleResult.ErrorMessages is null
+                ? "(no error details)"
+                : string.Join(",", roleResult.ErrorMessages.Select(e => $"{e.Context}:{e.Message}"));
+            throw new InvalidOperationException($"AssignRoleCommand failed: {detail}");
+        }
     }
 
     private async Task SeedSystemConfigurationAsync()

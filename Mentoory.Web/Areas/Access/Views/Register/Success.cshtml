@@ -14,12 +14,17 @@
                 </div>
                 <h3>Registro Exitoso</h3>
                 <p class="text-secondary">
-                    Revise su correo electrónico para verificar su cuenta.
-                    Le hemos enviado un enlace de verificación. Por favor, haga clic en el enlace para activar su cuenta.
+                    Revise su correo electrónico para confirmar su cuenta.
                 </p>
-                <div class="mt-4">
+                <p class="text-secondary mt-3">
+                    ¿Ya tiene una cuenta? Use la opción de recuperar contraseña.
+                </p>
+                <div class="mt-4 d-flex justify-content-center gap-2">
                     <a asp-area="Access" asp-controller="Login" asp-action="Index" class="btn btn-primary">
                         Ir a Iniciar Sesión
+                    </a>
+                    <a asp-area="Access" asp-controller="ForgotPassword" asp-action="Index" class="btn btn-outline-secondary">
+                        Recuperar Contraseña
                     </a>
                 </div>
             </div>

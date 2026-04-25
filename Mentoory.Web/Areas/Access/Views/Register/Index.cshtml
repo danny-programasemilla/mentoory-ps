@@ -1,6 +1,7 @@
 @model Mentoory.Web.Areas.Access.Models.RegisterViewModel
 @{
     ViewData["Title"] = "Crear Cuenta";
+    var genericFailure = ViewData["GenericRegistrationError"] is true;
 }
 
 <div class="text-center mb-4">
@@ -9,24 +10,26 @@
 </div>
 
 <form asp-action="Index" method="post">
-    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    @if (genericFailure)
+    {
+        <div class="alert alert-danger mb-3" role="alert">
+            No fue posible completar el registro. Revise los datos e intente nuevamente.
+        </div>
+    }
 
     <div class="mb-3">
         <label asp-for="Email" class="form-label"></label>
         <input asp-for="Email" class="form-control" autocomplete="email" autofocus />
-        <span asp-validation-for="Email" class="text-danger"></span>
     </div>
 
     <div class="row">
         <div class="col-md-6 mb-3">
             <label asp-for="FirstName" class="form-label"></label>
             <input asp-for="FirstName" class="form-control" autocomplete="given-name" />
-            <span asp-validation-for="FirstName" class="text-danger"></span>
         </div>
         <div class="col-md-6 mb-3">
             <label asp-for="LastName" class="form-label"></label>
             <input asp-for="LastName" class="form-control" autocomplete="family-name" />
-            <span asp-validation-for="LastName" class="text-danger"></span>
         </div>
     </div>
 
@@ -46,25 +49,21 @@
                     </option>
                 }
             </select>
-            <span asp-validation-for="Country" class="text-danger"></span>
         </div>
         <div class="col-md-6 mb-3">
             <label asp-for="NationalId" class="form-label" id="nationalIdLabel"></label>
             <input asp-for="NationalId" class="form-control" id="nationalIdInput" />
-            <span asp-validation-for="NationalId" class="text-danger"></span>
         </div>
     </div>
 
     <div class="mb-3">
         <label asp-for="Password" class="form-label"></label>
         <input asp-for="Password" class="form-control" autocomplete="new-password" />
-        <span asp-validation-for="Password" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
         <label asp-for="ConfirmPassword" class="form-label"></label>
         <input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" />
-        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
     </div>
 
     <div class="d-grid mb-3">

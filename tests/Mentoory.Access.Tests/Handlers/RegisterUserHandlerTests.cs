@@ -1,13 +1,7 @@
 using FluentAssertions;
 using Mentoory.Access.Application.Commands.RegisterUser;
-using Mentoory.Access.Application.Configuration;
-using Mentoory.Access.Domain.Aggregates.User;
-using Mentoory.Access.Domain.Repositories;
-using Mentoory.Access.Domain.Services;
-using Mentoory.Shared.Application;
-using Mentoory.Shared.Application.TimeProvider;
-using Mentoory.Shared.Domain.SeedWork;
-using Microsoft.Extensions.Logging.Abstractions;
+using Mentoory.Access.Application.Services;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -15,83 +9,106 @@ namespace Mentoory.Access.Tests.Handlers;
 
 public class RegisterUserHandlerTests
 {
-    private static readonly DateTime UtcNow = new(2026, 1, 15, 10, 0, 0, DateTimeKind.Utc);
-
-    private readonly Mock<IUserRepository> _userRepo = new();
-    private readonly Mock<IPasswordHasher> _passwordHasher = new();
-    private readonly Mock<ITimeProvider> _timeProvider = new();
-    private readonly Mock<ISystemConfigurationReader> _configReader = new();
-    private readonly Mock<IUnitOfWork> _userUnitOfWork = new();
+    private readonly Mock<IUserProvisioningService> _provisioning = new();
+    private readonly Mock<ILogger<RegisterUserHandler>> _logger = new();
     private readonly RegisterUserHandler _handler;
 
     public RegisterUserHandlerTests()
     {
-        _timeProvider.Setup(t => t.UtcNow).Returns(UtcNow);
-        _passwordHasher.Setup(h => h.HashPassword(It.IsAny<string>())).Returns("hashed-pw");
-        _userRepo.Setup(r => r.UnitOfWork).Returns(_userUnitOfWork.Object);
-        _userUnitOfWork.Setup(u => u.SaveEntitiesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
-        _configReader.Setup(c => c.GetIntAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(24);
-
-        _handler = new RegisterUserHandler(
-            _userRepo.Object,
-            _passwordHasher.Object,
-            _timeProvider.Object,
-            _configReader.Object,
-            NullLogger<RegisterUserHandler>.Instance);
+        _logger.Setup(l => l.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
+        _handler = new RegisterUserHandler(_provisioning.Object, _logger.Object);
     }
 
-    [Fact]
-    public async Task Handle_WithValidData_ReturnsSuccess()
+    [Theory]
+    [InlineData(UserProvisioningOutcome.Success)]
+    [InlineData(UserProvisioningOutcome.DuplicateEmail)]
+    [InlineData(UserProvisioningOutcome.DuplicateNationalId)]
+    [Trait("Spec", "FR-016-01")]
+    [Trait("Spec", "FR-016-03")]
+    [Trait("Spec", "FR-016-04")]
+    [Trait("Floor", "response-indistinguishability")]
+    public async Task Handle_AllOutcomes_ReturnSuccess_ToCloseEnumerationOracle(UserProvisioningOutcome outcome)
     {
-        _userRepo.Setup(r => r.ExistsByEmailAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
-        _userRepo.Setup(r => r.ExistsByNationalIdentityAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
-        _userRepo.Setup(r => r.Add(It.IsAny<User>())).Returns((User u) => u);
+        _provisioning.Setup(p => p.ProvisionAsync(It.IsAny<UserProvisioningRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(outcome);
 
-        var command = new RegisterUserCommand("test@test.com", "CO", "123456", "Juan", "Pérez", "SecureP@ss123!");
-        var result = await _handler.Handle(command, CancellationToken.None);
+        var result = await _handler.Handle(Command(), CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        _userRepo.Verify(r => r.Add(It.IsAny<User>()), Times.Once);
-        _userUnitOfWork.Verify(u => u.SaveEntitiesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _provisioning.Verify(p => p.ProvisionAsync(It.IsAny<UserProvisioningRequest>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(UserProvisioningOutcome.Success)]
+    [InlineData(UserProvisioningOutcome.DuplicateEmail)]
+    [InlineData(UserProvisioningOutcome.DuplicateNationalId)]
+    [Trait("Spec", "FR-016-06")]
+    [Trait("Floor", "outcome-audit-logging")]
+    public async Task Handle_LogsOutcome_WithCorrelationAndClientIp(UserProvisioningOutcome outcome)
+    {
+        _provisioning.Setup(p => p.ProvisionAsync(It.IsAny<UserProvisioningRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(outcome);
+
+        await _handler.Handle(Command("corr-42", "203.0.113.9"), CancellationToken.None);
+
+        _logger.Verify(
+            l => l.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((state, _) =>
+                    state.ToString()!.Contains($"Outcome: {outcome}")
+                    && state.ToString()!.Contains("CorrelationId: corr-42")
+                    && state.ToString()!.Contains("ClientIp: 203.0.113.9")
+                    && state.ToString()!.Contains("Email: test@example.com")),
+                It.IsAny<Exception?>(),
+                (Func<It.IsAnyType, Exception?, string>)It.IsAny<object>()),
+            Times.Once);
     }
 
     [Fact]
-    public async Task Handle_WithDuplicateEmail_ReturnsFieldSpecificError()
+    [Trait("Spec", "FR-016-05")]
+    public async Task Handle_ForwardsCommandFields_ToProvisioningRequest()
     {
-        _userRepo.Setup(r => r.ExistsByNationalIdentityAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
-        _userRepo.Setup(r => r.ExistsByEmailAsync("TEST@TEST.COM", It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        UserProvisioningRequest? captured = null;
+        _provisioning
+            .Setup(p => p.ProvisionAsync(It.IsAny<UserProvisioningRequest>(), It.IsAny<CancellationToken>()))
+            .Callback<UserProvisioningRequest, CancellationToken>((r, _) => captured = r)
+            .ReturnsAsync(UserProvisioningOutcome.Success);
 
-        var command = new RegisterUserCommand("test@test.com", "CO", "123456", "Juan", "Pérez", "SecureP@ss123!");
-        var result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(Command(), CancellationToken.None);
 
-        result.IsFailure.Should().BeTrue();
-        result.ErrorCode.Should().Be(ResultErrorCodes.GenericError);
-        result.ErrorMessages.Should().Contain(e => e.Context == "Email");
-        _userRepo.Verify(r => r.Add(It.IsAny<User>()), Times.Never);
+        captured.Should().NotBeNull();
+        captured!.Email.Should().Be("test@example.com");
+        captured.Country.Should().Be("CO");
+        captured.NationalId.Should().Be("123456");
+        captured.FirstName.Should().Be("Juan");
+        captured.LastName.Should().Be("Pérez");
+        captured.Password.Should().Be("SecureP@ss123!");
     }
 
     [Fact]
-    public async Task Handle_WithDuplicateNationalId_ReturnsFieldSpecificError()
+    [Trait("Spec", "FR-016-06")]
+    [Trait("Floor", "outcome-audit-logging")]
+    public async Task Handle_NullCorrelationAndIp_AreLoggedAsEmptyStrings()
     {
-        _userRepo.Setup(r => r.ExistsByNationalIdentityAsync("CO", "123456", It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        _provisioning.Setup(p => p.ProvisionAsync(It.IsAny<UserProvisioningRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(UserProvisioningOutcome.Success);
 
-        var command = new RegisterUserCommand("test@test.com", "CO", "123456", "Juan", "Pérez", "SecureP@ss123!");
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        result.IsFailure.Should().BeTrue();
-        result.ErrorMessages.Should().Contain(e => e.Context == "NationalId");
-    }
-
-    [Fact]
-    public async Task Handle_HashesPassword_BeforeCreatingUser()
-    {
-        _userRepo.Setup(r => r.ExistsByEmailAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
-        _userRepo.Setup(r => r.ExistsByNationalIdentityAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
-        _userRepo.Setup(r => r.Add(It.IsAny<User>())).Returns((User u) => u);
-
-        var command = new RegisterUserCommand("test@test.com", "CO", "123456", "Juan", "Pérez", "SecureP@ss123!");
+        var command = Command(correlationId: null, clientIp: null);
         await _handler.Handle(command, CancellationToken.None);
 
-        _passwordHasher.Verify(h => h.HashPassword("SecureP@ss123!"), Times.Once);
+        _logger.Verify(
+            l => l.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((state, _) =>
+                    state.ToString()!.Contains("CorrelationId: ")
+                    && state.ToString()!.Contains("ClientIp: ")),
+                It.IsAny<Exception?>(),
+                (Func<It.IsAnyType, Exception?, string>)It.IsAny<object>()),
+            Times.Once);
     }
+
+    private static RegisterUserCommand Command(string? correlationId = "trace-1", string? clientIp = "127.0.0.1") =>
+        new("test@example.com", "CO", "123456", "Juan", "Pérez", "SecureP@ss123!", correlationId, clientIp);
 }

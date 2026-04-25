@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <RootNamespace>Mentoory.Specs.CoverageCheck</RootNamespace>
+        <AssemblyName>Mentoory.Specs.CoverageCheck</AssemblyName>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="System.CommandLine" />
+        <PackageReference Include="System.Reflection.MetadataLoadContext" />
+        <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="build/CoverageCheck.targets" Pack="false" />
+    </ItemGroup>
+</Project>

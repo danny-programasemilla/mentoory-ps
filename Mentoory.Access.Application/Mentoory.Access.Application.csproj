@@ -8,4 +8,7 @@
         <ProjectReference Include="..\Mentoory.Access.Domain\Mentoory.Access.Domain.csproj"/>
         <ProjectReference Include="..\Mentoory.Shared.Application\Mentoory.Shared.Application.csproj"/>
     </ItemGroup>
+    <ItemGroup>
+        <InternalsVisibleTo Include="Mentoory.Access.Tests"/>
+    </ItemGroup>
 </Project>

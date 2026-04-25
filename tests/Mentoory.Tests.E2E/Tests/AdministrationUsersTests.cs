@@ -1,5 +1,6 @@
 using System.Text.Json;
 using FluentAssertions;
+using Mentoory.Access.Application.Validation;
 using Mentoory.Tests.E2E.Infrastructure;
 using Microsoft.Playwright;
 using Xunit;
@@ -94,6 +95,99 @@ public class AdministrationUsersTests
             await _fixture.TakeScreenshotOnFailureAsync(page, nameof(IncubatorAdmin_UsersDataTableAjax_ReturnsUserDetails));
             await page.Context.DisposeAsync();
         }
+    }
+
+    [Fact]
+    [Trait("Spec", "FR-016-07")]
+    [Trait("Spec", "FR-016-08")]
+    [Trait("Sc", "SC-016-03")]
+    [Trait("Floor", "public-vs-admin-attribution")]
+    public async Task AdminEnroll_DuplicateEmail_ShowsFieldAttributedError()
+    {
+        var page = await _fixture.CreatePageAsync();
+        try
+        {
+            await LoginAndSelectContextAsync(page, "incadmin1@test.mentoory.com", "Test123!@#");
+
+            var uniqueId = Guid.NewGuid().ToString("N")[..8];
+            var email = $"e2e-admindup-{uniqueId}@test.mentoory.com";
+            var nationalId1 = $"5-{uniqueId[..4]}-{uniqueId[4..8]}";
+            var nationalId2 = $"6-{uniqueId[..4]}-{uniqueId[4..8]}";
+
+            await EnrollUserAsync(page, email, nationalId1, "SecureP@ss12345!");
+            page.Url.Should().Contain("/Administration/Users", "first enrollment should redirect to the users list on success");
+
+            await EnrollUserAsync(page, email, nationalId2, "SecureP@ss12345!");
+
+            page.Url.Should().Contain("/Administration/Users/Enroll",
+                "duplicate admin enrollment must re-render the form, not redirect");
+
+            var pageContent = await page.ContentAsync();
+            pageContent.Should().Contain("Ya existe una cuenta con este correo electrónico",
+                "admin path must surface attributed duplicate-email errors to help resolve conflicts");
+        }
+        finally
+        {
+            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(AdminEnroll_DuplicateEmail_ShowsFieldAttributedError));
+            await page.Context.DisposeAsync();
+        }
+    }
+
+    [Fact]
+    [Trait("Spec", "FR-018-18")]
+    [Trait("Floor", "public-vs-admin-attribution")]
+    public async Task AdminEnroll_PasswordContainsIdentifyingData_ShowsAttributedError()
+    {
+        var page = await _fixture.CreatePageAsync();
+        try
+        {
+            await LoginAndSelectContextAsync(page, "incadmin1@test.mentoory.com", "Test123!@#");
+
+            var uniqueId = Guid.NewGuid().ToString("N");
+            var email = $"e2e-adminpwd-{uniqueId}@example.com";
+            var nationalId = $"NID-{uniqueId[..8]}";
+            // Password embeds the verbatim national ID to trip the shared
+            // MustNotContainIdentifyingData rule. The admin Enroll form has no
+            // input mask on NationalId (free-text input), so the value POSTs
+            // unchanged and `password.Contains(nationalId)` matches.
+            var password = $"AdminPwd{nationalId}Test!";
+
+            await EnrollUserAsync(page, email, nationalId, password, firstName: "Admin", lastName: "Pwd");
+
+            page.Url.Should().Contain("/Administration/Users/Enroll",
+                "an enrollment whose password contains identifying data must re-render the form, not redirect");
+
+            // The Razor `asp-validation-for="Password"` tag helper renders a span with
+            // `data-valmsg-for="Password"`. Locate the field-attributed error there
+            // (the inverse of the public path's masked banner).
+            var passwordError = page.Locator("[data-valmsg-for=\"Password\"]");
+            await Assertions.Expect(passwordError).ToHaveTextAsync(PasswordIdentifyingDataRule.Message);
+        }
+        finally
+        {
+            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(AdminEnroll_PasswordContainsIdentifyingData_ShowsAttributedError));
+            await page.Context.DisposeAsync();
+        }
+    }
+
+    private async Task EnrollUserAsync(IPage page, string email, string nationalId, string password, string firstName = "Admin", string lastName = "Enrolled")
+    {
+        await page.GotoAsync($"{_fixture.BaseUrl}/Administration/Users/Enroll");
+        await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+        await page.FillAsync("input[name='Email']", email);
+        await page.FillAsync("input[name='FirstName']", firstName);
+        await page.FillAsync("input[name='LastName']", lastName);
+        await page.FillAsync("input[name='Country']", "CO");
+        await page.FillAsync("input[name='NationalId']", nationalId);
+        await page.FillAsync("input[name='Password']", password);
+        await page.FillAsync("input[name='ConfirmPassword']", password);
+
+        // The shared layout has hidden submit buttons (e.g. logout form inside the
+        // user-menu dropdown), so a bare `button[type='submit']` resolves to multiple
+        // elements. Target the Enroll form's primary action by its visible label.
+        await page.ClickAsync("button[type='submit']:has-text('Inscribir Usuario')");
+        await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
     }
 
     private async Task LoginAndSelectContextAsync(IPage page, string email, string password)

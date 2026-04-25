@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Mentoory pre-push hook — runs Mentoory.Specs.CoverageCheck before any push
+# to catch spec/test drift before it leaves your machine.
+#
+# Enable once per clone:
+#     git config core.hooksPath .githooks
+#
+# Bypass for one-off pushes (use sparingly):
+#     git push --no-verify
+#
+# Authority: .specify/memory/access-security-constitution.md  Section 13
+
+set -e
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+TOOL_PROJECT="$REPO_ROOT/tools/Mentoory.Specs.CoverageCheck"
+
+if [ ! -d "$TOOL_PROJECT" ]; then
+    # Tool not present (likely a partial checkout). Skip silently.
+    exit 0
+fi
+
+echo "→ pre-push: running coverage gate (Mentoory.Specs.CoverageCheck)..."
+
+if dotnet build "$TOOL_PROJECT" --configuration Debug --nologo --verbosity quiet 2>&1 | tail -40; then
+    echo "✓ coverage gate clean"
+    exit 0
+else
+    echo
+    echo "✗ coverage gate failed."
+    echo "  Read the report above; fix unclaimed identifiers, dangling traits,"
+    echo "  missing floor categories, etc."
+    echo "  Full report: dotnet build $TOOL_PROJECT --configuration Debug"
+    echo "  Bypass:      git push --no-verify"
+    exit 1
+fi

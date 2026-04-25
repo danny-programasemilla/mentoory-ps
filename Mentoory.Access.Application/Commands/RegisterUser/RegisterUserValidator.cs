@@ -1,4 +1,5 @@
 using FluentValidation;
+using Mentoory.Access.Application.Validation;
 
 namespace Mentoory.Access.Application.Commands.RegisterUser;
 
@@ -32,11 +33,7 @@ public class RegisterUserValidator : AbstractValidator<RegisterUserCommand>
             .MaximumLength(100);
 
         RuleFor(x => x.Password)
-            .NotEmpty().WithMessage("La contraseña es requerida.")
-            .MinimumLength(12).WithMessage("La contraseña debe tener al menos 12 caracteres.")
-            .Matches("[A-Z]").WithMessage("La contraseña debe contener al menos una letra mayúscula.")
-            .Matches("[a-z]").WithMessage("La contraseña debe contener al menos una letra minúscula.")
-            .Matches("[0-9]").WithMessage("La contraseña debe contener al menos un dígito.")
-            .Matches("[^a-zA-Z0-9]").WithMessage("La contraseña debe contener al menos un carácter especial.");
+            .MustBeStrongPassword()
+            .MustNotContainIdentifyingData(x => x.Email, x => x.NationalId);
     }
 }
