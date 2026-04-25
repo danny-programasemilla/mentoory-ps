@@ -62,7 +62,7 @@ public class SchemaDriftTests
                 }
 
                 var clrType = GetEffectiveClrType(property);
-                var expectedSqlType = MapClrTypeToSqlType(clrType);
+                var expectedSqlType = MapPropertyToSqlType(property, clrType);
 
                 if (expectedSqlType is not null && !IsCompatible(expectedSqlType, dbColumn.DataType))
                 {
@@ -90,8 +90,19 @@ public class SchemaDriftTests
         return Nullable.GetUnderlyingType(providerType) ?? providerType;
     }
 
-    private static string? MapClrTypeToSqlType(Type clrType)
+    private static string? MapPropertyToSqlType(IProperty property, Type clrType)
     {
+        // SQL Server's ROWVERSION column (aliased as TIMESTAMP in INFORMATION_SCHEMA)
+        // maps to a byte[] EF property configured with IsRowVersion(): concurrency
+        // token + auto-generated on add or update. Matching only on "varbinary" would
+        // report a false mismatch because the column type surfaces as "timestamp".
+        if (clrType == typeof(byte[])
+            && property.IsConcurrencyToken
+            && property.ValueGenerated == ValueGenerated.OnAddOrUpdate)
+        {
+            return "timestamp";
+        }
+
         return clrType switch
         {
             _ when clrType == typeof(bool) => "bit",

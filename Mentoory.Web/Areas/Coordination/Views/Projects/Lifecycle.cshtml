@@ -1,0 +1,222 @@
+@model LifecycleProjectViewModel
+@{
+    ViewData["Title"] = $"Ciclo de Vida · {Model.Name}";
+}
+
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h2 class="mb-1">@Model.Name</h2>
+        <div class="text-muted">
+            <i class="ti ti-building me-1"></i>@Model.IncubatorName
+        </div>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="ti ti-arrow-left me-1"></i>Volver
+    </a>
+</div>
+
+@if (TempData[TempDataKeys.SuccessMessage] is string successMessage)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @successMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+}
+@if (TempData[TempDataKeys.ErrorMessage] is string errorMessage)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @errorMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+}
+@if (TempData[TempDataKeys.WarningMessage] is string warningMessage)
+{
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        @warningMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+}
+
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-center">
+            <div class="col-md-8">
+                <div class="text-muted small">Descripción</div>
+                <div>@(string.IsNullOrWhiteSpace(Model.Description) ? "Sin descripción" : Model.Description)</div>
+            </div>
+            <div class="col-md-2">
+                <div class="text-muted small">Etapa Actual</div>
+                <span class="badge bg-primary">@StageTypeDisplay.ToSpanish(Model.CurrentStageType)</span>
+            </div>
+            <div class="col-md-2">
+                <div class="text-muted small">Estado del Proyecto</div>
+                @if (Model.IsActive)
+                {
+                    <span class="badge bg-success">Activo</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary">Inactivo</span>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h3 class="card-title mb-0">Línea de Tiempo</h3>
+    </div>
+    <div class="card-body">
+        <ul class="steps steps-vertical" role="list">
+            @foreach (var stage in Model.Stages)
+            {
+                var stepClass = stage.State is StageState.Completed or StageState.InProgress
+                    ? "step-item active"
+                    : "step-item";
+                <li class="@stepClass">
+                    <div>
+                        <strong>@stage.DisplayName</strong>
+                        @if (stage.State == StageState.Completed)
+                        {
+                            <span class="badge bg-success ms-2">Completada</span>
+                        }
+                        else if (stage.State == StageState.InProgress)
+                        {
+                            <span class="badge bg-primary ms-2">En progreso</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary ms-2">Pendiente</span>
+                        }
+                    </div>
+                    <div class="text-muted small">
+                        @if (stage.StartedAtUtc.HasValue)
+                        {
+                            <span>Inicio: @stage.StartedAtUtc.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                        }
+                        @if (stage.CompletedAtUtc.HasValue)
+                        {
+                            <span> · Fin: @stage.CompletedAtUtc.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(stage.AdvancedByDisplay))
+                        {
+                            <div>Avanzada por: @stage.AdvancedByDisplay</div>
+                        }
+                    </div>
+                </li>
+            }
+        </ul>
+    </div>
+    <div class="card-footer">
+        @if (Model.CanAdvance)
+        {
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#advanceStageModal">
+                <i class="ti ti-arrow-big-right me-1"></i>Avanzar Etapa
+            </button>
+        }
+        else if (!string.IsNullOrWhiteSpace(Model.CannotAdvanceReason))
+        {
+            <span class="text-muted">@Model.CannotAdvanceReason</span>
+        }
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title mb-0">Acciones por Etapa</h3>
+    </div>
+    <div class="card-body">
+        <div class="row row-cards g-3">
+            @foreach (var action in Model.Actions)
+            {
+                var isAvailable = action.State == StageGatedActionState.Available;
+                var isLocked = action.State == StageGatedActionState.Locked;
+                var isPast = action.State == StageGatedActionState.Past;
+
+                var cardClass = isAvailable ? "card card-action border-primary"
+                    : isLocked ? "card card-action border-secondary opacity-50"
+                    : "card card-action border-success";
+                var iconClass = isAvailable ? "ti ti-circle-check text-primary"
+                    : isLocked ? "ti ti-lock text-secondary"
+                    : "ti ti-checks text-success";
+
+                <div class="col-sm-6 col-lg-4">
+                    <div class="@cardClass h-100"
+                         @(isLocked ? "aria-disabled=\"true\" tabindex=\"-1\"" : "")
+                         @(isLocked ? $"data-bs-toggle=\"tooltip\" data-bs-title=\"Disponible desde la etapa {action.GatingStageDisplayName}\"" : "")>
+                        <div class="card-body d-flex flex-column">
+                            <div class="mb-2">
+                                <i class="@iconClass" style="font-size: 1.5rem;"></i>
+                            </div>
+                            <div class="fw-bold">@action.DisplayName</div>
+                            <div class="text-muted small mb-3">
+                                @if (isAvailable)
+                                {
+                                    <text>Disponible ahora</text>
+                                }
+                                else if (isLocked)
+                                {
+                                    <text>Disponible desde la etapa @action.GatingStageDisplayName</text>
+                                }
+                                else
+                                {
+                                    <text>Etapa completada</text>
+                                }
+                            </div>
+                            <div class="mt-auto">
+                                @if (isAvailable)
+                                {
+                                    <a href="@action.LinkUrl" class="btn btn-primary btn-sm w-100">Abrir</a>
+                                }
+                                else if (isPast)
+                                {
+                                    <a href="@action.LinkUrl" class="btn btn-outline-secondary btn-sm w-100">Ver historial</a>
+                                }
+                                else
+                                {
+                                    <button type="button" class="btn btn-outline-secondary btn-sm w-100" disabled>
+                                        <i class="ti ti-lock me-1"></i>Bloqueada
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@if (Model.CanAdvance)
+{
+    <div class="modal modal-blur fade" id="advanceStageModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <form method="post" asp-action="AdvanceStage" asp-route-externalId="@Model.ExternalId">
+                @Html.AntiForgeryToken()
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Confirmar avance de etapa</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        @{
+                            var nextStageDisplay = Model.Stages
+                                .FirstOrDefault(s => (int)s.StageType > (int)Model.CurrentStageType)?.DisplayName ?? "siguiente etapa";
+                        }
+                        <p>¿Confirma avanzar de <strong>@StageTypeDisplay.ToSpanish(Model.CurrentStageType)</strong> a <strong>@nextStageDisplay</strong>?</p>
+                        <p class="text-muted small mb-0">Esta acción completará la etapa actual e iniciará la siguiente. No se puede deshacer.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Avanzar</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script src="~/js/coordination-lifecycle.js"></script>
+}

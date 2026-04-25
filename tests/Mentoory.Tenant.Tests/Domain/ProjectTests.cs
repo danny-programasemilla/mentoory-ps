@@ -38,6 +38,57 @@ public class ProjectTests
     }
 
     [Fact]
+    public void AdvanceStage_RecordsAuditOnCurrentAndNextStage()
+    {
+        var project = Project.Create(1, "Test", null, UtcNow);
+        var advancedAt = UtcNow.AddHours(2);
+
+        project.AdvanceStage(42, advancedAt);
+
+        var completedRegistration = project.Stages.Single(s => s.StageType == StageType.Registration);
+        completedRegistration.State.Should().Be(StageState.Completed);
+        completedRegistration.CompletedAtUtc.Should().Be(advancedAt);
+
+        var forms = project.Stages.Single(s => s.StageType == StageType.Forms);
+        forms.State.Should().Be(StageState.InProgress);
+        forms.StartedAtUtc.Should().Be(advancedAt);
+        forms.AdvancedByUserId.Should().Be(42);
+    }
+
+    [Fact]
+    public void AdvanceStage_AtFinalStage_StopsInClosureWithCompletedState()
+    {
+        var project = Project.Create(1, "Test", null, UtcNow);
+        for (var i = 0; i < 6; i++)
+        {
+            project.AdvanceStage(1, UtcNow.AddHours(i + 1));
+        }
+
+        project.CurrentStageType.Should().Be(StageType.Closure);
+        project.CurrentStageState.Should().Be(StageState.InProgress);
+
+        project.AdvanceStage(1, UtcNow.AddHours(10));
+
+        project.CurrentStageType.Should().Be(StageType.Closure);
+        project.CurrentStageState.Should().Be(StageState.Completed);
+    }
+
+    [Fact]
+    public void AdvanceStage_WhenStageNotInProgress_Throws()
+    {
+        var project = Project.Create(1, "Test", null, UtcNow);
+        for (var i = 0; i < 7; i++)
+        {
+            project.AdvanceStage(1, UtcNow.AddHours(i + 1));
+        }
+
+        project.CurrentStageState.Should().Be(StageState.Completed);
+
+        var act = () => project.AdvanceStage(1, UtcNow.AddHours(20));
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
     public void EnrollParticipant_ShouldAddToCollection()
     {
         var project = Project.Create(1, "Test", null, UtcNow);

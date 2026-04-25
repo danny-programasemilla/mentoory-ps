@@ -76,6 +76,7 @@ public class TenantDbContext : SharedAbstractDbContext
             entity.Property(e => e.IsActive).IsRequired().HasDefaultValue(true);
             entity.Property(e => e.CreatedAtUtc).IsRequired();
             entity.Property(e => e.UpdatedAtUtc).IsRequired();
+            entity.Property(e => e.RowVersion).IsRowVersion();
 
             entity.HasMany(e => e.Stages)
                 .WithOne()

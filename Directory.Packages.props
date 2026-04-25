@@ -65,6 +65,6 @@
     <!-- Notification -->
     <PackageVersion Include="MailKit" Version="4.16.0" />
     <!-- Mapping -->
-    <PackageVersion Include="Riok.Mapperly" Version="4.2.2" />
+    <PackageVersion Include="Riok.Mapperly" Version="4.3.0" />
   </ItemGroup>
 </Project>

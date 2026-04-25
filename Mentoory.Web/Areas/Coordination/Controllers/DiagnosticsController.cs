@@ -1,3 +1,4 @@
+using Mentoory.Access.Application.StageActions;
 using Mentoory.Diagnostic.Application.Commands.CloneFormTemplate;
 using Mentoory.Diagnostic.Application.Queries.GetProjectForm;
 using Mentoory.Diagnostic.Application.Queries.ListFormTemplates;
@@ -5,6 +6,7 @@ using Mentoory.Diagnostic.Application.Queries.ListProjectForms;
 using Mentoory.Shared.Application.DataTables;
 using Mentoory.Web.Areas.Coordination.Models;
 using Mentoory.Web.Infrastructure;
+using Mentoory.Web.Infrastructure.Filters;
 using Mentoory.Web.Models;
 using Mentoory.Web.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -54,6 +56,7 @@ public class DiagnosticsController : Controller
     }
 
     [HttpGet("[action]")]
+    [RequiresStage(StageGatedAction.DiagnosticForms)]
     public async Task<IActionResult> Clone(CancellationToken ct)
     {
         if (!User.GetActiveProjectId().HasValue)
@@ -68,6 +71,7 @@ public class DiagnosticsController : Controller
 
     [HttpPost("[action]")]
     [ValidateAntiForgeryToken]
+    [RequiresStage(StageGatedAction.DiagnosticForms)]
     public async Task<IActionResult> Clone(CloneDiagnosticFormViewModel model, CancellationToken ct)
     {
         if (!ModelState.IsValid)

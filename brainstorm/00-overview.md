@@ -1,6 +1,6 @@
 # Brainstorm Overview
 
-Last updated: 2026-04-19
+Last updated: 2026-04-19 (added #11 e2e-quality-gate → 018, #12 e2e-lifecycle-coverage → 016/e2e)
 
 ## Sessions
 
@@ -17,6 +17,7 @@ Last updated: 2026-04-19
 | 09 | 2026-04-18 | mentoring-execution | parked | - |
 | 10 | 2026-04-18 | cross-cutting-hardening | parked | - |
 | 11 | 2026-04-19 | e2e-quality-gate | spec-created | 018 |
+| 12 | 2026-04-19 | e2e-lifecycle-coverage | spec-created | 016/e2e |
 
 ## Open Threads
 
@@ -61,6 +62,9 @@ Last updated: 2026-04-19
 - 50-probe sweep count — configurable for nightly deep-run? (from #11, OQ-003)
 - Floor-category enforcement — opt-in via `access-security: true` vs heuristic-detected? (from #11)
 - Retroactive trait retrofit for features 001–015 — organic migration expected (from #11)
+- PlaywrightFixture extensibility assumption may fail at C0 (from #12)
+- Test #3 broken-state fixture: pull-weight vs redundant with unit coverage (from #12)
+- Concurrency UI test mechanism: parallel contexts vs test-time stale-advance helper (from #12)
 
 ## Decisions Ratified During Review
 

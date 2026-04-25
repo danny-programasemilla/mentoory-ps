@@ -25,6 +25,7 @@ DECLARE @IncAdmin1Id   BIGINT;
 DECLARE @IncAdmin2Id   BIGINT;
 DECLARE @Coord1Id      BIGINT;
 DECLARE @Coord2Id      BIGINT;
+DECLARE @Coord3Id      BIGINT;
 DECLARE @Mentor1Id     BIGINT;
 DECLARE @Entrep1Id     BIGINT;
 DECLARE @Entrep2Id     BIGINT;
@@ -94,6 +95,22 @@ BEGIN
 END
 ELSE
     SELECT @Coord2Id = [Id] FROM [access].[Users] WHERE [NormalizedEmail] = N'COORD2@TEST.MENTOORY.COM';
+
+-- ------------------------------------------------------------------------------------------
+-- User: Project Coordinator 3
+-- ------------------------------------------------------------------------------------------
+IF NOT EXISTS (SELECT 1 FROM [access].[Users] WHERE [NormalizedEmail] = N'COORD3@TEST.MENTOORY.COM')
+BEGIN
+    INSERT INTO [access].[Users] ([ExternalId], [Email], [NormalizedEmail], [Country], [NationalId], [FirstName], [LastName], [AccountStatus], [FailedLoginAttempts], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), N'coord3@test.mentoory.com', N'COORD3@TEST.MENTOORY.COM', N'Chile', N'TEST-COORD3', N'Sofía', N'Navarro', 1, 0, @Now, @Now);
+
+    SET @Coord3Id = SCOPE_IDENTITY();
+
+    INSERT INTO [access].[Credentials] ([UserId], [PasswordHash], [IsActive], [CreatedAtUtc])
+    VALUES (@Coord3Id, @PasswordHash, 1, @Now);
+END
+ELSE
+    SELECT @Coord3Id = [Id] FROM [access].[Users] WHERE [NormalizedEmail] = N'COORD3@TEST.MENTOORY.COM';
 
 -- ------------------------------------------------------------------------------------------
 -- User: Mentor
@@ -282,6 +299,36 @@ ELSE
     SELECT @Project4Id = [Id] FROM [tenant].[Projects] WHERE [Name] = N'Proyecto Comunitario' AND [IncubatorId] = @Incubator2Id;
 
 
+-- ------------------------------------------------------------------------------------------
+-- Project Stages: the domain's Project.Create factory inserts 7 ProjectStage rows per
+-- project (Registration in progress, all others not started). The raw SQL inserts above
+-- bypass the factory, so we materialize the same 7 rows here. Idempotent via the unique
+-- (ProjectId, StageType) index plus a NOT EXISTS guard.
+-- ------------------------------------------------------------------------------------------
+;WITH SeedProjects AS (
+    SELECT @Project1Id AS ProjectId
+    UNION ALL SELECT @Project2Id
+    UNION ALL SELECT @Project3Id
+    UNION ALL SELECT @Project4Id
+), SeedStages AS (
+    SELECT
+        p.ProjectId,
+        s.StageType,
+        CASE WHEN s.StageType = 0 THEN 1 ELSE 0 END AS [State],
+        CASE WHEN s.StageType = 0 THEN @Now ELSE NULL END AS StartedAtUtc
+    FROM SeedProjects p
+    CROSS JOIN (VALUES (0),(1),(2),(3),(4),(5),(6)) s(StageType)
+    WHERE p.ProjectId IS NOT NULL
+)
+INSERT INTO [tenant].[ProjectStages] ([ProjectId], [StageType], [State], [StartedAtUtc])
+SELECT s.ProjectId, s.StageType, s.[State], s.StartedAtUtc
+FROM SeedStages s
+WHERE NOT EXISTS (
+    SELECT 1 FROM [tenant].[ProjectStages] ps
+    WHERE ps.ProjectId = s.ProjectId AND ps.StageType = s.StageType
+);
+
+
 -- ==========================================================================================
 -- SECTION 4: Role Assignments
 -- ==========================================================================================
@@ -323,6 +370,18 @@ IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @Coord2
 BEGIN
     INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
     VALUES (NEWID(), @Coord2Id, @Incubator1Id, @Project2Id, N'ProjectCoordinator', 1, @Now, @Now);
+END
+
+-- ------------------------------------------------------------------------------------------
+-- ProjectCoordinator 3 -> Incubadora Alpha, Proyecto Innovación
+-- (single-role single-incubator; context selector auto-skips server-side, so coord3 logs in
+-- with ActiveIncubatorId = Alpha. Used by WalkthroughAuditConcurrencyTests so three distinct
+-- coordinators can advance the same Alpha-scoped test project and be attributed by name.)
+-- ------------------------------------------------------------------------------------------
+IF NOT EXISTS (SELECT 1 FROM [access].[RoleAssignments] WHERE [UserId] = @Coord3Id AND [IncubatorId] = @Incubator1Id AND [ProjectId] = @Project1Id AND [Role] = N'ProjectCoordinator' AND [IsActive] = 1)
+BEGIN
+    INSERT INTO [access].[RoleAssignments] ([ExternalId], [UserId], [IncubatorId], [ProjectId], [Role], [IsActive], [CreatedAtUtc], [UpdatedAtUtc])
+    VALUES (NEWID(), @Coord3Id, @Incubator1Id, @Project1Id, N'ProjectCoordinator', 1, @Now, @Now);
 END
 
 -- ------------------------------------------------------------------------------------------
