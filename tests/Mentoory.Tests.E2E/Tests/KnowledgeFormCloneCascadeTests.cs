@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Mentoory.Tenant.Domain.Enums;
 using Mentoory.Tests.E2E.Infrastructure;
 using Microsoft.Playwright;
 using Xunit;
@@ -39,6 +40,12 @@ public class KnowledgeFormCloneCascadeTests
             incubatorName: "Incubadora Alpha",
             ksTemplateExternalId: seededKsTemplateId,
             projectName: projectName);
+
+        // Bundle 019: feature 016-project-lifecycle-finish gates DiagnosticForms behind the
+        // Forms stage. Fresh projects start at Registration, so the Clone view's
+        // [RequiresStage(DiagnosticForms)] redirects to the lifecycle banner unless we advance.
+        await KnowledgeIntegrationHelpers.AdvanceProjectToStageAsync(
+            _fixture, project.ExternalId, project.CoordinatorUserId, project.IncubatorId, StageType.Forms);
 
         var baselineFormCount = await KnowledgeIntegrationHelpers.CountProjectFormsAsync(_fixture, project.ProjectId);
 
@@ -86,23 +93,35 @@ public class KnowledgeFormCloneCascadeTests
     {
         // Setup: build a FormTemplate bound to a DIFFERENT KS template than the project's bound
         // template. The mismatch check in CloneFormTemplateHandler short-circuits before any
-        // TopicId rewrite, so we can reuse the seeded 'Proyecto Innovación' for coord1 here
-        // (FirstEnabled context lands on it) without needing the Phase-9 provisioned state that
-        // the happy path requires.
+        // TopicId rewrite. Bundle 019 caveat: feature 016-project-lifecycle-finish gates
+        // DiagnosticForms behind the Forms stage, so we cannot reuse the seeded 'Proyecto
+        // Innovación' (which sits at Registration and would pollute siblings if advanced).
+        // Use a transient project + coordinator instead — same shape as the happy-path test.
+        var seededKsTemplateId = await KnowledgeIntegrationHelpers.GetSeededKsTemplateExternalIdAsync(_fixture);
         var otherKsTemplateId = await KnowledgeIntegrationHelpers.CreateKsTemplateAsync(
             _fixture, $"E2E-US3-2-Other-{Guid.NewGuid():N}"[..24]);
         var mismatchedFormTemplateId = await KnowledgeIntegrationHelpers.CreateFormTemplateAsync(
             _fixture, boundKsTemplateExternalId: otherKsTemplateId);
 
-        var seededProject = await KnowledgeIntegrationHelpers.GetProjectByNameAsync(_fixture, "Proyecto Innovación");
-        var baselineFormCount = await KnowledgeIntegrationHelpers.CountProjectFormsAsync(_fixture, seededProject.ProjectId);
+        var projectName = $"E2E-US3-2-{Guid.NewGuid():N}"[..24];
+        var transientProject = await KnowledgeIntegrationHelpers.CreateProjectWithCoordinatorAsync(
+            _fixture,
+            incubatorName: "Incubadora Alpha",
+            ksTemplateExternalId: seededKsTemplateId,
+            projectName: projectName);
+
+        await KnowledgeIntegrationHelpers.AdvanceProjectToStageAsync(
+            _fixture, transientProject.ExternalId, transientProject.CoordinatorUserId,
+            transientProject.IncubatorId, StageType.Forms);
+
+        var baselineFormCount = await KnowledgeIntegrationHelpers.CountProjectFormsAsync(_fixture, transientProject.ProjectId);
 
         var page = await _fixture.CreatePageAsync();
         try
         {
             await KnowledgeTestHelpers.LoginAndSelectAsync(
-                page, _fixture.BaseUrl, "coord1@test.mentoory.com", "Test123!@#",
-                ContextSelection.FirstEnabled);
+                page, _fixture.BaseUrl, transientProject.CoordinatorEmail, transientProject.CoordinatorPassword,
+                ContextSelection.CoordinatorForProject(transientProject.Name));
 
             await page.GotoAsync($"{_fixture.BaseUrl}/Coordination/Diagnostics/Clone");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
@@ -125,7 +144,7 @@ public class KnowledgeFormCloneCascadeTests
             body.Should().Contain("Este formulario está diseñado para una estructura de conocimiento diferente",
                 "the Phase 9 mismatch error must surface verbatim in the clone view on rejection");
 
-            var postCount = await KnowledgeIntegrationHelpers.CountProjectFormsAsync(_fixture, seededProject.ProjectId);
+            var postCount = await KnowledgeIntegrationHelpers.CountProjectFormsAsync(_fixture, transientProject.ProjectId);
             postCount.Should().Be(baselineFormCount,
                 "no ProjectForm row must be created when the KS mismatch check rejects the clone");
         }

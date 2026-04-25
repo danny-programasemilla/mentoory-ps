@@ -12,7 +12,9 @@ using Mentoory.Knowledge.Application.Commands.CreateKnowledgeStructureTemplate;
 using Mentoory.Knowledge.Infrastructure.Persistence;
 using Mentoory.Shared.Application;
 using Mentoory.Shared.Domain.Constants;
+using Mentoory.Tenant.Application.Commands.AdvanceProjectStage;
 using Mentoory.Tenant.Application.Commands.CreateProject;
+using Mentoory.Tenant.Domain.Enums;
 using Mentoory.Tenant.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -339,7 +341,7 @@ public static class KnowledgeIntegrationHelpers
     /// additional assignments to a seeded account accumulates across the run and breaks any
     /// legacy test that asserts a specific coordinator's project count.
     /// </remarks>
-    public static async Task<(long ProjectId, long IncubatorId, Guid ExternalId, string Name, string CoordinatorEmail, string CoordinatorPassword)>
+    public static async Task<(long ProjectId, long IncubatorId, Guid ExternalId, string Name, string CoordinatorEmail, string CoordinatorPassword, long CoordinatorUserId)>
         CreateProjectWithCoordinatorAsync(
             WebApplicationFactory<Program> factory,
             string incubatorName,
@@ -379,7 +381,57 @@ public static class KnowledgeIntegrationHelpers
                 $"AssignRoleCommand failed for {coordinatorEmail} on project {projectName}: {FormatErrors(assignResult)}");
         }
 
-        return (projectId, incubatorId, projectExternalId, projectName, coordinatorEmail, coordinatorPassword);
+        return (projectId, incubatorId, projectExternalId, projectName, coordinatorEmail, coordinatorPassword, userId);
+    }
+
+    /// <summary>
+    /// Advances a project past the Registration stage by issuing
+    /// <see cref="AdvanceProjectStageCommand"/> calls until <paramref name="targetStage"/> is the
+    /// project's current stage. Required by stage-gated diagnostic tests because feature
+    /// 016-project-lifecycle-finish locks <c>StageGatedAction.DiagnosticForms</c> until the
+    /// project leaves Registration. The acting user must hold a project-coordinator (or higher)
+    /// assignment on the project for the command to authorize.
+    /// </summary>
+    public static async Task AdvanceProjectToStageAsync(
+        WebApplicationFactory<Program> factory,
+        Guid projectExternalId,
+        long actingUserId,
+        long actingIncubatorId,
+        StageType targetStage,
+        bool actingUserIsGlobalAdmin = false)
+    {
+        // Read the current stage and advance until the target is reached. Fresh projects start
+        // at Registration (= 0); advancing once yields Forms (= 1), and so on per the StageType
+        // enum order. We loop on the live project state rather than computing (target - start)
+        // upfront so the helper is robust to projects that already advanced partway.
+        for (var i = 0; i < (int)StageType.Closure; i++)
+        {
+            using (var scope = factory.Services.CreateScope())
+            {
+                var tenantDb = scope.ServiceProvider.GetRequiredService<TenantDbContext>();
+                var current = await tenantDb.Projects
+                    .IgnoreQueryFilters()
+                    .AsNoTracking()
+                    .Where(p => p.ExternalId == projectExternalId)
+                    .Select(p => p.CurrentStageType)
+                    .FirstAsync();
+                if (current >= targetStage)
+                {
+                    return;
+                }
+            }
+
+            var advanceResult = await SendAsync(factory, new AdvanceProjectStageCommand(
+                projectExternalId, actingUserId, actingIncubatorId, actingUserIsGlobalAdmin));
+            if (!advanceResult.IsSuccess)
+            {
+                throw new InvalidOperationException(
+                    $"AdvanceProjectStageCommand failed for project {projectExternalId} (acting user {actingUserId}): {FormatErrors(advanceResult)}");
+            }
+        }
+
+        throw new InvalidOperationException(
+            $"AdvanceProjectToStageAsync exhausted iterations without reaching {targetStage} for project {projectExternalId}.");
     }
 
     private static async Task<TResponse> SendAsync<TResponse>(

@@ -350,7 +350,7 @@ public class KnowledgePartialSyncTests
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
     }
 
-    private async Task<(long ProjectId, long IncubatorId, Guid ExternalId, string Name, string CoordinatorEmail, string CoordinatorPassword)>
+    private async Task<(long ProjectId, long IncubatorId, Guid ExternalId, string Name, string CoordinatorEmail, string CoordinatorPassword, long CoordinatorUserId)>
         ProvisionFreshProjectAsync(string prefix)
     {
         return await KnowledgeIntegrationHelpers.CreateProjectWithCoordinatorAsync(

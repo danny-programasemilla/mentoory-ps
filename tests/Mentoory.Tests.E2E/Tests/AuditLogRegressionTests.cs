@@ -179,7 +179,22 @@ public class AuditLogRegressionTests : E2ETestBase
             await registerPage.WaitForLoadStateAsync(LoadState.NetworkIdle, new() { Timeout = 15000 });
 
             // Bypass HTML5 constraint validation so the malformed email reaches the server.
-            await registerPage.EvaluateAsync("() => { document.querySelector('form').noValidate = true; }");
+            // Bundle 019: the hardened registration view (016-registration-access-hardening)
+            // emits jQuery-unobtrusive `data-val-*` attributes that block the submit on the
+            // client. Strip the validator's binding so the malformed POST hits the controller
+            // and surfaces the generic 'No fue posible completar el registro.' banner.
+            await registerPage.EvaluateAsync(@"() => {
+                const form = document.querySelector('form');
+                form.noValidate = true;
+                if (window.jQuery && window.jQuery.fn.validate) {
+                    const $form = window.jQuery(form);
+                    $form.removeData('validator');
+                    $form.removeData('unobtrusiveValidation');
+                    form.querySelectorAll('[data-val=\""true\""]').forEach(el => {
+                        el.removeAttribute('data-val');
+                    });
+                }
+            }");
 
             await registerPage.FillAsync("input[name='Email']", invalidEmail);
             await registerPage.FillAsync("input[name='FirstName']", "Test");
@@ -194,9 +209,14 @@ public class AuditLogRegressionTests : E2ETestBase
             registerPage.Url.Should().Contain("/Access/Register",
                 "validation rejection must keep the user on the Register page, not redirect to Success");
 
-            var emailError = registerPage.Locator("span.text-danger").Filter(
-                new() { HasTextString = "correo electrónico no es válido" });
-            await Assertions.Expect(emailError).ToBeVisibleAsync(new() { Timeout = 15000 });
+            // Bundle 019: feature 016-registration-access-hardening clears ModelState on
+            // validation failure and renders a generic 'No fue posible...' banner instead of
+            // per-field text-danger spans (anti-enumeration). The point of this test —
+            // confirming the form rejected the submission so AuditingBehavior never ran — is
+            // preserved by the banner; we just assert against the new surface.
+            var genericError = registerPage.Locator(".alert.alert-danger").Filter(
+                new() { HasTextString = "No fue posible completar el registro" });
+            await Assertions.Expect(genericError).ToBeVisibleAsync(new() { Timeout = 15000 });
         }
         finally
         {

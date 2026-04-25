@@ -10,6 +10,7 @@ using Mentoory.Diagnostic.Domain.Enums;
 using Mentoory.Diagnostic.Infrastructure.Persistence;
 using Mentoory.Shared.Application.Audit;
 using Mentoory.Shared.Domain.Constants;
+using Mentoory.Tenant.Domain.Enums;
 using Mentoory.Tenant.Infrastructure.Persistence;
 using Mentoory.Tests.E2E.Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -400,6 +401,23 @@ public class AuditLogCaptureTests : E2ETestBase
 
         var project = await tenantCtx.Projects.AsNoTracking()
             .FirstAsync(p => p.Name == "Proyecto Innovación");
+
+        // Bundle 019: feature 016-project-lifecycle-finish gates AnswerCorrection
+        // (StageGatedAction.AnswerCorrection → StageType.Analysis). The seeded "Proyecto
+        // Innovación" starts at Registration, so the controller's [RequiresStage] would short-
+        // circuit before the test ever sees the correction modal. Advance the seeded project
+        // to Analysis idempotently. The helper is a no-op once the project is past Analysis,
+        // so back-to-back tests in the collection are safe.
+        if (project.CurrentStageType < StageType.Analysis)
+        {
+            var accessCtx = scope.ServiceProvider.GetRequiredService<AccessDbContext>();
+            var coordUserId = await accessCtx.Users.AsNoTracking()
+                .Where(u => u.Email.NormalizedValue == CoordinatorEmail.ToUpperInvariant())
+                .Select(u => u.Id)
+                .FirstAsync();
+            await KnowledgeIntegrationHelpers.AdvanceProjectToStageAsync(
+                Fixture, project.ExternalId, coordUserId, project.IncubatorId, StageType.Analysis);
+        }
 
         var template = FormTemplate.Create($"AuditE2E-{Guid.NewGuid():N}", null, null, DateTime.UtcNow);
         template.AddQuestion(1, "Q1", QuestionType.Text, StageApplicability.Both, 1, null, false);
