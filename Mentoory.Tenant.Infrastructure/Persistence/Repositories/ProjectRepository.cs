@@ -25,6 +25,11 @@ public class ProjectRepository : AbstractRepository<Project>, IProjectRepository
         _dbContext.Entry(project).State = EntityState.Modified;
     }
 
+    public void Detach(Project project)
+    {
+        _dbContext.Entry(project).State = EntityState.Detached;
+    }
+
     public Task<Project?> GetByIdAsync(long id, CancellationToken cancellationToken)
     {
         return _dbContext.Projects
@@ -48,6 +53,13 @@ public class ProjectRepository : AbstractRepository<Project>, IProjectRepository
         return _dbContext.Projects
             .Include(p => p.Participants)
             .Include(p => p.MentorAssignments)
+            .FirstOrDefaultAsync(p => p.ExternalId == externalId, cancellationToken);
+    }
+
+    public Task<Project?> GetByExternalIdWithStagesAsync(Guid externalId, CancellationToken cancellationToken)
+    {
+        return _dbContext.Projects
+            .Include(p => p.Stages)
             .FirstOrDefaultAsync(p => p.ExternalId == externalId, cancellationToken);
     }
 

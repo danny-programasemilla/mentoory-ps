@@ -9,6 +9,7 @@ namespace Mentoory.Tests.E2E.Tests;
 /// T052 - Validates that each role sees only the menu items they are permitted to access.
 /// </summary>
 [Collection(E2ETestCollection.Name)]
+[Trait("Category", "E2E")]
 public class MenuVisibilityTests
 {
     private readonly PlaywrightFixture _fixture;

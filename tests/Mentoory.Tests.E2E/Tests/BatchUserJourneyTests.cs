@@ -11,6 +11,7 @@ namespace Mentoory.Tests.E2E.Tests;
 /// CSV upload -> temp password -> forced password change -> application access.
 /// </summary>
 [Collection(E2ETestCollection.Name)]
+[Trait("Category", "E2E")]
 public class BatchUserJourneyTests
 {
     private readonly PlaywrightFixture _fixture;

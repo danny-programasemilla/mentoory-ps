@@ -69,6 +69,8 @@ public class TenantDbContext : SharedAbstractDbContext
             entity.HasIndex(e => e.IncubatorId);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Description).HasMaxLength(1000);
+            entity.Property(e => e.KnowledgeStructureTemplateExternalId).IsRequired();
+            entity.HasIndex(e => e.KnowledgeStructureTemplateExternalId);
             entity.Property(e => e.CurrentStageType).IsRequired().HasConversion<byte>();
             entity.Property(e => e.CurrentStageState).IsRequired().HasConversion<byte>();
             entity.Property(e => e.IsPublic).IsRequired().HasDefaultValue(false);
@@ -76,6 +78,7 @@ public class TenantDbContext : SharedAbstractDbContext
             entity.Property(e => e.IsActive).IsRequired().HasDefaultValue(true);
             entity.Property(e => e.CreatedAtUtc).IsRequired();
             entity.Property(e => e.UpdatedAtUtc).IsRequired();
+            entity.Property(e => e.RowVersion).IsRowVersion();
 
             entity.HasMany(e => e.Stages)
                 .WithOne()

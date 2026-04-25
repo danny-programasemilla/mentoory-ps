@@ -11,6 +11,7 @@ namespace Mentoory.Tests.E2E.Tests;
 /// their password before accessing any other page.
 /// </summary>
 [Collection(E2ETestCollection.Name)]
+[Trait("Category", "E2E")]
 public class ForcedPasswordChangeTests
 {
     private readonly PlaywrightFixture _fixture;

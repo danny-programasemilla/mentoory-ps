@@ -10,6 +10,7 @@ namespace Mentoory.Tests.E2E.Tests;
 /// requests require re-authentication.
 /// </summary>
 [Collection(E2ETestCollection.Name)]
+[Trait("Category", "E2E")]
 public class LogoutTests
 {
     private readonly PlaywrightFixture _fixture;

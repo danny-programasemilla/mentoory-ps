@@ -1,0 +1,136 @@
+# Implementation Notes — Feature 016 (project-lifecycle-finish)
+
+## Deviations from the task list
+
+### File placement: display helpers moved to `Mentoory.Access.Application.StageActions`
+Tasks T008–T010 specified `Mentoory.Web/Infrastructure/Display/`. Kept the intent but
+physically located `StageTypeDisplay`, `StageActionDisplay`, and `StageActionLinks` in
+`Mentoory.Access.Application/StageActions/` alongside the registry they collaborate with.
+Reason: the application-layer handler (`GetProjectLifecycleHandler`) composes Spanish
+display values into the DTO, so it must be able to reference the helpers — and
+`Mentoory.Tenant.Application` cannot reference `Mentoory.Web`. Access.Application is
+already a reverse-dependency shared by both Tenant.Application and Web, which makes it
+the correct location and keeps the constitution's layer boundaries intact.
+
+### User display-name resolver
+Task T032 suggested reusing an existing `ListPlatformUsersQuery` or adding an
+`IUserReadService.GetDisplayNamesAsync`. Implemented as `IUserDirectory` in
+`Mentoory.Access.Application/Users/` with a single method and an EF-backed
+implementation (`Mentoory.Access.Infrastructure/Services/UserDirectory.cs`) to avoid
+pulling the full `ListUsersQuery` pagination machinery into a focused lookup path.
+
+### Cross-module reference: `Mentoory.Access.Application` → `Mentoory.Tenant.Domain`
+Added to let `StageActionRegistry` and `StageTypeDisplay` consume the `StageType` enum.
+This is one directed dependency on a pure-domain module (no Application/Infrastructure
+coupling). No other cross-module references introduced.
+
+### `IProjectRepository.Detach(Project)` added
+Needed because `AdvanceProjectStageHandler` explicitly calls
+`UnitOfWork.SaveEntitiesAsync` to catch `DbUpdateConcurrencyException`. Without detach,
+the `TransactionBehavior` would call `SaveEntitiesAsync` again on commit and the still-
+tracked entity would re-throw the same concurrency exception, masking the typed failure
+result the handler returns.
+
+### Concurrency test — mock unit test plus end-to-end integration test
+Task T016 prescribed a relational test provider because EF InMemory does not simulate
+`ROWVERSION`. Implementation uses two complementary tests:
+1. `tests/Mentoory.Tenant.Tests/Handlers/AdvanceProjectStageHandlerConcurrencyTests.cs`
+   — mock-based unit test; `IUnitOfWork.SaveEntitiesAsync` throws
+   `DbUpdateConcurrencyException`. Proves the handler's typed-failure path and that
+   `Detach` is invoked. Fast, no DB required.
+2. `tests/Mentoory.Tests.Integration/Tenant/AdvanceProjectStageConcurrencyTests.cs`
+   — Testcontainers SQL Server + real DACPAC schema. Arranges two advances against the
+   same project — one through `SendAsync` (scope B), the second through a mediator
+   resolved from scope A whose DbContext still tracks the stale rowversion. Proves the
+   SSDT `ROWVERSION` column plus `.IsRowVersion()` mapping actually fires the typed
+   failure end-to-end. Placed in the Integration project rather than the suggested
+   `Mentoory.Tenant.Tests/Handlers/` location because the unit test project uses Moq
+   exclusively; the Integration project already has Testcontainers + DACPAC wiring.
+
+### Seed data: ProjectStages rows added for the four test-seed projects
+The four seed projects in `Mentoory.Db.PostDeployment/004.SeedTestData.sql` were inserted
+via raw SQL, which bypassed the domain's `Project.Create` factory — so they had the
+`Projects` row but not the 7 `ProjectStages` rows the factory produces. That violates the
+aggregate invariant and caused `GetProjectLifecycleHandler` (introduced by this feature)
+to throw `KeyNotFoundException` when opening a seed project's Lifecycle page. Added an
+idempotent `INSERT ... WHERE NOT EXISTS` block that materializes the seven stages
+(Registration in progress, others not started) for every seed project.
+
+Fixing the schema-drift false positive (`RowVersion` column is SQL Server `timestamp`,
+not `varbinary`) and the E2E `Coordinator_ShouldClone_FormTemplate` regression required
+no product code changes — only the seed fix plus a schema-drift test awareness of the
+rowversion mapping in `tests/Mentoory.Tests.Integration/Schema/SchemaDriftTests.cs`.
+
+### Package bump: Riok.Mapperly 4.2.2 → 4.3.0
+The central `Directory.Packages.props` pinned `4.2.2` which NuGet could not resolve
+against the local cache. Bumped to `4.3.0` — a minor version within the `4.x` line
+noted in the plan.
+
+### MailKit NuGet audit warning (pre-existing)
+Baseline `dotnet build` fails without `/p:NuGetAudit=false` because `TreatWarningsAsErrors`
+promotes the `NU1902` MailKit advisory to an error. This pre-dates the feature branch
+(see develop). Feature work was validated with `/p:NuGetAudit=false`; resolving the
+advisory belongs to a platform-level MailKit upgrade PR.
+
+### Empty test projects (Mentoring / Notification / Subscription / Knowledge)
+These projects exist but contain no tests. Nothing to add here.
+
+## Tasks explicitly skipped or partially completed
+
+- **T016 (US1 concurrency test)** — covered by mock unit test AND relational integration
+  test (see above).
+- **T026 (integration tests for Coordination routes)** — not written. Walkthroughs 2 & 3
+  in `quickstart.md` cover the same surface manually. Additionally, no HTTP controller
+  tests exist in the repo yet; bootstrapping that infrastructure is out of scope here.
+- **T043–T044 (filter integration + matrix tests)** — not written. The filter consumes
+  `StageActionRegistry.GetState`, which is exhaustively covered by
+  `StageActionRegistryTests` (42 × 7 stages × 6 actions). The remaining filter surface
+  (TempData warning + redirect) is verifiable through Walkthrough 3.
+- **T042, T051, T056 (walkthroughs)** — now closed by the E2E sub-feature (see § below). Per SC-E7.
+
+## Constitution compliance quick-check
+
+| Check | Status |
+|-------|--------|
+| Clean-arch boundaries | PASS — Web→Application→Domain, no repo in controllers |
+| CQRS | PASS — `AdvanceProjectStageCommand`, `GetProjectLifecycleQuery`, `GetProjectCurrentStageQuery` |
+| DDD / ExternalId routes | PASS — all coordination routes use `externalId:guid` |
+| Zero warnings | PASS — `dotnet build /p:NuGetAudit=false` green, 0 warnings |
+| `ITimeProvider` (not `DateTime.UtcNow`) | PASS — handler injects `ITimeProvider` |
+| Naming | PASS |
+| One class per file | PASS |
+| Spanish UI | PASS |
+| Role hierarchy `[Authorize]` | PASS — `ProjectCoordinator,IncubatorAdmin,GlobalAdmin` on `Coordination.ProjectsController` |
+| SSDT schema change | PASS — `ROWVERSION` added to `Mentoory.Db/tenant/Tables/Projects.sql` |
+| Tenant isolation | PASS — handler checks `IncubatorId` unless caller is `GlobalAdmin` |
+| Backend authority for stage-gated actions | PASS — `RequiresStageAttribute` applied to `AnswerCorrectionController` (class-level) and `DiagnosticsController.Clone` (method-level) |
+| Audit trail | PASS — `ProjectStage.AdvancedByUserId/StartedAtUtc/CompletedAtUtc` populated by the domain method |
+
+## E2E coverage complete
+
+The `specs/016-project-lifecycle-finish/e2e/` sub-feature added a Playwright E2E suite
+(~17 tests) that covers every automatable acceptance scenario, edge case, and success
+criterion of the parent feature. Execution was split into six strictly-ordered chunks
+(C0–C5) with pre-authored resume prompts under `e2e/checkpoints/` so a fresh AI session
+could pick up each chunk without drift. Final state: 16 passing + 2 `[Fact(Skip=...)]`
+that document product-code bugs tracked in `e2e/open-questions.md` (blocked on T056b —
+Razor attribute-encoding fix in `Lifecycle.cshtml`).
+
+Per SC-E7, the E2E suite closes parent tasks T042 (Walkthrough 2), T051 (Walkthrough 3),
+and T056 (quickstart validation) — each was originally a manual verification step that
+the Playwright coverage now replaces. Coverage matrix (`e2e/coverage-matrix.md`) is 100%
+filled in with one row per spec scenario + one row per non-automatable success
+criterion (explicit "not covered" with rationale is a valid row).
+
+Non-product-code additions for this sub-feature:
+- `tests/Mentoory.Tests.E2E/Infrastructure/Lifecycle/` — fixtures, login helpers,
+  and `LifecyclePageObject`.
+- `tests/Mentoory.Tests.E2E/Tests/Lifecycle/` — five Walkthrough test classes plus one
+  smoke test.
+- `Mentoory.Db.PostDeployment/004.SeedTestData.sql` — added `coord3@test.mentoory.com`
+  user + ProjectCoordinator role assignment (idempotent `IF NOT EXISTS ... INSERT`)
+  so the SC-005 audit-trail test can observe three distinct names on one project.
+
+No product code was modified across C0–C5. Execution surfaced two real product bugs
+(ARIA/tooltip encoding in `Lifecycle.cshtml:145-147`, and TempData warning not rendered
+on `Context/Select.cshtml`) that are filed under `e2e/open-questions.md` for follow-up.

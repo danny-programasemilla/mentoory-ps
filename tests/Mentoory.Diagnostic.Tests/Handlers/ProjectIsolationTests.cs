@@ -150,6 +150,9 @@ public class ProjectIsolationTests
             responseRepo.Object,
             timeProvider.Object,
             eventService.Object,
+            Mock.Of<Mentoory.Shared.Application.Audit.IAuditService>(),
+            Mock.Of<Mentoory.Shared.Application.Interfaces.ITenantContext>(),
+            Mock.Of<Mentoory.Shared.Application.Interfaces.ICorrelationContext>(),
             Mock.Of<ILogger<CorrectAnswerHandler>>());
 
         var command = new CorrectAnswerCommand(

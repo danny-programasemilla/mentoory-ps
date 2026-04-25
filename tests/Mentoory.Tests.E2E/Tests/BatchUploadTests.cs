@@ -11,6 +11,7 @@ namespace Mentoory.Tests.E2E.Tests;
 /// and temporary password generation.
 /// </summary>
 [Collection(E2ETestCollection.Name)]
+[Trait("Category", "E2E")]
 public class BatchUploadTests
 {
     private readonly PlaywrightFixture _fixture;

@@ -10,6 +10,8 @@ using Mentoory.Tenant.Application;
 using Mentoory.Tenant.Infrastructure;
 using Mentoory.Diagnostic.Application;
 using Mentoory.Diagnostic.Infrastructure;
+using Mentoory.Knowledge.Application;
+using Mentoory.Knowledge.Infrastructure;
 using Mentoory.Shared.Application.Audit;
 using Mentoory.Shared.Application.Behaviors;
 using Mentoory.Shared.Application.Interfaces;
@@ -17,9 +19,12 @@ using Mentoory.Shared.Application.TimeProvider;
 using Mentoory.Shared.Infrastructure.Audit;
 using Mentoory.Shared.Infrastructure.Behaviors;
 using Mentoory.Shared.Infrastructure.Persistence;
+using Mentoory.Shared.Infrastructure.Persistence.Audit;
 using Mentoory.Shared.Infrastructure.Services;
+using Microsoft.EntityFrameworkCore;
 using Mentoory.Web.Infrastructure.Authentication;
 using Mentoory.Web.Infrastructure.Authorization;
+using Mentoory.Web.Infrastructure.Correlation;
 using Mentoory.Web.Infrastructure.Menu;
 using Mentoory.Web.Infrastructure.Persistence;
 using Mentoory.Web.Services;
@@ -37,14 +42,20 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly());
 
     cfg.AddOpenBehavior(typeof(ValidatorBehavior<,>));
+    cfg.AddOpenBehavior(typeof(AuditingBehavior<,>));
     cfg.AddOpenBehavior(typeof(TransactionBehavior<,>));
 });
+
+builder.Services.Configure<AuditOptions>(builder.Configuration.GetSection(AuditOptions.SectionName));
+builder.Services.AddScoped<ICorrelationContext, WebCorrelationContext>();
 
 builder.Services.AddScoped<IDbContextFactory, DbContextFactory>();
 
 builder.Services.AddSingleton<ITimeProvider, DefaultSystemTimeProvider>();
 
 builder.Services.AddScoped<MediatRExecutor>();
+
+builder.Services.AddSingleton<Mentoory.Web.Areas.Coordination.Models.LifecycleMapper>();
 
 builder.Services.AddSingleton<IVersionProvider, VersionProvider>();
 
@@ -60,6 +71,8 @@ builder.Services.AddTenantApplication();
 builder.AddTenantInfrastructure();
 builder.Services.AddDiagnosticApplication();
 builder.AddDiagnosticInfrastructure();
+builder.Services.AddKnowledgeApplication();
+builder.AddKnowledgeInfrastructure();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -115,6 +128,12 @@ builder.Services.AddAntiforgery(options =>
 builder.Services.AddScoped<ITenantContext, TenantContextService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
 
+var auditReadConnectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+builder.Services.AddDbContext<AuditReadDbContext>(opts => opts.UseSqlServer(auditReadConnectionString));
+builder.Services.AddScoped<Mentoory.Shared.Application.Queries.Audit.IAuditLogReadRepository,
+    Mentoory.Shared.Infrastructure.Persistence.Audit.AuditLogReadRepository>();
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IMenuService, MenuService>();
 
@@ -136,6 +155,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseCorrelation();
 app.UseHttpsRedirection();
 app.UseRouting();
 

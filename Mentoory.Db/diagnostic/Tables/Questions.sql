@@ -12,9 +12,14 @@ CREATE TABLE [diagnostic].[Questions]
     [IsOptional] BIT NOT NULL DEFAULT 0,
     CONSTRAINT [PK_diagnostic_Questions] PRIMARY KEY CLUSTERED ([Id] ASC),
     CONSTRAINT [FK_Questions_ProjectForms] FOREIGN KEY ([ProjectFormId]) REFERENCES [diagnostic].[ProjectForms] ([Id]) ON DELETE CASCADE,
+    CONSTRAINT [FK_Questions_Topics] FOREIGN KEY ([TopicId]) REFERENCES [knowledge].[Topics] ([Id]),
     CONSTRAINT [UQ_Questions_ExternalId] UNIQUE ([ExternalId])
 )
 GO
 
 CREATE NONCLUSTERED INDEX [IX_Questions_ProjectFormId]
     ON [diagnostic].[Questions] ([ProjectFormId])
+GO
+
+CREATE NONCLUSTERED INDEX [IX_Questions_TopicId]
+    ON [diagnostic].[Questions] ([TopicId])

@@ -2,7 +2,18 @@
   ============================================================
   SYNC IMPACT REPORT
   ============================================================
-  Version change: 1.1.0 -> 1.1.1
+  Version change: 1.1.1 -> 1.1.2
+
+  Patches:
+    - Added checklist item #10 under "Specification Validation &
+      Enforcement" requiring [Audited] on sensitive commands.
+      Points to access-security-constitution.md § "Audit Trail
+      Obligations" (bumped to 1.1.0 in the same PR) and cites
+      Mentoory.Tests.Architecture.AuditCoverageTests as the
+      enforcement mechanism.
+    - Updated version footer to 1.1.2
+
+  Previous version: 1.1.0 -> 1.1.1
 
   Patches:
     - Added Related Governance Documents section linking to
@@ -342,6 +353,9 @@ output is finalized, the following checks MUST pass:
    (Principle XI)
 9. Do `[Authorize]` attributes include all higher-privilege
    roles? Do menu groups include GlobalAdmin? (Principle X)
+10. Do all sensitive commands carry `[Audited]` per
+    `access-security-constitution.md` § "Audit Trail Obligations"?
+    (Enforced by `Mentoory.Tests.Architecture.AuditCoverageTests`.)
 
 If any validation fails, the specification MUST be revised before
 proceeding.
@@ -389,4 +403,4 @@ All specifications and implementations produced by `/speckit`
 workflows are subject to validation against this constitution.
 Non-compliant outputs MUST be revised before approval.
 
-**Version**: 1.1.1 | **Ratified**: 2026-01-27 | **Last Amended**: 2026-04-08
+**Version**: 1.1.2 | **Ratified**: 2026-01-27 | **Last Amended**: 2026-04-18

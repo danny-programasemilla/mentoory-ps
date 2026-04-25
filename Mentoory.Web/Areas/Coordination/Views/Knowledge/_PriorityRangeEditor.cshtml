@@ -1,0 +1,66 @@
+@using Mentoory.Knowledge.Application.Queries.GetKnowledgeStructureTemplate
+@model TopicTemplateDto
+
+<div class="priority-range-editor border rounded p-3 bg-light-subtle" data-topic-id="@Model.ExternalId">
+    <h5 class="mb-2">
+        <i class="ti ti-adjustments-alt me-1"></i>Rangos de Prioridad
+    </h5>
+    <p class="text-secondary small mb-3">
+        Configure los 3 rangos (alto, medio, bajo). Los rangos deben ser no solapados
+        (incluyendo los extremos). Deje vacío para no configurar un rango.
+    </p>
+
+    <div class="table-responsive">
+        <table class="table table-sm table-vcenter mb-0">
+            <thead>
+                <tr>
+                    <th style="width: 25%;">Prioridad</th>
+                    <th>Mínimo</th>
+                    <th>Máximo</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr data-band="high">
+                    <td><span class="badge bg-danger">Alta</span></td>
+                    <td>
+                        <input type="number" step="0.01" class="form-control form-control-sm"
+                               data-field="min" value="@(Model.HighRangeMin?.ToString(System.Globalization.CultureInfo.InvariantCulture))" />
+                    </td>
+                    <td>
+                        <input type="number" step="0.01" class="form-control form-control-sm"
+                               data-field="max" value="@(Model.HighRangeMax?.ToString(System.Globalization.CultureInfo.InvariantCulture))" />
+                    </td>
+                </tr>
+                <tr data-band="medium">
+                    <td><span class="badge bg-warning">Media</span></td>
+                    <td>
+                        <input type="number" step="0.01" class="form-control form-control-sm"
+                               data-field="min" value="@(Model.MediumRangeMin?.ToString(System.Globalization.CultureInfo.InvariantCulture))" />
+                    </td>
+                    <td>
+                        <input type="number" step="0.01" class="form-control form-control-sm"
+                               data-field="max" value="@(Model.MediumRangeMax?.ToString(System.Globalization.CultureInfo.InvariantCulture))" />
+                    </td>
+                </tr>
+                <tr data-band="low">
+                    <td><span class="badge bg-success">Baja</span></td>
+                    <td>
+                        <input type="number" step="0.01" class="form-control form-control-sm"
+                               data-field="min" value="@(Model.LowRangeMin?.ToString(System.Globalization.CultureInfo.InvariantCulture))" />
+                    </td>
+                    <td>
+                        <input type="number" step="0.01" class="form-control form-control-sm"
+                               data-field="max" value="@(Model.LowRangeMax?.ToString(System.Globalization.CultureInfo.InvariantCulture))" />
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="d-flex justify-content-end mt-2">
+        <button type="button" class="btn btn-sm btn-primary"
+                data-action="update-topic-ranges" data-topic-id="@Model.ExternalId">
+            <i class="ti ti-device-floppy me-1"></i>Guardar rangos
+        </button>
+    </div>
+</div>

@@ -1,3 +1,4 @@
+using Mentoory.Shared.Application.Audit;
 using Mentoory.Shared.Application.MediatR;
 
 namespace Mentoory.Access.Application.Commands.AssignRole;
@@ -9,6 +10,7 @@ namespace Mentoory.Access.Application.Commands.AssignRole;
 /// <param name="IncubatorId">The identifier of the incubator context for the role.</param>
 /// <param name="ProjectId">The optional project identifier for project-scoped roles.</param>
 /// <param name="Role">The role name to assign (must be a valid platform role).</param>
+[Audited(AuditEventTypes.RoleAssigned, EntityType = "RoleAssignment")]
 public sealed record AssignRoleCommand(
     long UserId,
     long IncubatorId,

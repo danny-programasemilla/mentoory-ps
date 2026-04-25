@@ -12,6 +12,8 @@ namespace Mentoory.Tests.Integration.Tenant;
 [Collection(IntegrationTestCollection.Name)]
 public class CrossTenantIsolationTests : IntegrationTestBase
 {
+    private static readonly Guid SeedKsTemplateId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+
     public CrossTenantIsolationTests(MentooryWebApplicationFactory factory)
         : base(factory)
     {
@@ -26,7 +28,7 @@ public class CrossTenantIsolationTests : IntegrationTestBase
 
         // Act
         var projectResult = await SendAsync(new CreateProjectCommand(
-            incubatorResult.Value!, "My Project", "A test project"));
+            incubatorResult.Value!, "My Project", "A test project", SeedKsTemplateId));
 
         // Assert
         projectResult.IsSuccess.Should().BeTrue();
@@ -51,8 +53,8 @@ public class CrossTenantIsolationTests : IntegrationTestBase
         var inc1Result = await SendAsync(new CreateIncubatorCommand("Incubator Alpha", null));
         var inc2Result = await SendAsync(new CreateIncubatorCommand("Incubator Beta", null));
 
-        await SendAsync(new CreateProjectCommand(inc1Result.Value!, "Alpha Project", null));
-        await SendAsync(new CreateProjectCommand(inc2Result.Value!, "Beta Project", null));
+        await SendAsync(new CreateProjectCommand(inc1Result.Value!, "Alpha Project", null, SeedKsTemplateId));
+        await SendAsync(new CreateProjectCommand(inc2Result.Value!, "Beta Project", null, SeedKsTemplateId));
 
         // Get incubator IDs
         var inc1Id = await GetIncubatorIdAsync(inc1Result.Value!);
@@ -85,9 +87,9 @@ public class CrossTenantIsolationTests : IntegrationTestBase
         var inc2Result = await SendAsync(new CreateIncubatorCommand("Isolated B", null));
         var inc3Result = await SendAsync(new CreateIncubatorCommand("Isolated C (empty)", null));
 
-        await SendAsync(new CreateProjectCommand(inc1Result.Value!, "Project A1", null));
-        await SendAsync(new CreateProjectCommand(inc1Result.Value!, "Project A2", null));
-        await SendAsync(new CreateProjectCommand(inc2Result.Value!, "Project B1", null));
+        await SendAsync(new CreateProjectCommand(inc1Result.Value!, "Project A1", null, SeedKsTemplateId));
+        await SendAsync(new CreateProjectCommand(inc1Result.Value!, "Project A2", null, SeedKsTemplateId));
+        await SendAsync(new CreateProjectCommand(inc2Result.Value!, "Project B1", null, SeedKsTemplateId));
 
         var inc1Id = await GetIncubatorIdAsync(inc1Result.Value!);
         var inc2Id = await GetIncubatorIdAsync(inc2Result.Value!);
@@ -111,8 +113,8 @@ public class CrossTenantIsolationTests : IntegrationTestBase
         var inc1Result = await SendAsync(new CreateIncubatorCommand("All-View A", null));
         var inc2Result = await SendAsync(new CreateIncubatorCommand("All-View B", null));
 
-        await SendAsync(new CreateProjectCommand(inc1Result.Value!, "View A Project", null));
-        await SendAsync(new CreateProjectCommand(inc2Result.Value!, "View B Project", null));
+        await SendAsync(new CreateProjectCommand(inc1Result.Value!, "View A Project", null, SeedKsTemplateId));
+        await SendAsync(new CreateProjectCommand(inc2Result.Value!, "View B Project", null, SeedKsTemplateId));
 
         // Act — default tenant context is null (no tenant set), so query filter passes all
         using var scope = CreateScope();

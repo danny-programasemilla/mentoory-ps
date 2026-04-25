@@ -1,0 +1,4 @@
+<Project>
+    <Import Project="tools/Mentoory.Specs.CoverageCheck/build/CoverageCheck.targets"
+            Condition="Exists('$(MSBuildThisFileDirectory)tools/Mentoory.Specs.CoverageCheck/build/CoverageCheck.targets')" />
+</Project>

@@ -8,6 +8,12 @@ CREATE TABLE [diagnostic].[FormTemplates]
     [Version] INT NOT NULL DEFAULT 1,
     [IsActive] BIT NOT NULL DEFAULT 1,
     [CreatedAtUtc] DATETIME2 NOT NULL,
+    [DefaultKnowledgeStructureTemplateExternalId] UNIQUEIDENTIFIER NULL,
     CONSTRAINT [PK_diagnostic_FormTemplates] PRIMARY KEY CLUSTERED ([Id] ASC),
-    CONSTRAINT [UQ_FormTemplates_ExternalId] UNIQUE ([ExternalId])
+    CONSTRAINT [UQ_FormTemplates_ExternalId] UNIQUE ([ExternalId]),
+    CONSTRAINT [FK_FormTemplates_DefaultKnowledgeStructureTemplate] FOREIGN KEY ([DefaultKnowledgeStructureTemplateExternalId]) REFERENCES [knowledge].[KnowledgeStructureTemplates] ([ExternalId]) ON DELETE SET NULL
 )
+GO
+
+CREATE NONCLUSTERED INDEX [IX_FormTemplates_DefaultKnowledgeStructureTemplateExternalId]
+    ON [diagnostic].[FormTemplates] ([DefaultKnowledgeStructureTemplateExternalId])

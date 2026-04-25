@@ -1,4 +1,10 @@
 using System.Reflection;
+using Mentoory.Access.Application.Audit;
+using Mentoory.Access.Application.Commands.LoginUser;
+using Mentoory.Access.Application.Commands.RegisterUser;
+using Mentoory.Access.Application.Infrastructure;
+using Mentoory.Access.Application.Services;
+using Mentoory.Shared.Application.Audit;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Mentoory.Access.Application;
@@ -26,6 +32,13 @@ public static class DependencyInjection
         FluentValidation.AssemblyScanner
             .FindValidatorsInAssembly(Assembly.GetExecutingAssembly())
             .ForEach(item => services.AddScoped(item.InterfaceType, item.ValidatorType));
+
+        services.AddScoped<IUserProvisioningService, UserProvisioningService>();
+
+        // Audit anonymous resolvers (FR-014): supply user email to AuditingBehavior
+        // when the tenant context is empty (pre-authentication flows).
+        services.AddScoped<IAuditAnonymousResolver<RegisterUserCommand>, RegisterUserAuditResolver>();
+        services.AddScoped<IAuditAnonymousResolver<LoginUserCommand>, LoginUserAuditResolver>();
 
         return services;
     }

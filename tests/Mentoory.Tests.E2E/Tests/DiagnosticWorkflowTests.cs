@@ -9,6 +9,7 @@ namespace Mentoory.Tests.E2E.Tests;
 /// T050 - Validates the diagnostic workflow: clone template, view details, submit response.
 /// </summary>
 [Collection(E2ETestCollection.Name)]
+[Trait("Category", "E2E")]
 public class DiagnosticWorkflowTests
 {
     private readonly PlaywrightFixture _fixture;

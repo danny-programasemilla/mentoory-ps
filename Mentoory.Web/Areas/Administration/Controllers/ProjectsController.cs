@@ -1,3 +1,4 @@
+using Mentoory.Knowledge.Application.Queries.ListKnowledgeStructureTemplates;
 using Mentoory.Tenant.Application.Commands.CreateProject;
 using Mentoory.Tenant.Application.Queries.GetProjectByExternalId;
 using Mentoory.Tenant.Application.Queries.ListIncubators;
@@ -14,7 +15,7 @@ namespace Mentoory.Web.Areas.Administration.Controllers;
 
 [Area("Administration")]
 [Route("[area]/[controller]")]
-[Authorize(Roles = "IncubatorAdmin,GlobalAdmin")]
+[Authorize(Roles = "ProjectCoordinator,IncubatorAdmin,GlobalAdmin")]
 public class ProjectsController : Controller
 {
     private readonly MediatRExecutor _executor;
@@ -53,8 +54,9 @@ public class ProjectsController : Controller
     }
 
     [HttpGet("[action]")]
-    public IActionResult Create()
+    public async Task<IActionResult> Create(CancellationToken ct)
     {
+        await PopulateKnowledgeTemplatesAsync(ct);
         return View(new CreateProjectViewModel());
     }
 
@@ -64,6 +66,7 @@ public class ProjectsController : Controller
     {
         if (!ModelState.IsValid)
         {
+            await PopulateKnowledgeTemplatesAsync(ct);
             return View(model);
         }
 
@@ -74,6 +77,7 @@ public class ProjectsController : Controller
                 incubatorExternalId,
                 model.Name,
                 model.Description,
+                model.KnowledgeStructureTemplateExternalId,
                 model.IsPublic,
                 (EnrollmentVariant)model.EnrollmentVariant), ct);
 
@@ -84,6 +88,7 @@ public class ProjectsController : Controller
         }
 
         ModelState.AddModelError(string.Empty, "Error al crear el proyecto.");
+        await PopulateKnowledgeTemplatesAsync(ct);
         return View(model);
     }
 
@@ -106,5 +111,12 @@ public class ProjectsController : Controller
 
         var incubator = result.Data.FirstOrDefault();
         return incubator?.ExternalId ?? Guid.Empty;
+    }
+
+    private async Task PopulateKnowledgeTemplatesAsync(CancellationToken ct)
+    {
+        var templates = await _executor.SendOrThrowAsync(
+            new ListKnowledgeStructureTemplatesQuery(IncludeArchived: false), ct);
+        ViewBag.KnowledgeTemplates = templates;
     }
 }

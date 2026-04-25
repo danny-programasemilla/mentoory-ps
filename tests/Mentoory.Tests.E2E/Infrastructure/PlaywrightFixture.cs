@@ -17,6 +17,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Playwright;
 using Microsoft.SqlServer.Dac;
+using Respawn;
 using Testcontainers.MsSql;
 using Xunit;
 
@@ -30,6 +31,7 @@ public class PlaywrightFixture : WebApplicationFactory<Program>, IAsyncLifetime
         .Build();
 
     private IHost? _kestrelHost;
+    private Respawner? _respawner;
 
     public string BaseUrl { get; private set; } = string.Empty;
     public IPlaywright? Playwright { get; private set; }
@@ -60,6 +62,19 @@ public class PlaywrightFixture : WebApplicationFactory<Program>, IAsyncLifetime
     {
         var context = await CreateBrowserContextAsync();
         return await context.NewPageAsync();
+    }
+
+    public async Task ResetDatabaseAsync()
+    {
+        if (_respawner is null)
+        {
+            throw new InvalidOperationException(
+                "Respawner not initialized. ResetDatabaseAsync() must be called after the fixture's InitializeAsync.");
+        }
+
+        await using var connection = new SqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await _respawner.ResetAsync(connection);
     }
 
     public async Task TakeScreenshotOnFailureAsync(IPage page, string testName)
@@ -109,11 +124,14 @@ public class PlaywrightFixture : WebApplicationFactory<Program>, IAsyncLifetime
 
         await _kestrelHost.StartAsync();
 
-        // 6. Launch Playwright browser
+        // 6. Launch Playwright browser.
+        //    Set E2E_HEADED=1 to run headed with slow-motion for local debugging.
+        var headed = Environment.GetEnvironmentVariable("E2E_HEADED") == "1";
         Playwright = await Microsoft.Playwright.Playwright.CreateAsync();
         Browser = await Playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
         {
-            Headless = true
+            Headless = !headed,
+            SlowMo = headed ? 250 : 0,
         });
     }
 
@@ -247,5 +265,21 @@ public class PlaywrightFixture : WebApplicationFactory<Program>, IAsyncLifetime
             BlockOnPossibleDataLoss = false,
             IncludeTransactionalScripts = false,
         });
+
+        using var connection = new SqlConnection(ConnectionString);
+        connection.Open();
+
+        // Only [audit] is respawned between E2E tests. The other schemas that the
+        // integration fixture wipes (access, tenant, diagnostic, example, subscription)
+        // hold DACPAC-seeded data that E2E tests depend on (admin@mentoory.com and the
+        // four lower-role users, plus the seeded incubator/role rows). Wiping them
+        // would break every Playwright login. Audit rows are produced exclusively by
+        // the test workload, so isolating just [audit] is sufficient for the
+        // "exactly one audit row" assertions used in P2.
+        _respawner = Respawner.CreateAsync(connection, new RespawnerOptions
+        {
+            SchemasToInclude = ["audit"],
+            DbAdapter = DbAdapter.SqlServer,
+        }).GetAwaiter().GetResult();
     }
 }

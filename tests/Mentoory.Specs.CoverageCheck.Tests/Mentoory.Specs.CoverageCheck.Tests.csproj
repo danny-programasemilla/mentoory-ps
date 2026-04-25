@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <!-- Default-included content under Fixtures must NOT compile into the test assembly;
+             the synthetic SampleXunitTests sub-project owns those .cs files. -->
+        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+        <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="**/*.cs" Exclude="bin/**;obj/**;Fixtures/**" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="coverlet.collector">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="FluentAssertions" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+        <PackageReference Include="xunit" />
+        <PackageReference Include="xunit.runner.visualstudio">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\tools\Mentoory.Specs.CoverageCheck\Mentoory.Specs.CoverageCheck.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="Fixtures\specs\*.md" CopyToOutputDirectory="PreserveNewest" />
+        <None Include="Fixtures\expected-text-output.txt" CopyToOutputDirectory="PreserveNewest" />
+        <None Include="Fixtures\expected-json-output.json" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+    <!-- Build the synthetic xUnit fixture assembly so reflection tests have something to inspect. -->
+    <Target Name="BuildFixtures" BeforeTargets="Build">
+        <Exec Command="dotnet build &quot;$(MSBuildThisFileDirectory)Fixtures/assemblies/SampleXunitTests/SampleXunitTests.csproj&quot; --configuration $(Configuration) --nologo --verbosity quiet" />
+    </Target>
+</Project>

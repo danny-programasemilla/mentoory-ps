@@ -2,26 +2,33 @@
   ============================================================
   SYNC IMPACT REPORT
   ============================================================
-  Version: 1.0.0 (initial ratification)
+  Version: 1.2.0 (combined feature-018 + feature-016-audit amendment, integration bundle 019)
 
-  Added sections:
-    - 1. Executive Summary
-    - 2. Confirmed Model vs Inferred Model
-    - 3. Access & Security Constitution Rules
-    - 4. Domain Scope Model
-    - 5. Role Catalog (with Glossary)
-    - 6. Sustainable Permission Matrix
-    - 7. Security Design Principles
-    - 8. Threat and Failure Analysis
-    - 9. Enforcement Model Recommendations
-    - 10. Secure Feature Design Workflow
-    - 11. Testing and Verification Requirements
-    - 12. Open Questions / Decisions Needed
-    - Appendices (A, B, C)
+  Added sections (from feature 018-access-security-delivery-quality-gate):
+    - 11.9 Response Indistinguishability (floor category)
+    - 11.10 Outcome Audit Logging (floor category)
+    - 11.11 Public-vs-Admin Attribution (floor category)
+    - 11.12 Form-State Preservation (floor category)
+    - 11.13 Defense-in-Depth Controls (floor category)
+    - 11.14 Content-Policy Rules (floor category)
+    - 13. Delivery Quality Gate (CI workflow governance)
 
-  Removed sections: (none — first version)
+  Added sections (from feature 016-audit-pipeline):
+    - Audit Trail Obligations (between § 12 and Appendix A)
+
+  Sections preserved without renumbering:
+    - 1-10 unchanged; 11.1-11.8 unchanged; 12 unchanged; Appendices A/B/C unchanged.
+
+  Rationale: Feature 018 introduces the coverage-enforcement gate (Section 13
+  + floor categories). Feature 016-audit-pipeline introduces the AuditingBehavior +
+  [Audited] attribute + architecture-test enforcement (Audit Trail Obligations).
+  Both amendments are additive and compose without renumbering. The combined
+  bump to 1.2.0 reflects two simultaneous minor amendments shipped together
+  in bundle PR #019.
+
 
   Follow-up TODOs:
+    - Configure `coverage-check` as a required status check on `develop` (DEP-005).
     - Resolve open questions for Mentor, Entrepreneur, Sponsor roles
     - Audit existing endpoints against permission matrix
     - Integrate PR template into repository workflow
@@ -30,7 +37,7 @@
 
 # Mentoory Access & Security Constitution
 
-**Version**: 1.0.0 | **Ratified**: 2026-04-08 | **Last Amended**: 2026-04-08  
+**Version**: 1.2.0 | **Ratified**: 2026-04-08 | **Last Amended**: 2026-04-19  
 **Status**: Draft — Pending Stakeholder Ratification  
 **Linked from**: [constitution.md](constitution.md)
 
@@ -952,6 +959,66 @@ Every feature that involves authorization, scoped data, or role-gated operations
 - Verify audit records cannot be modified or deleted by the actor who triggered them
 - Verify failed authorization attempts are also logged (for security monitoring)
 
+### 11.9 Response Indistinguishability
+
+**Purpose**: Public endpoints whose specification masks an outcome (e.g. masked-success on uniqueness conflict) must produce visibly identical responses across every masked outcome. This category protects the masking contract from regression by drift in headers, cookies, or rendered HTML. Adversaries probe these endpoints for enumeration oracles; a single divergent header reopens the oracle.
+
+**Trigger condition**: A feature whose specification declares that two or more outcome paths must be indistinguishable to an unauthenticated observer (status, headers, body bytes after deterministic stripping).
+
+**Minimum automated assertion**: ≥ 1 integration test runs ≥ 50 probes mixing every relevant outcome and asserts pairwise equality across every probe of: HTTP status, `Location` header, `Cache-Control`, `Content-Type`, the *set of names* of `Set-Cookie` cookies, and post-redirect body bytes after a deterministic strip of inherently-random tokens (antiforgery cookie/value).
+
+**Canonical example**: Feature 018 FR-018-19 — `/Access/Register` 50-probe sweep mixing fresh, duplicate-email, and duplicate-national-ID submissions. Test name pattern: `PublicRegistration_FiftyProbeSweep_*`.
+
+### 11.10 Outcome Audit Logging
+
+**Purpose**: When a public-facing endpoint masks its outcome to the caller, the server-side log must still record the *true* outcome with enough detail to support post-hoc forensics and abuse-rate alerting. The log is the only artefact that distinguishes a duplicate-conflict probe from a genuine new registration. Loss of this log means loss of the operator's only signal that someone is iterating against the form.
+
+**Trigger condition**: A feature whose specification requires that the visible response masks the underlying outcome (success vs failure vs conflict).
+
+**Minimum automated assertion**: ≥ 1 unit or integration test pins the outcome-code log entry's required fields — the spec's complete outcome enum is exercised, and for each value the test asserts the log line carries the required structured fields (outcome code, correlation ID, optional submitter identity per the spec's redaction rules).
+
+**Canonical example**: Feature 018 FR-018-14 — `RegisterUserHandler` always returns `Success()` to the caller, but logs the true outcome with the structured fields required by 016 FR-016-06. Test name pattern: `RegisterUserHandler_*_LogsOutcomeWith*`.
+
+### 11.11 Public-vs-Admin Attribution
+
+**Purpose**: Where the same domain operation is exposed both to an unauthenticated public path AND to an authenticated admin path, the public path must mask conflict outcomes while the admin path must surface field-attributed errors. The asymmetry must be tested explicitly so that a refactor cannot silently leak admin specificity onto the public surface or strip admin specificity from the admin surface.
+
+**Trigger condition**: A feature whose specification splits one capability across a public endpoint and an admin endpoint with different response-shaping rules.
+
+**Minimum automated assertion**: ≥ 1 admin-side test asserts each conflict surface returns a field-attributed error with the exact message the spec requires; ≥ 1 public-side test asserts the same conflict surface returns the masked-success response and no field attribution.
+
+**Canonical example**: Feature 018 FR-018-15 — `AdminEnrollUserCommand` returns `Result.Failure` with `("NationalId", "Ya existe una cuenta con este número de identificación.")`; the public path's `RegisterUserCommand` masks the same conflict to `Success`. Test name patterns: `AdminEnrollment_DuplicateNationalId_ReturnsAttributedError` and `RegisterUserHandler_DuplicateNationalId_*MasksOutcome`.
+
+### 11.12 Form-State Preservation
+
+**Purpose**: When an access-security validator failure causes the server to re-render a form with a generic banner (rather than redirect), every non-secret field the user typed must be re-populated, and every secret field must be cleared. Failure of either side is a UX regression *and* a leak vector — re-rendered passwords disclose them in browser DOM caches and to over-the-shoulder observers.
+
+**Trigger condition**: A feature whose specification renders a generic in-form failure response after server-side validation (rather than redirecting on failure) AND whose form contains both non-secret and secret fields.
+
+**Minimum automated assertion**: ≥ 1 E2E test submits a server-side failure path; asserts every non-secret field input contains the previously-submitted value; asserts every secret field input value is empty.
+
+**Canonical example**: Feature 018 FR-018-20 — `/Access/Register` POST with a server-side validator failure re-renders the form with the generic banner; Email/FirstName/LastName/Country/NationalId carry the prior submission, Password and ConfirmPassword are blank. Test name: `Registration_GenericBannerRender_PreservesNonSecretFields`.
+
+### 11.13 Defense-in-Depth Controls
+
+**Purpose**: Antiforgery enforcement and rate limiting are the two unconditional layers below the application's access-security logic. Their presence is mandatory; their absence is a CWE-class regression. Tests assert both layers actually engage on the endpoints the spec says they protect — not that the configuration *exists*, but that a request without a valid token gets blocked and a request burst gets throttled.
+
+**Trigger condition**: A feature whose specification declares that an endpoint is protected by antiforgery AND/OR by a rate-limit policy.
+
+**Minimum automated assertion**: ≥ 1 integration test asserts a POST to the endpoint with no antiforgery token returns HTTP 400; ≥ 1 integration test asserts a synthetic-tight rate-limit policy engages and returns HTTP 429 after the configured threshold is exceeded.
+
+**Canonical example**: Feature 018 FR-018-21 — `POST /Access/Register` and `POST /Administration/Users/Enroll` reject missing antiforgery tokens; `/Access/Register` rate-limit policy engages within configured probe count. Test name patterns: `*_AntiforgeryMissing_Returns400`, `*_RateLimitExceeded_Returns429`.
+
+### 11.14 Content-Policy Rules
+
+**Purpose**: When the password policy (or other content-policy validator) rejects user-supplied content based on what it contains rather than its structure, every rejection branch must be tested. Branch coverage of the verbatim form, the normalised form, the case-folded form, and below-threshold short-circuits is required because a missing branch means the policy is silently weaker than the spec promises.
+
+**Trigger condition**: A feature whose specification adds a containment-style validator (password contains email, password contains national ID, message contains banned phrase, etc.) with multiple normalisation forms or threshold short-circuits.
+
+**Minimum automated assertion**: ≥ 1 unit test per rejection branch named in the spec, plus ≥ 1 unit test per below-threshold short-circuit named in the spec, asserting the rejection message is the shared user-facing string and does not disclose which branch matched.
+
+**Canonical example**: Feature 018 FR-018-18 — `PasswordIdentifyingDataRule` rejection of password containing the user's email (full and local part), national ID (verbatim and separator-stripped), with the 4-character threshold short-circuits. Test name pattern: `PasswordIdentifyingData_*`.
+
 ## 12. Open Questions / Decisions Needed
 
 The following items must be resolved by stakeholders before implementing features that depend on them. Per Constitution Rule 10, unresolved open questions block implementation of the affected area.
@@ -1018,6 +1085,113 @@ The following items must be resolved by stakeholders before implementing feature
 - **[OPEN]** Should exports be limited to the active incubator/project context, or can GlobalAdmin export cross-incubator data?
 - **[OPEN]** Are there data fields that must be redacted or anonymized in exports (e.g., entrepreneur personal data)?
 - **[OPEN]** Must export actions be logged as audit events with the full scope of exported data?
+
+## 13. Delivery Quality Gate
+
+This section governs the CI workflow that protects every access-security feature from coverage drift. The gate consists of: a coverage-enforcement tool (`Mentoory.Specs.CoverageCheck`), an MSBuild integration that runs the tool on every `dotnet build`, and a GitHub Actions stage that fails the workflow on coverage violations. Together they make "spec-vs-test drift" a build-time error rather than a review-time observation.
+
+### 13.1 Scope anchor
+
+This section binds **only** access-security features. A specification opts in by declaring `access-security: true` in its YAML front-matter (`spec.md`, between `---` fences at line 1). Specifications without the front-matter flag are scanned for traceability (Section 13.2) but are exempt from floor-category enforcement (Section 13.3). Areas outside access-security (Tenant, Diagnostic, Mentoring, Knowledge, Subscription, Example) MAY adopt this gate later by adding the front-matter to their own spec files; this amendment does not retroactively force them.
+
+### 13.2 Traceability rule
+
+Every functional-requirement (`FR-DDD` or `FR-DDD-DD`) and success-criterion (`SC-DDD` or `SC-DDD-DD`) identifier declared in an opted-in `spec.md` MUST have at least one non-skipped xUnit test method carrying the corresponding `[Trait("Spec", "FR-…")]` or `[Trait("Sc", "SC-…")]` attribute. Multi-claim is permitted: a single test method MAY claim multiple identifiers via repeated `[Trait]` attributes, and each identifier counts once. The drift assertion is two-sided:
+
+- **Unclaimed Identifier**: a spec declares an identifier that no test claims. Build-fail.
+- **Dangling Trait**: a test claims an identifier that no spec declares. Build-fail.
+
+### 13.3 Floor-category rule
+
+Every opted-in feature MUST have at least one non-skipped test claiming each applicable floor category (Sections 11.9 through 11.14) via `[Trait("Floor", "<category-name>")]`. The applicable set is determined by the trigger conditions defined in Sections 11.9–11.14; the canonical names are:
+
+- `response-indistinguishability`
+- `outcome-audit-logging`
+- `public-vs-admin-attribution`
+- `form-state-preservation`
+- `defense-in-depth-controls`
+- `content-policy-rules`
+
+For the inaugural rollout (feature 016), all six categories apply. Future opted-in features whose specifications do not match every trigger condition MAY narrow the applicable set explicitly; the narrowing MUST be motivated in the feature's spec body. The default is "all six apply."
+
+### 13.4 CI stage sequence
+
+The required GitHub Actions pipeline runs in this fixed order; each stage's pass is the entry criterion for the next:
+
+1. **build** — `dotnet build Mentoory.sln --configuration Release`. Fails on compiler error or analyzer violation.
+2. **coverage-check** — invokes `Mentoory.Specs.CoverageCheck` against `specs/` and the test-assembly glob. Fails on Unclaimed, Dangling, MissingFloorCategories, DuplicateIds, MalformedExclusions, or assembly-load errors. Runs **before** any test job because drift detection costs ~2 s and fails fast.
+3. **unit-tests** — `dotnet test` against the unit-test projects (`Mentoory.*.Tests`).
+4. **integration-tests** — `dotnet test` against `Mentoory.Tests.Integration`.
+5. **e2e-tests** — `dotnet test` against `Mentoory.Tests.E2E`.
+
+Each stage is a required status check on `develop`. A failure at stage N skips stages N+1..5 — the workflow short-circuits to surface the earliest signal.
+
+### 13.5 Exclusion marker format
+
+A specification MAY exempt an identifier from traceability via an inline marker placed on the line immediately following the identifier line:
+
+```
+- **FR-018-03** …requirement text…
+  *Coverage: N/A — <≥ 20-character justification sentence ending in a period>.*
+```
+
+The exclusion is parsed by regex `\*Coverage:\s*N/A\s*[—-]{1,2}\s*(.{20,}?)\.\s*\*`. Justifications shorter than 20 characters or missing the trailing period are MalformedExclusions and fail the build. Excluded identifiers are listed in a separate audit section of the tool's output, never in Unclaimed.
+
+### 13.6 Flaky-test policy
+
+A test that fails non-deterministically in CI MUST be quarantined within 24 hours by adding `[Trait("Flaky", "true")]` to the method. Once tagged, the coverage tool treats the test as **non-claiming** for every other trait it carries. If the quarantined test was the only claimant for an identifier, the gate immediately reports that identifier as Unclaimed → build-fail → the team is forced to repair the test, find another claim, or mark the identifier `Coverage: N/A` with a justification. This behaviour is intentional: quarantine without immediate visibility is silent erosion. The 24-hour quarantine clock starts when CI surfaces the first non-deterministic failure of an identifier-claiming test.
+
+## Audit Trail Obligations
+
+### Scope
+
+A **sensitive command** is any MediatR command class whose name matches the pattern:
+
+```
+^(Assign|Approve|Correct|Advance|Login|Register|SetActive).*Command$
+```
+
+This pattern is the canonical definition. The architecture test `Mentoory.Tests.Architecture.AuditCoverageTests` enforces it at build time.
+
+Current categories and their intent:
+
+- `Assign*` — granting access or responsibility (roles, mentors, ...).
+- `Approve*` — endorsing an artifact for progression (plans, advancements, ...).
+- `Correct*` — altering a recorded value after the fact.
+- `Advance*` — transitioning a workflow forward (stages, phases).
+- `Login*` — authentication attempts.
+- `Register*` — user / entity onboarding.
+- `SetActive*` — selecting operational context (tenants, projects, roles).
+
+### Obligation
+
+Every sensitive command MUST be decorated with `[Audited]` (`Mentoory.Shared.Application.Audit.AuditedAttribute`). The architecture test fails CI if the obligation is violated.
+
+- **Default mode** (`AuditMode.Automatic`): the `AuditingBehavior` captures a uniform payload (user, tenant, role, correlation, outcome, redacted command payload).
+- **Escape hatch** (`AuditMode.Manual`): used when the entry needs domain-specific detail (e.g., before/after text from an aggregate). The handler calls `IAuditService.LogAsync` directly and is responsible for its own audit entry.
+
+### Extension procedure
+
+When a new sensitive command category enters the codebase (e.g., `Delete*`, `Revoke*`, `Reset*`):
+
+1. Extend the regex in `Mentoory.Tests.Architecture.AuditCoverageTests` AND this section's scope list, in the same pull request.
+2. Add the new event-type constant to `Mentoory.Shared.Application.Audit.AuditEventTypes`.
+3. Apply `[Audited]` to the new command.
+4. Update this document's version footer per its SemVer policy.
+
+Extending the regex WITHOUT updating this section (or vice versa) constitutes a constitution violation and MUST be rejected in code review.
+
+### Non-obligations
+
+- Query handlers are NOT audited in v1.
+- `ValidationException`s (short-circuited by `ValidatorBehavior`) are NOT audited — they represent input noise, not security events.
+- Audit failures MUST NOT fail the wrapped business command (best-effort semantics preserved from the pre-016 `AuditService`).
+
+### Audience
+
+All contributors writing new commands. Reviewers enforce this at code-review time; CI enforces at build time; the constitution is the canonical reference.
+
+---
 
 ## Appendix A: Permission Matrix (Compact)
 
