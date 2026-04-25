@@ -180,6 +180,29 @@ public abstract class IntegrationTestBase : IAsyncLifetime
         return client;
     }
 
+    /// <summary>
+    /// Returns the most-recent <c>[audit].[AuditLog]</c> row matching the given event type
+    /// (and optionally user email) and asserts it exists. Use this to confirm an audited
+    /// command has been captured by the pipeline.
+    /// </summary>
+    protected async Task<AuditLogReadEntity> AssertAuditLoggedAsync(
+        string expectedEventType,
+        string? userEmail = null)
+    {
+        using var scope = CreateScope();
+        var ctx = scope.ServiceProvider.GetRequiredService<AuditReadDbContext>();
+
+        var query = ctx.AuditLogs.AsNoTracking().Where(r => r.EventType == expectedEventType);
+        if (userEmail is not null)
+        {
+            query = query.Where(r => r.UserEmail == userEmail);
+        }
+
+        var row = await query.OrderByDescending(r => r.OccurredAtUtc).FirstOrDefaultAsync();
+        row.Should().NotBeNull($"expected an audit row with EventType '{expectedEventType}'");
+        return row!;
+    }
+
     private async Task EnsureSeedAdminAsync(string email, string password)
     {
         var normalizedEmail = email.Trim().ToUpperInvariant();
@@ -282,29 +305,6 @@ public abstract class IntegrationTestBase : IAsyncLifetime
                 : string.Join(",", roleResult.ErrorMessages.Select(e => $"{e.Context}:{e.Message}"));
             throw new InvalidOperationException($"AssignRoleCommand failed: {detail}");
         }
-    }
-
-    /// <summary>
-    /// Returns the most-recent <c>[audit].[AuditLog]</c> row matching the given event type
-    /// (and optionally user email) and asserts it exists. Use this to confirm an audited
-    /// command has been captured by the pipeline.
-    /// </summary>
-    protected async Task<AuditLogReadEntity> AssertAuditLoggedAsync(
-        string expectedEventType,
-        string? userEmail = null)
-    {
-        using var scope = CreateScope();
-        var ctx = scope.ServiceProvider.GetRequiredService<AuditReadDbContext>();
-
-        var query = ctx.AuditLogs.AsNoTracking().Where(r => r.EventType == expectedEventType);
-        if (userEmail is not null)
-        {
-            query = query.Where(r => r.UserEmail == userEmail);
-        }
-
-        var row = await query.OrderByDescending(r => r.OccurredAtUtc).FirstOrDefaultAsync();
-        row.Should().NotBeNull($"expected an audit row with EventType '{expectedEventType}'");
-        return row!;
     }
 
     private async Task SeedSystemConfigurationAsync()
