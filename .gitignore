@@ -452,3 +452,9 @@ _UpgradeReport_Files/
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+# Claude Code session-local lock file (per-machine state)
+.claude/scheduled_tasks.lock
+
+# IDE folders that occasionally appear under SpecKit memory
+.specify/memory/.idea/

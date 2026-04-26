@@ -1,8 +1,17 @@
 # Spec 019 — Bundle Ship Follow-ups
 
-Spec 019 (integration soak bundle) shipped via PR #15 (squash commit `fbd5ac6` on `develop`, 2026-04-25). Two follow-ups were chartered during the ship and could not be filed as GitHub issues because **the repository has issues disabled**. They are recorded here instead.
+Spec 019 (integration soak bundle) shipped via PR #15 (squash commit `fbd5ac6` on `develop`, 2026-04-25), followed by docs-only PR #16 (`33d2147`) that landed the spec artefacts on `develop` after the bundle. Two follow-ups were chartered during the ship and could not be filed as GitHub issues because **the repository has issues disabled**. They are recorded here instead.
 
 When repo issues are re-enabled (or migrated to another tracker), copy each section into a real issue and link back here.
+
+---
+
+## Post-ship verifications (resolved 2026-04-25)
+
+- **GitGuardian alerts on PR #15 (22 incidents):** verified by reading every flagged file/line. Every flagged item is a fixture password used in tests (`Test123!@#`, `123abc987`, `Secure99887766!`, etc.); all 22 incidents trace to files under `tests/` only — no production code, no real credentials. **Nothing to rotate.** Future false-positive prevention: consider adding a `.gitguardian.yaml` with `paths-ignore: ["tests/**"]` (deferred — config schema not pinned in this session).
+- **Local-machine post-ship gate on `develop` (`33d2147`):** Release build clean (0 warnings, 0 errors); CoverageCheck PASSED warn-mode (15 justified exclusions); E2E suite 181 passed / 0 failed / 5 skipped (pre-existing) / 6m58s.
+- **CI scanners on closed PR #15:** four checks red but all advisory (no required-checks branch protection on `develop`). Coverage-gate workflow infrastructure failure: dotnet-install hit HTTP 404 on `builds.dotnet.microsoft.com/dotnet/Sdk/10.0.0/dotnet-sdk-10.0.0-linux-x64.tar.gz` — Microsoft CDN gap, not a policy fail. CodeQL/SonarCloud findings not investigated; deferred unless they recur on a future PR.
+- **Branch cleanup:** `019-integration-soak` (integration) deleted from origin and local at T034/T035; `019-spec-docs` (post-ship docs PR) deleted at PR #16 cleanup; `019-integration-soak-bundle` (spec branch, redundant after PR #16) deleted at post-ship cleanup. No 019-* branches remain.
 
 ---
 
