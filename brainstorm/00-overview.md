@@ -1,6 +1,6 @@
 # Brainstorm Overview
 
-Last updated: 2026-04-19 (bundle 019 — sessions #11 e2e-quality-gate → 018, #12 e2e-lifecycle-coverage → 016/e2e, #13 audit-pipeline → 016, #14 audit-e2e → 017, #15 knowledge-module-binding-redesign → 016 amended; audit sessions renumbered from #11/#12 to #13/#14, knowledge from #11 to #15 to avoid collision; intra-document references retargeted accordingly)
+Last updated: 2026-04-25 (#16 integration-soak-bundle shipped via PR #15, squash `fbd5ac6`; spec 019's session was originally drafted as #11 on the spec branch but renumbered to #16 to avoid collision with #11–#15 added by the source PRs during the bundle merges)
 
 ## Sessions
 
@@ -21,6 +21,7 @@ Last updated: 2026-04-19 (bundle 019 — sessions #11 e2e-quality-gate → 018, 
 | 13 | 2026-04-18 | audit-pipeline | spec-created | 016 |
 | 14 | 2026-04-19 | audit-e2e | spec-created | 017 |
 | 15 | 2026-04-19 | knowledge-module-binding-redesign | spec-created | 016 (amended) |
+| 16 | 2026-04-25 | integration-soak-bundle | spec-shipped | 019 (PR #15, squash `fbd5ac6`) |
 
 ## Open Threads
 
@@ -79,6 +80,10 @@ Last updated: 2026-04-19 (bundle 019 — sessions #11 e2e-quality-gate → 018, 
 - Spanish-copy assertions distributed across P1+P4 vs consolidated into one file (from #14)
 - SC-008 "bootstrap within 5 tool calls" — novel metric, possibly reframe as "reads no files beyond spec + RESUME" (from #14)
 - `PlaywrightFixture` respawn of the `audit` schema is unverified — flagged as P1's first concrete task in FR-016 (from #14)
+- Bundle PR merge style — regular merge commit vs squash (from #16 — RESOLVED: forced to squash by repo ruleset on develop; FR-007 deviation recorded in PR #15 squash commit body and spec 019 tasks.md T032)
+- Bundle PR description — verbatim source PR bodies vs cross-reference (from #16 — RESOLVED: cross-reference per `contracts/gate-commands.md` G-SHIP-4; source PRs #11–#14 closed with "Closed in favor of bundle ship #15" comments)
+- Registration branch standalone build verification — coverage-check tests may not compile without production project (from #16 — RESOLVED: standalone strict-mode failed with 33 unclaimed identifiers on registration #13; release-manager elected Path B / warn-mode override per FR-005; see `logs/branch-eligibility.txt` and spec 019 followups FU-1)
+- Follow-up bundle gating on coverage-check once feature 018 implementation lands (from #16 — partially RESOLVED: integrated bundle build runs `-p:CoverageCheckMode=warn` per FR-005 with zero unclaimed identifiers; full strict-mode return chartered as spec 019 followup FU-1, T053)
 
 ## Decisions Ratified During Review
 
