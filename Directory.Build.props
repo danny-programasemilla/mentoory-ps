@@ -18,6 +18,8 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+        <!-- Pin OpenTelemetry.Api floor across all projects so transitive resolutions cannot fall back to vulnerable 1.15.0 / 1.15.2 (GHSA-g94r-2vxg-569j). -->
+        <PackageReference Include="OpenTelemetry.Api" />
     </ItemGroup>
     
 </Project>
