@@ -123,3 +123,8 @@ Run /simplify before presenting code to the user.
 - 016-knowledge-module-core: Added C# / .NET 10.0 (SDK 10.0.0 pre-release) — test projects only + Microsoft.Playwright (Chromium headless), xUnit, FluentAssertions, Microsoft.AspNetCore.Mvc.Testing, Testcontainers.MsSql, Microsoft.SqlServer.DacFx, coverlet.collector. All already declared in `tests/Mentoory.Tests.E2E/Mentoory.Tests.E2E.csproj` and `tests/Mentoory.Tests.Integration/Mentoory.Tests.Integration.csproj`; no new packages required.
 - 016-knowledge-module-core: Added C# / .NET 10.0 (SDK 10.0.0 pre-release) + ASP.NET Core MVC 10.x, MediatR 14.1, FluentValidation 12.1, Riok.Mapperly 4.x, Entity Framework Core 10.x, MailKit/MimeKit (not used by this spec), Tabler v1.4.0 + Bootstrap 5 (UI)
 - 013-table-filtering: Added C# / .NET 10.0 + JavaScript (vanilla, ES5-compatible) + DataTables 2.3.4, jQuery, Tabler v1.4.0 (Bootstrap 5), Tabler Icons Webfont
+
+<!-- SPECKIT START -->
+For additional context about technologies to be used, project structure,
+shell commands, and other important information, read the current plan
+<!-- SPECKIT END -->
