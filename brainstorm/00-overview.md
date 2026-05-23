@@ -1,6 +1,6 @@
 # Brainstorm Overview
 
-Last updated: 2026-04-25 (#16 integration-soak-bundle shipped via PR #15, squash `fbd5ac6`; spec 019's session was originally drafted as #11 on the spec branch but renumbered to #16 to avoid collision with #11–#15 added by the source PRs during the bundle merges)
+Last updated: 2026-05-22 (#17 sidebar-context-footer → spec 020 created; relocates active-context display from header to a clickable card at the sidebar bottom)
 
 ## Sessions
 
@@ -22,6 +22,7 @@ Last updated: 2026-04-25 (#16 integration-soak-bundle shipped via PR #15, squash
 | 14 | 2026-04-19 | audit-e2e | spec-created | 017 |
 | 15 | 2026-04-19 | knowledge-module-binding-redesign | spec-created | 016 (amended) |
 | 16 | 2026-04-25 | integration-soak-bundle | spec-shipped | 019 (PR #15, squash `fbd5ac6`) |
+| 17 | 2026-05-22 | sidebar-context-footer | spec-created | 020 |
 
 ## Open Threads
 
@@ -84,6 +85,9 @@ Last updated: 2026-04-25 (#16 integration-soak-bundle shipped via PR #15, squash
 - Bundle PR description — verbatim source PR bodies vs cross-reference (from #16 — RESOLVED: cross-reference per `contracts/gate-commands.md` G-SHIP-4; source PRs #11–#14 closed with "Closed in favor of bundle ship #15" comments)
 - Registration branch standalone build verification — coverage-check tests may not compile without production project (from #16 — RESOLVED: standalone strict-mode failed with 33 unclaimed identifiers on registration #13; release-manager elected Path B / warn-mode override per FR-005; see `logs/branch-eligibility.txt` and spec 019 followups FU-1)
 - Follow-up bundle gating on coverage-check once feature 018 implementation lands (from #16 — partially RESOLVED: integrated bundle build runs `-p:CoverageCheckMode=warn` per FR-005 with zero unclaimed identifiers; full strict-mode return chartered as spec 019 followup FU-1, T053)
+- Switchability detection — cheapest reliable way to know "user has > 1 selectable context" at layout render: claim set at sign-in vs cached value vs always-clickable fallback (from #17, deferred to `/speckit-plan`)
+- Card contrast on dark sidebar — optionally quantify against WCAG AA ≥ 4.5:1 (from #17)
+- Mobile switch reach — with the avatar-dropdown switch path removed, switching on small screens requires opening the hamburger and tapping the card; confirm acceptable in UX review (from #17)
 
 ## Decisions Ratified During Review
 
