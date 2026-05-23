@@ -2,33 +2,6 @@
     ViewBag.ContextSelectorMode = "modal";
 
     var activeRole = User.GetActiveRole();
-    var activeIncubatorName = User.FindFirst("ActiveIncubatorName")?.Value;
-    var activeProjectName = User.FindFirst("ActiveProjectName")?.Value;
-}
-
-@* Center zone: context with status indicators *@
-@if (!string.IsNullOrEmpty(activeRole))
-{
-    <div class="col-auto d-none d-md-flex align-items-center gap-2" id="context-display" data-testid="current-context">
-        <span class="status status-primary">
-            <span class="status-dot"></span>
-            @activeRole
-        </span>
-        @if (!string.IsNullOrEmpty(activeIncubatorName))
-        {
-            <span class="status status-info">
-                <span class="status-dot"></span>
-                @activeIncubatorName
-            </span>
-        }
-        @if (!string.IsNullOrEmpty(activeProjectName))
-        {
-            <span class="status status-success">
-                <span class="status-dot"></span>
-                @activeProjectName
-            </span>
-        }
-    </div>
 }
 
 @* Right zone: bell + avatar dropdown *@
@@ -58,11 +31,6 @@
             <a class="dropdown-item disabled" href="#">
                 <i class="ti ti-user me-2"></i>Perfil
             </a>
-            <button type="button" class="dropdown-item"
-                    data-bs-toggle="modal"
-                    data-bs-target="#contextSwitcherModal">
-                <i class="ti ti-switch-horizontal me-2"></i>Cambiar contexto
-            </button>
             <div class="dropdown-divider"></div>
             <form asp-area="Access" asp-controller="Logout" asp-action="Index" method="post">
                 @Html.AntiForgeryToken()

@@ -6,7 +6,7 @@ using Xunit;
 namespace Mentoory.Tests.E2E.Tests;
 
 /// <summary>
-/// Validates context switching behavior from the top-bar modal.
+/// Validates context switching behavior from the sidebar context card.
 /// </summary>
 [Collection(E2ETestCollection.Name)]
 [Trait("Category", "E2E")]
@@ -20,46 +20,69 @@ public class ContextSwitchingTests
     }
 
     [Fact]
-    public async Task TopBar_ShouldDisplay_CurrentContext()
+    public async Task Sidebar_ShouldDisplay_CurrentContext()
     {
         var page = await _fixture.CreatePageAsync();
         try
         {
             await LoginAsync(page, "incadmin1@test.mentoory.com", "Test123!@#");
 
-            // The top navigation bar should display the current incubator/project context
-            var contextIndicator = page.Locator("[data-testid='current-context'], .context-indicator, .navbar .context-name");
-            (await contextIndicator.CountAsync()).Should().BeGreaterThan(0,
-                "the top bar must show the current context information");
+            // The active context now lives in the sidebar card, not the header.
+            var contextCard = page.Locator("[data-testid='current-context']");
+            (await contextCard.CountAsync()).Should().Be(1,
+                "exactly one current-context card must render");
+
+            // It must be inside the sidebar (relocated from the header) — SC-001 / SC-004 / FR-012.
+            (await page.Locator("#sidebar [data-testid='current-context']").CountAsync()).Should().Be(1,
+                "the context card must be pinned in the sidebar, and nowhere else (the header carries no context badge)");
+
+            // The card must actually show context text (role primary line), not render empty.
+            var cardText = (await contextCard.InnerTextAsync()).Trim();
+            cardText.Should().NotBeEmpty("the card must display the active context");
+
+            // Razor control flow must execute, not leak into the page as literal text
+            // (regression guard: an unescaped `if` inside a markup block renders as text).
+            cardText.Should().NotContainAny("IsNullOrEmpty", "string.", "@if");
         }
         finally
         {
-            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(TopBar_ShouldDisplay_CurrentContext));
+            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(Sidebar_ShouldDisplay_CurrentContext));
             await page.Context.DisposeAsync();
         }
     }
 
     [Fact]
-    public async Task CambiarContextoButton_ShouldOpen_Modal()
+    public async Task ContextCard_ShouldOpen_Modal()
     {
         var page = await _fixture.CreatePageAsync();
         try
         {
             await LoginAndSelectContextAsync(page, "multirole@test.mentoory.com", "Test123!@#");
 
-            // Open the avatar dropdown in the TopBar to reveal the "Cambiar contexto" button
+            // The sidebar context card is now the single entry point to the switcher.
+            var contextCard = page.Locator("[data-testid='current-context']");
+            (await contextCard.CountAsync()).Should().BeGreaterThan(0,
+                "the sidebar must show the current context card");
+
+            // A multi-context user's card must expose the switch affordance (FR-004 / US2 #1).
+            (await page.Locator("[data-testid='current-context'][role='button'][data-bs-toggle='modal']").CountAsync())
+                .Should().Be(1, "the interactive card must be a modal trigger with role=button");
+            (await page.Locator("[data-testid='current-context'] .ti-selector").CountAsync())
+                .Should().Be(1, "the interactive card must show the switch chevron");
+
+            // "Cambiar contexto" must no longer live in the avatar dropdown (relocated to the card).
             var avatarDropdownToggle = page.Locator("[data-bs-toggle='dropdown'][aria-label='Menu de usuario']");
             await avatarDropdownToggle.ClickAsync();
-
-            // "Cambiar contexto" is a dropdown item that opens a modal
-            var switchButton = page.Locator("button").Filter(new LocatorFilterOptions
+            var legacySwitchButton = page.Locator("button").Filter(new LocatorFilterOptions
             {
                 HasText = "Cambiar contexto"
             });
-            (await switchButton.CountAsync()).Should().BeGreaterThan(0,
-                "'Cambiar contexto' button must be visible in the navigation");
+            (await legacySwitchButton.CountAsync()).Should().Be(0,
+                "'Cambiar contexto' must be removed from the avatar dropdown");
+            await page.Keyboard.PressAsync("Escape");
 
-            await switchButton.First.ClickAsync();
+            // Clicking the sidebar card opens the switcher modal.
+            await contextCard.ClickAsync();
 
             // Modal should appear
             var modal = page.Locator("#contextSwitcherModal");
@@ -81,7 +104,39 @@ public class ContextSwitchingTests
         }
         finally
         {
-            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(CambiarContextoButton_ShouldOpen_Modal));
+            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(ContextCard_ShouldOpen_Modal));
+            await page.Context.DisposeAsync();
+        }
+    }
+
+    [Fact]
+    public async Task SingleContextUser_Card_IsStatic_NotClickable()
+    {
+        var page = await _fixture.CreatePageAsync();
+        try
+        {
+            // entrepreneur1 has a single role assignment → auto-skips selection, CanSwitchContext = false.
+            await LoginAsync(page, "entrepreneur1@test.mentoory.com", "Test123!@#");
+
+            var contextCard = page.Locator("[data-testid='current-context']");
+            (await contextCard.CountAsync()).Should().Be(1, "the static context card must still render");
+
+            // SC-003 / FR-005: no switch affordance whatsoever.
+            (await page.Locator("[data-testid='current-context'][data-bs-toggle='modal']").CountAsync())
+                .Should().Be(0, "a single-context card must not be a modal trigger");
+            (await page.Locator("[data-testid='current-context'][role='button']").CountAsync())
+                .Should().Be(0, "a single-context card must not present as a button");
+            (await page.Locator("[data-testid='current-context'] .ti-selector").CountAsync())
+                .Should().Be(0, "a single-context card must not show the switch chevron");
+
+            // Clicking it must not open the switcher modal.
+            await contextCard.ClickAsync();
+            var modal = page.Locator("#contextSwitcherModal");
+            await Assertions.Expect(modal).Not.ToBeVisibleAsync();
+        }
+        finally
+        {
+            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(SingleContextUser_Card_IsStatic_NotClickable));
             await page.Context.DisposeAsync();
         }
     }
@@ -94,16 +149,9 @@ public class ContextSwitchingTests
         {
             await LoginAndSelectContextAsync(page, "multirole@test.mentoory.com", "Test123!@#");
 
-            // Open the avatar dropdown to reveal the "Cambiar contexto" button
-            var avatarDropdownToggle = page.Locator("[data-bs-toggle='dropdown'][aria-label='Menu de usuario']");
-            await avatarDropdownToggle.ClickAsync();
-
-            // Click the "Cambiar contexto" dropdown item to open the modal
-            var switchButton = page.Locator("button").Filter(new LocatorFilterOptions
-            {
-                HasText = "Cambiar contexto"
-            });
-            await switchButton.First.ClickAsync();
+            // Open the switcher modal from the sidebar context card.
+            var contextCard = page.Locator("[data-testid='current-context']");
+            await contextCard.ClickAsync();
 
             var modal = page.Locator("#contextSwitcherModal");
             await modal.WaitForAsync(new LocatorWaitForOptions
