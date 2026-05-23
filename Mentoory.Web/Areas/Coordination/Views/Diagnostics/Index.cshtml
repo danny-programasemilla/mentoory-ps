@@ -2,12 +2,13 @@
     ViewData["Title"] = "Formularios Diagnósticos";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Formularios Diagnósticos</h2>
-    <a asp-action="Clone" class="btn btn-primary">
-        <i class="ti ti-copy me-1"></i>Clonar Plantilla
-    </a>
-</div>
+@section PageActions {
+    <div class="col-auto">
+        <a asp-action="Clone" class="btn btn-primary">
+            <i class="ti ti-copy me-1"></i>Clonar Plantilla
+        </a>
+    </div>
+}
 
 @if (TempData["SuccessMessage"] is string successMessage)
 {
@@ -26,7 +27,7 @@
     </div>
 }
 
-@await Component.InvokeAsync("DataTable", new { tableId = "diagnosticFormsTable", columns = new[] { "Nombre", "Modo Sincronización", "Preguntas", "Fecha de Creación", "Acciones" }, title = "Listado de Formularios" })
+@await Component.InvokeAsync("DataTable", new { tableId = "diagnosticFormsTable", columns = new[] { "Nombre", "Modo Sincronización", "Preguntas", "Fecha de Creación", "Acciones" } })
 
 <form id="antiForgeryForm">
     @Html.AntiForgeryToken()

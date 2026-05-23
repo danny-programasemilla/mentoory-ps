@@ -2,11 +2,7 @@
     ViewData["Title"] = "Usuarios de la Plataforma";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Usuarios de la Plataforma</h2>
-</div>
-
-@await Component.InvokeAsync("DataTable", new { tableId = "usersTable", columns = new[] { "Correo Electrónico", "Nombre", "Apellido", "Estado", "Fecha de Registro" }, title = "Usuarios" })
+@await Component.InvokeAsync("DataTable", new { tableId = "usersTable", columns = new[] { "Correo Electrónico", "Nombre", "Apellido", "Estado", "Fecha de Registro" } })
 
 <form id="antiForgeryForm">
     @Html.AntiForgeryToken()

@@ -14,10 +14,45 @@
 <body class="@(User.Identity?.IsAuthenticated == true ? "layout-fluid" : "")">
     @if (User.Identity?.IsAuthenticated == true)
     {
+        var area = ViewContext.RouteData.Values["area"]?.ToString();
+        var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+        var action = ViewContext.RouteData.Values["action"]?.ToString();
+        var pageTitle = ViewData["Title"]?.ToString() ?? controller ?? "";
+
         <div class="page">
             @await Html.PartialAsync("_Navigation")
             <div class="page-wrapper">
-                @await Html.PartialAsync("_TopBar")
+                <div class="page-header d-print-none">
+                    <div class="container-xl">
+                        <div class="row align-items-center">
+                            @* Left zone: breadcrumb as page-pretitle + page-title *@
+                            <div class="col">
+                                <div class="page-pretitle">
+                                    <ol class="breadcrumb" aria-label="breadcrumbs">
+                                        <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                                        @if (!string.IsNullOrEmpty(area))
+                                        {
+                                            <li class="breadcrumb-item">@area</li>
+                                        }
+                                        @if (!string.IsNullOrEmpty(controller) && controller != "Home")
+                                        {
+                                            <li class="breadcrumb-item">@controller</li>
+                                        }
+                                        @if (!string.IsNullOrEmpty(action) && action != "Index")
+                                        {
+                                            <li class="breadcrumb-item active" aria-current="page">@action</li>
+                                        }
+                                    </ol>
+                                </div>
+                                <h2 class="page-title">@pageTitle</h2>
+                            </div>
+                            @* Per-page action buttons opt in via @@section PageActions *@
+                            @await RenderSectionAsync("PageActions", required: false)
+                            @* Right zone: context indicators + user menu *@
+                            @await Html.PartialAsync("_TopBar")
+                        </div>
+                    </div>
+                </div>
                 <div class="page-body">
                     <div class="container-xl">
                         @RenderBody()

@@ -20,25 +20,25 @@
     return;
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 class="mb-0">@Model.Name</h2>
-        <div class="text-secondary small">
-            <span class="badge bg-info">v@(Model.Version)</span>
-            @if (Model.IsArchived)
-            {
-                <span class="badge bg-secondary ms-1">Archivada</span>
-            }
-            else
-            {
-                <span class="badge bg-success ms-1">Activa</span>
-            }
-            <span class="ms-2">Creada el @Model.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</span>
-        </div>
+@section PageActions {
+    <div class="col-auto">
+        <a asp-action="Templates" class="btn btn-ghost-secondary">
+            <i class="ti ti-arrow-left me-1"></i>Volver al listado
+        </a>
     </div>
-    <a asp-action="Templates" class="btn btn-ghost-secondary">
-        <i class="ti ti-arrow-left me-1"></i>Volver al listado
-    </a>
+}
+
+<div class="text-secondary small mb-4">
+    <span class="badge bg-info">v@(Model.Version)</span>
+    @if (Model.IsArchived)
+    {
+        <span class="badge bg-secondary ms-1">Archivada</span>
+    }
+    else
+    {
+        <span class="badge bg-success ms-1">Activa</span>
+    }
+    <span class="ms-2">Creada el @Model.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</span>
 </div>
 
 @if (TempData["SuccessMessage"] is string successMessage)
