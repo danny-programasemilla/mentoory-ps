@@ -1,11 +1,10 @@
 @model Mentoory.Web.Areas.Participant.Models.DiagnosticFormViewModel
 @{
-    ViewData["Title"] = "Diagnóstico";
+    ViewData["Title"] = $"Diagnóstico: {Model.FormName}";
     var totalQuestions = Model.Questions.Count;
 }
 
 <div class="mb-4">
-    <h2>Diagnóstico: @Model.FormName</h2>
     <p class="text-secondary">Etapa de evaluación: <strong>@(Model.EvaluationStage == "Initial" ? "Inicial" : "Final")</strong></p>
 </div>
 

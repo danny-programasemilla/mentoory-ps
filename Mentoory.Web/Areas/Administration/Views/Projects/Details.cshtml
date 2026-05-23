@@ -5,17 +5,17 @@
     ViewData["Title"] = "Detalle del Proyecto";
 }
 
+@section PageActions {
+    <div class="col-auto">
+        <a asp-action="Index" class="btn btn-ghost-secondary">
+            <i class="ti ti-arrow-left me-1"></i>Volver
+        </a>
+    </div>
+}
+
 <div class="row justify-content-center">
     <div class="col-lg-8">
         <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Detalle del Proyecto</h3>
-                <div class="card-actions">
-                    <a asp-action="Index" class="btn btn-ghost-secondary">
-                        <i class="ti ti-arrow-left me-1"></i>Volver
-                    </a>
-                </div>
-            </div>
             <div class="card-body">
                 <div class="datagrid">
                     <div class="datagrid-item">

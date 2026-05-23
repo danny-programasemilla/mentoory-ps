@@ -2,11 +2,7 @@
     ViewData["Title"] = "Plantillas de Diagnóstico";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Plantillas de Diagnóstico</h2>
-</div>
-
-@await Component.InvokeAsync("DataTable", new { tableId = "templatesTable", columns = new[] { "Nombre", "Descripción", "Nivel de Suscripción", "Versión", "Estado", "Fecha de Creación" }, title = "Plantillas de Diagnóstico" })
+@await Component.InvokeAsync("DataTable", new { tableId = "templatesTable", columns = new[] { "Nombre", "Descripción", "Nivel de Suscripción", "Versión", "Estado", "Fecha de Creación" } })
 
 @section Scripts {
     <script src="~/js/datatable-helper.js"></script>

@@ -9,9 +9,6 @@
         <form asp-action="Edit" asp-route-externalId="@Model.ExternalId" method="post">
             @Html.AntiForgeryToken()
             <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Editar Incubadora</h3>
-                </div>
                 <div class="card-body">
                     <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
