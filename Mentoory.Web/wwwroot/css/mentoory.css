@@ -77,6 +77,38 @@ a:hover {
     background: var(--mentory-sidebar-active);
 }
 
+/* ── Sidebar context card (active-context footer) ── */
+.sidebar-context {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.5rem;
+}
+
+.sidebar-context-card {
+    padding: 0.5rem 0.625rem;
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.92); /* primary line — WCAG AA on #1B2434 */
+}
+
+.sidebar-context-card .text-secondary {
+    color: rgba(255, 255, 255, 0.6) !important; /* muted secondary line, still ≥ 4.5:1 */
+}
+
+.sidebar-context-card .ti-selector {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Hover/cursor affordance only on the interactive (anchor) variant */
+a.sidebar-context-card {
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+a.sidebar-context-card:hover,
+a.sidebar-context-card:focus {
+    background-color: var(--mentory-sidebar-hover);
+    color: #fff;
+}
+
 /* ── Avatar ── */
 .avatar {
     background-color: var(--mentory-primary);

@@ -16,6 +16,30 @@
 
     var currentArea = ViewContext.RouteData.Values["area"]?.ToString() ?? "";
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+
+    var activeRole = User.GetActiveRole();
+    var activeIncubatorName = User.FindFirst("ActiveIncubatorName")?.Value;
+    var activeProjectName = User.FindFirst("ActiveProjectName")?.Value;
+    var canSwitchContext = User.CanSwitchContext();
+
+    // Avatar + context lines, shared by the interactive and static card variants.
+    // Incubator and project each get their own truncating line so the full name is
+    // visible without hovering — only an individually over-long name is clipped.
+    void RenderContextCardBody()
+    {
+        <span class="avatar avatar-sm me-2"><i class="ti ti-building-community"></i></span>
+        <div class="text-truncate">
+            <div class="text-truncate" title="@activeRole">@activeRole</div>
+            @if (!string.IsNullOrEmpty(activeIncubatorName))
+            {
+                <div class="small text-secondary text-truncate" title="@activeIncubatorName">@activeIncubatorName</div>
+            }
+            @if (!string.IsNullOrEmpty(activeProjectName))
+            {
+                <div class="small text-secondary text-truncate" title="@activeProjectName">@activeProjectName</div>
+            }
+        </div>
+    }
 }
 
 <aside id="sidebar" class="navbar navbar-vertical navbar-expand-sm" data-bs-theme="dark">
@@ -114,6 +138,29 @@
                     }
                 }
             </ul>
+
+            @* Active-context card pinned to the sidebar bottom (relocated from the header). *@
+            @if (!string.IsNullOrEmpty(activeRole))
+            {
+                <div class="mt-auto sidebar-context">
+                    @if (canSwitchContext)
+                    {
+                        <a href="#" class="sidebar-context-card d-flex align-items-center text-reset text-decoration-none"
+                           data-bs-toggle="modal" data-bs-target="#contextSwitcherModal"
+                           data-testid="current-context" role="button"
+                           aria-label="Cambiar contexto de trabajo">
+                            @{ RenderContextCardBody(); }
+                            <i class="ti ti-selector ms-auto"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <div class="sidebar-context-card d-flex align-items-center" data-testid="current-context">
+                            @{ RenderContextCardBody(); }
+                        </div>
+                    }
+                </div>
+            }
         </div>
     </div>
 </aside>

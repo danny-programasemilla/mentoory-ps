@@ -45,7 +45,7 @@ public class ContextController : Controller
         // Auto-skip: single non-GlobalAdmin context
         if (contexts.Count == 1 && contexts[0].Role != Roles.GlobalAdmin)
         {
-            return await SetContext(contexts[0].RoleAssignmentExternalId, returnUrl, ct);
+            return await SetContext(contexts[0].RoleAssignmentExternalId, returnUrl, ct, contexts.Count);
         }
 
         // Auto-skip: single GlobalAdmin with no incubators to browse
@@ -56,7 +56,7 @@ public class ContextController : Controller
 
             if (options.Count == 0)
             {
-                return await SetContext(contexts[0].RoleAssignmentExternalId, returnUrl, ct);
+                return await SetContext(contexts[0].RoleAssignmentExternalId, returnUrl, ct, contexts.Count);
             }
         }
 
@@ -233,7 +233,7 @@ public class ContextController : Controller
             };
         }
 
-        await UpdateAuthCookie(context);
+        await UpdateAuthCookie(context, ct);
 
         return Ok(new { message = "Contexto actualizado exitosamente." });
     }
@@ -262,7 +262,8 @@ public class ContextController : Controller
         return (contextsTask.Result, optionsTask.Result);
     }
 
-    private async Task<IActionResult> SetContext(Guid roleAssignmentExternalId, string? returnUrl, CancellationToken ct)
+    private async Task<IActionResult> SetContext(
+        Guid roleAssignmentExternalId, string? returnUrl, CancellationToken ct, int? selectableContextCount = null)
     {
         var userId = User.GetUserId();
         if (userId is null)
@@ -273,7 +274,7 @@ public class ContextController : Controller
         var context = await _executor.SendOrThrowAsync(
             new SetActiveContextCommand(userId.Value, roleAssignmentExternalId), ct);
 
-        await UpdateAuthCookie(context);
+        await UpdateAuthCookie(context, ct, selectableContextCount);
 
         if (IsValidLocalUrl(returnUrl))
         {
@@ -314,7 +315,7 @@ public class ContextController : Controller
             ProjectName = projectName,
         };
 
-        await UpdateAuthCookie(context);
+        await UpdateAuthCookie(context, ct);
 
         if (IsValidLocalUrl(returnUrl))
         {
@@ -324,20 +325,24 @@ public class ContextController : Controller
         return RedirectToAction("Index", "Home");
     }
 
-    private async Task UpdateAuthCookie(UserContext context)
+    private async Task UpdateAuthCookie(UserContext context, CancellationToken ct, int? selectableContextCount = null)
     {
+        var canSwitch = await ResolveCanSwitchContextAsync(context, selectableContextCount, ct);
+
         var existingClaims = User.Claims
             .Where(c => c.Type != "ActiveRole"
                         && c.Type != "ActiveIncubatorId"
                         && c.Type != "ActiveProjectId"
                         && c.Type != "ActiveIncubatorName"
-                        && c.Type != "ActiveProjectName")
+                        && c.Type != "ActiveProjectName"
+                        && c.Type != "CanSwitchContext")
             .ToList();
 
         var claims = new List<Claim>(existingClaims)
         {
             new("ActiveRole", context.Role),
             new("ActiveIncubatorId", context.IncubatorId.ToString()),
+            new("CanSwitchContext", canSwitch ? "true" : "false"),
         };
 
         if (!string.IsNullOrEmpty(context.IncubatorName))
@@ -367,6 +372,32 @@ public class ContextController : Controller
         await HttpContext.SignInAsync(
             CookieAuthenticationDefaults.AuthenticationScheme,
             principal);
+    }
+
+    private async Task<bool> ResolveCanSwitchContextAsync(
+        UserContext context, int? selectableContextCount, CancellationToken ct)
+    {
+        // A GlobalAdmin can always re-pick incubator/project from the system-wide list.
+        if (context.Role == Roles.GlobalAdmin)
+        {
+            return true;
+        }
+
+        var count = selectableContextCount;
+        if (count is null)
+        {
+            var userId = User.GetUserId();
+            if (userId is null)
+            {
+                return false;
+            }
+
+            var contexts = await _executor.SendOrThrowAsync(new GetUserContextsQuery(userId.Value), ct);
+            count = contexts.Count;
+        }
+
+        // More than one active role assignment ⇒ the user has a meaningful choice.
+        return count > 1;
     }
 }
 
