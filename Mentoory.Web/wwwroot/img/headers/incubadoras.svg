@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 240" fill="none" aria-hidden="true">
+  <g opacity="0.14" fill="none" stroke-width="2">
+    <polygon points="1140,120 1080,224 960,224 900,120 960,16 1080,16" stroke="#D946A8"/>
+    <polygon points="1090,120 1055,181 985,181 950,120 985,59 1055,59" stroke="#F5B731"/>
+  </g>
+  <circle cx="1020" cy="120" r="16" fill="#E07850" opacity="0.12"/>
+</svg>

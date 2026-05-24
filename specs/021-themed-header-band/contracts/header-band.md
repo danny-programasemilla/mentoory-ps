@@ -26,8 +26,8 @@ Guarantees:
 - The band is inside the header that already has `d-print-none`, so it is print-suppressed (FR-011).
 
 CSS responsibilities (in `wwwroot/css/mentoory.css`):
-- `.page-header { position: relative; overflow: hidden; }`
-- `.page-header .container-xl { position: relative; z-index: 1; }`
+- `.page-header { position: relative; }` — NB: no `overflow: hidden` (it would clip the in-header user-menu/context dropdowns; the band's SVG is a background and is already clipped to the band's box, which is `inset: 0` = header-sized)
+- `.page-header > .container-xl { position: relative; z-index: 1; }`
 - `.page-header-band { position: absolute; inset: 0; z-index: 0; pointer-events: none; }`
 
 ## 2. Asset + class binding (swap contract — FR-005 / SC-003)

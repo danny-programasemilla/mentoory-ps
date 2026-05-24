@@ -18,7 +18,9 @@ Resolves the open decisions deferred from the spec (band dimensions, tint model,
 </div>
 ```
 
-`.page-header` gets `position: relative; overflow: hidden;`. `.page-header-band` is `position: absolute; inset: 0; z-index: 0; pointer-events: none;`. The `.container-xl` content is raised with `position: relative; z-index: 1`.
+`.page-header` gets `position: relative;`. `.page-header-band` is `position: absolute; inset: 0; z-index: 0; pointer-events: none;`. The `.container-xl` content is raised with `position: relative; z-index: 1`.
+
+> **Implementation deviation (recorded during build):** the originally-planned `overflow: hidden` on `.page-header` was **dropped**. The `_TopBar` user-menu / context dropdowns live inside `.page-header` and open *below* it; `overflow: hidden` would clip them (a real regression, caught by `LogoutTests` which waits for the dropdown's logout button to be visible). It is also unnecessary for the band: the band element is `inset: 0` (exactly header-sized) and its SVG is a *background*, which is auto-clipped to the element's box. So the art stays within the header without `overflow: hidden`.
 
 **Rationale**:
 - A real `aria-hidden="true"` element is the same approach already proven by `.auth-decorations` in `mentoory.css` (consistency, FR-008 decorative-only).

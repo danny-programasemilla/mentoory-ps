@@ -18,11 +18,14 @@
         var controller = ViewContext.RouteData.Values["controller"]?.ToString();
         var action = ViewContext.RouteData.Values["action"]?.ToString();
         var pageTitle = ViewData["Title"]?.ToString() ?? controller ?? "";
+        var headerTheme = Mentoory.Web.Infrastructure.HeaderTheme.Resolve(area, controller);
 
         <div class="page">
             @await Html.PartialAsync("_Navigation")
             <div class="page-wrapper">
                 <div class="page-header d-print-none">
+                    @* Decorative, per-section themed band (021). aria-hidden + not focusable. *@
+                    <div class="page-header-band header-band--@headerTheme" aria-hidden="true"></div>
                     <div class="container-xl">
                         <div class="row align-items-center">
                             @* Left zone: breadcrumb as page-pretitle + page-title *@

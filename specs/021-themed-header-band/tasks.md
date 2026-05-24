@@ -27,7 +27,7 @@ Web app (modular monolith). All production changes in `Mentoory.Web/`. Tests in 
 
 **Purpose**: Asset structure for the header SVGs.
 
-- [ ] T001 Create the header-asset directory `Mentoory.Web/wwwroot/img/headers/` (add a temporary `.gitkeep`; real SVGs land in T006).
+- [X] T001 Create the header-asset directory `Mentoory.Web/wwwroot/img/headers/` (add a temporary `.gitkeep`; real SVGs land in T006).
 
 ---
 
@@ -37,9 +37,9 @@ Web app (modular monolith). All production changes in `Mentoory.Web/`. Tests in 
 
 **⚠️ CRITICAL**: No user story work begins until this phase is complete.
 
-- [ ] T002 [P] Write FAILING unit tests for `HeaderTheme.Resolve(string? area, string? controller)` in `tests/Mentoory.Tests.Integration/Web/HeaderThemeResolveTests.cs` — assert every mapping row from data-model.md (`Dashboard→dashboard`, `Projects→proyectos`, `Knowledge`/`Templates→conocimiento`, `Diagnostics`/`Diagnostic`/`AnswerCorrection→diagnostico`, `Users`/`Sponsor`/`BatchUpload→personas`, `Incubators→incubadoras`, `AuditLog→auditoria`), case-insensitivity, unmapped controller → `default`, and `(null,null)` → `default`.
-- [ ] T003 Implement `Mentoory.Web/Infrastructure/HeaderTheme.cs` — pure static `Resolve` returning a non-empty slug per the data-model table; make T002 pass. No I/O, no state.
-- [ ] T004 Add shared structural CSS for the band in `Mentoory.Web/wwwroot/css/mentoory.css`: `.page-header { position: relative; overflow: hidden; }`, `.page-header .container-xl { position: relative; z-index: 1; }`, `.page-header-band { position: absolute; inset: 0; z-index: 0; pointer-events: none; background-repeat: no-repeat; background-position: right center; background-size: auto 100%; }`.
+- [X] T002 [P] Write FAILING unit tests for `HeaderTheme.Resolve(string? area, string? controller)` in `tests/Mentoory.Tests.Integration/Web/HeaderThemeResolveTests.cs` — assert every mapping row from data-model.md (`Dashboard→dashboard`, `Projects→proyectos`, `Knowledge`/`Templates→conocimiento`, `Diagnostics`/`Diagnostic`/`AnswerCorrection→diagnostico`, `Users`/`Sponsor`/`BatchUpload→personas`, `Incubators→incubadoras`, `AuditLog→auditoria`), case-insensitivity, unmapped controller → `default`, and `(null,null)` → `default`.
+- [X] T003 Implement `Mentoory.Web/Infrastructure/HeaderTheme.cs` — pure static `Resolve` returning a non-empty slug per the data-model table; make T002 pass. No I/O, no state.
+- [X] T004 Add shared structural CSS for the band in `Mentoory.Web/wwwroot/css/mentoory.css`: `.page-header { position: relative; overflow: hidden; }`, `.page-header .container-xl { position: relative; z-index: 1; }`, `.page-header-band { position: absolute; inset: 0; z-index: 0; pointer-events: none; background-repeat: no-repeat; background-position: right center; background-size: auto 100%; }`.
 
 **Checkpoint**: Resolver green and structural CSS in place — user stories can begin.
 
@@ -53,13 +53,13 @@ Web app (modular monolith). All production changes in `Mentoory.Web/`. Tests in 
 
 ### Tests for User Story 1 ⚠️ (write first, ensure they fail)
 
-- [ ] T005 [P] [US1] Integration HTML test in `tests/Mentoory.Tests.Integration/Web/HeaderBandRenderTests.cs` — via the existing `WebApplicationFactory` fixture, GET a representative authenticated route per theme and one unmapped route; assert exactly one `.page-header`, a first-child `.page-header-band` carrying the expected `header-band--{slug}` class, and unmapped → `header-band--default`. (Will fail until T007/T008 land.)
+- [X] T005 [P] [US1] Integration HTML test in `tests/Mentoory.Tests.Integration/Web/HeaderBandRenderTests.cs` — via the existing `WebApplicationFactory` fixture, GET a representative authenticated route per theme and one unmapped route; assert exactly one `.page-header`, a first-child `.page-header-band` carrying the expected `header-band--{slug}` class, and unmapped → `header-band--default`. (Will fail until T007/T008 land.)
 
 ### Implementation for User Story 1
 
-- [ ] T006 [P] [US1] Author the 8 abstract SVGs in `Mentoory.Web/wwwroot/img/headers/` (`dashboard.svg`, `proyectos.svg`, `conocimiento.svg`, `diagnostico.svg`, `personas.svg`, `incubadoras.svg`, `auditoria.svg`, `default.svg`): `viewBox="0 0 1200 240"`, minimal abstract geometry, brand palette (coral `#E07850`, gold `#F5B731`, magenta `#D946A8`, neutrals), composed to read when anchored right and clipped to header height; a few KB each. Remove the `.gitkeep`.
-- [ ] T007 [P] [US1] Add per-theme CSS rules `.header-band--{slug}` (8 rules incl. `default`) in `Mentoory.Web/wwwroot/css/mentoory.css`, each binding `background-image: url('/img/headers/{slug}.svg'), linear-gradient(90deg, transparent 0 45%, <per-theme low-alpha tint> 100%)` per contracts/header-band.md. Depends on T004 + T006.
-- [ ] T008 [US1] Inject the band into `Mentoory.Web/Views/Shared/_Layout.cshtml`: compute `var headerTheme = Mentoory.Web.Infrastructure.HeaderTheme.Resolve(area, controller);` (using the existing `area`/`controller` vars) and render `<div class="page-header-band header-band--@headerTheme" aria-hidden="true"></div>` as the FIRST child of the single `.page-header`. The edit stays inside the existing `User.Identity?.IsAuthenticated == true` branch so the band renders only on authenticated app pages, never on auth pages (FR-014). Do not add any second header (FR-010). Depends on T003.
+- [X] T006 [P] [US1] Author the 8 abstract SVGs in `Mentoory.Web/wwwroot/img/headers/` (`dashboard.svg`, `proyectos.svg`, `conocimiento.svg`, `diagnostico.svg`, `personas.svg`, `incubadoras.svg`, `auditoria.svg`, `default.svg`): `viewBox="0 0 1200 240"`, minimal abstract geometry, brand palette (coral `#E07850`, gold `#F5B731`, magenta `#D946A8`, neutrals), composed to read when anchored right and clipped to header height; a few KB each. Remove the `.gitkeep`.
+- [X] T007 [P] [US1] Add per-theme CSS rules `.header-band--{slug}` (8 rules incl. `default`) in `Mentoory.Web/wwwroot/css/mentoory.css`, each binding `background-image: url('/img/headers/{slug}.svg'), linear-gradient(90deg, transparent 0 45%, <per-theme low-alpha tint> 100%)` per contracts/header-band.md. Depends on T004 + T006.
+- [X] T008 [US1] Inject the band into `Mentoory.Web/Views/Shared/_Layout.cshtml`: compute `var headerTheme = Mentoory.Web.Infrastructure.HeaderTheme.Resolve(area, controller);` (using the existing `area`/`controller` vars) and render `<div class="page-header-band header-band--@headerTheme" aria-hidden="true"></div>` as the FIRST child of the single `.page-header`. The edit stays inside the existing `User.Identity?.IsAuthenticated == true` branch so the band renders only on authenticated app pages, never on auth pages (FR-014). Do not add any second header (FR-010). Depends on T003.
 - [ ] T009 [US1] Manual QA — distinctness + contrast: confirm each theme renders distinct art (SC-001) and the title + breadcrumb measure ≥ 4.5:1 over the band on every theme (SC-002/FR-007); tune the per-theme tint alpha in `mentoory.css` for any theme that falls short (worst case: most-saturated tint).
 
 **Checkpoint**: MVP — every section shows a distinct, legible, on-brand band.
@@ -74,7 +74,7 @@ Web app (modular monolith). All production changes in `Mentoory.Web/`. Tests in 
 
 ### Implementation for User Story 2
 
-- [ ] T010 [US2] Confirm the swap contract holds: each `.header-band--{slug}` rule references only `/img/headers/{slug}.svg` (no inlined art, no JS), and `.header-band--default` is always defined so the resolver's fallback always paints. Verify in `Mentoory.Web/wwwroot/css/mentoory.css`. (FR-005, FR-012)
+- [X] T010 [US2] Confirm the swap contract holds: each `.header-band--{slug}` rule references only `/img/headers/{slug}.svg` (no inlined art, no JS), and `.header-band--default` is always defined so the resolver's fallback always paints. Verify in `Mentoory.Web/wwwroot/css/mentoory.css`. (FR-005, FR-012)
 - [ ] T011 [US2] Manual QA — swap + fallback (SC-003/FR-012): overwrite one `{slug}.svg` with a distinct image → art changes on reload, no rebuild; temporarily delete a `{slug}.svg` → band shows tint only, title unbroken. Restore the file afterward.
 
 **Checkpoint**: Art is swappable per the file-path contract; missing files never break the header.
@@ -89,12 +89,12 @@ Web app (modular monolith). All production changes in `Mentoory.Web/`. Tests in 
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T012 [P] [US3] E2E test in `tests/Mentoory.Tests.E2E/` (Playwright, existing fixture) — on a representative authenticated page assert the `.page-header-band` is present, the page title is visible, and the band element is not reachable via keyboard tab order. (FR-008, SC-005)
-- [ ] T013 [P] [US3] Extend `tests/Mentoory.Tests.Integration/Web/HeaderBandRenderTests.cs` — assert the rendered `.page-header-band` carries `aria-hidden="true"` and contains no interactive descendants (no `<a>`/`<button>`/`tabindex`).
+- [X] T012 [P] [US3] E2E test in `tests/Mentoory.Tests.E2E/` (Playwright, existing fixture) — on a representative authenticated page assert the `.page-header-band` is present, the page title is visible, and the band element is not reachable via keyboard tab order. (FR-008, SC-005)
+- [X] T013 [P] [US3] Extend `tests/Mentoory.Tests.Integration/Web/HeaderBandRenderTests.cs` — assert the rendered `.page-header-band` carries `aria-hidden="true"` and contains no interactive descendants (no `<a>`/`<button>`/`tabindex`).
 
 ### Implementation for User Story 3
 
-- [ ] T014 [US3] Add responsive CSS in `Mentoory.Web/wwwroot/css/mentoory.css`: below the Bootstrap `md` breakpoint, suppress the `.page-header-band` SVG art layer (keep the gradient tint) so it never crowds a wrapped title (FR-009).
+- [X] T014 [US3] Add responsive CSS in `Mentoory.Web/wwwroot/css/mentoory.css`: below the Bootstrap `md` breakpoint, suppress the `.page-header-band` SVG art layer (keep the gradient tint) so it never crowds a wrapped title (FR-009).
 - [ ] T015 [US3] Manual QA — accessibility + responsive + print (quickstart): narrow-viewport crowding check, screen-reader silence, and print-preview suppression (FR-009/FR-011/SC-005).
 
 **Checkpoint**: All three stories independently functional.
@@ -103,8 +103,8 @@ Web app (modular monolith). All production changes in `Mentoory.Web/`. Tests in 
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T016 Run `/simplify` and a self code-review on `HeaderTheme.cs`, the `_Layout.cshtml` edit, and the `mentoory.css` additions — small methods, no dead code, no magic strings, consistent with surrounding style.
-- [ ] T017 Build zero-warning (`dotnet build`, `TreatWarningsAsErrors=true`) and run `dotnet test tests/Mentoory.Tests.Integration` + `dotnet test tests/Mentoory.Tests.E2E` green.
+- [X] T016 Run `/simplify` and a self code-review on `HeaderTheme.cs`, the `_Layout.cshtml` edit, and the `mentoory.css` additions — small methods, no dead code, no magic strings, consistent with surrounding style.
+- [X] T017 Build zero-warning (`dotnet build`, `TreatWarningsAsErrors=true`) and run `dotnet test tests/Mentoory.Tests.Integration` + `dotnet test tests/Mentoory.Tests.E2E` green.
 - [ ] T018 Run the full `quickstart.md` manual-QA checklist end to end and record the outcome; address any failures before merge.
 
 ---
