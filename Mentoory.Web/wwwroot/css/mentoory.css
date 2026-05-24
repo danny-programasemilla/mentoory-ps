@@ -305,3 +305,88 @@ a.sidebar-context-card:focus {
     margin-bottom: 0;
     font-size: 0.875rem;
 }
+
+/* ── Themed header band (021) ────────────────────────────────────────────────
+   A decorative, per-section band painted behind the single shared page header.
+   Structure: the band is an absolutely-positioned aria-hidden child of .page-header;
+   the header's content (.container-xl) is raised above it. Tint + art are weighted
+   to the RIGHT so the breadcrumb/title on the left stay over near-body-bg and remain
+   WCAG-AA legible. Per-theme art is bound by the .header-band--{slug} rules below. */
+/* position:relative anchors the absolute band. We intentionally do NOT set
+   overflow:hidden here: the band's SVG is a background painted inside the band's own
+   box (inset:0 = header size), so it is already clipped — and overflow:hidden would
+   instead clip the in-header user-menu / context dropdowns, which open below the header. */
+.page-header {
+    position: relative;
+}
+
+.page-header > .container-xl {
+    position: relative;
+    z-index: 1;
+}
+
+.page-header-band {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-repeat: no-repeat;
+    background-position: right center;
+    background-size: auto 100%;
+    /* Layer order: SVG art (right-anchored) on top, right-weighted gradient tint behind.
+       Both layers come from per-theme custom properties so the responsive rule below can
+       drop the art alone while keeping the tint. */
+    background-image: var(--band-art, none), var(--band-tint, none);
+}
+
+/* Per-theme art + tint. The gradient stays transparent under the left text column
+   (0–45%) so the title/breadcrumb keep WCAG-AA contrast over the body background.
+   Swap contract: overwrite /img/headers/{slug}.svg to change a section's art — no code
+   change. A missing file simply fails to paint and the tint remains (FR-012). */
+.header-band--dashboard {
+    --band-art: url('/img/headers/dashboard.svg');
+    --band-tint: linear-gradient(90deg, transparent 0 45%, rgba(224, 120, 80, 0.10) 100%);
+}
+
+.header-band--proyectos {
+    --band-art: url('/img/headers/proyectos.svg');
+    --band-tint: linear-gradient(90deg, transparent 0 45%, rgba(245, 183, 49, 0.12) 100%);
+}
+
+.header-band--conocimiento {
+    --band-art: url('/img/headers/conocimiento.svg');
+    --band-tint: linear-gradient(90deg, transparent 0 45%, rgba(217, 70, 168, 0.10) 100%);
+}
+
+.header-band--diagnostico {
+    --band-art: url('/img/headers/diagnostico.svg');
+    --band-tint: linear-gradient(90deg, transparent 0 45%, rgba(66, 153, 225, 0.10) 100%);
+}
+
+.header-band--personas {
+    --band-art: url('/img/headers/personas.svg');
+    --band-tint: linear-gradient(90deg, transparent 0 45%, rgba(224, 120, 80, 0.10) 100%);
+}
+
+.header-band--incubadoras {
+    --band-art: url('/img/headers/incubadoras.svg');
+    --band-tint: linear-gradient(90deg, transparent 0 45%, rgba(217, 70, 168, 0.09) 100%);
+}
+
+.header-band--auditoria {
+    --band-art: url('/img/headers/auditoria.svg');
+    --band-tint: linear-gradient(90deg, transparent 0 45%, rgba(27, 36, 52, 0.06) 100%);
+}
+
+.header-band--default {
+    --band-art: url('/img/headers/default.svg');
+    --band-tint: linear-gradient(90deg, transparent 0 45%, rgba(224, 120, 80, 0.06) 100%);
+}
+
+/* Responsive (FR-009): below Bootstrap md, drop the SVG art so it never crowds a wrapped
+   title; the faint gradient tint stays for a touch of section color. */
+@media (max-width: 767.98px) {
+    .page-header-band {
+        --band-art: none;
+    }
+}

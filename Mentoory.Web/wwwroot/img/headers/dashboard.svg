@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 240" fill="none" aria-hidden="true">
+  <g opacity="0.13">
+    <circle cx="1090" cy="120" r="165" stroke="#E07850" stroke-width="2"/>
+    <circle cx="1090" cy="120" r="112" stroke="#E07850" stroke-width="2"/>
+    <circle cx="1090" cy="120" r="58" stroke="#F5B731" stroke-width="2"/>
+  </g>
+  <g opacity="0.11" fill="#E07850">
+    <circle cx="752" cy="70" r="7"/>
+    <circle cx="824" cy="150" r="7"/>
+    <circle cx="700" cy="182" r="7"/>
+    <circle cx="880" cy="60" r="7"/>
+  </g>
+</svg>

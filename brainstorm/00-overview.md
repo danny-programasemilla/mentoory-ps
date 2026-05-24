@@ -1,6 +1,6 @@
 # Brainstorm Overview
 
-Last updated: 2026-05-22 (#17 sidebar-context-footer → spec 020 created; relocates active-context display from header to a clickable card at the sidebar bottom)
+Last updated: 2026-05-23 (#18 themed-header-band → spec 021 created; curated per-section abstract SVG band behind the shared page header — fresh, on-brand, static, WCAG-AA legible)
 
 ## Sessions
 
@@ -23,6 +23,7 @@ Last updated: 2026-05-22 (#17 sidebar-context-footer → spec 020 created; reloc
 | 15 | 2026-04-19 | knowledge-module-binding-redesign | spec-created | 016 (amended) |
 | 16 | 2026-04-25 | integration-soak-bundle | spec-shipped | 019 (PR #15, squash `fbd5ac6`) |
 | 17 | 2026-05-22 | sidebar-context-footer | spec-created | 020 |
+| 18 | 2026-05-23 | themed-header-band | spec-created | 021 |
 
 ## Open Threads
 
@@ -88,6 +89,10 @@ Last updated: 2026-05-22 (#17 sidebar-context-footer → spec 020 created; reloc
 - Switchability detection — cheapest reliable way to know "user has > 1 selectable context" at layout render: claim set at sign-in vs cached value vs always-clickable fallback (from #17, deferred to `/speckit-plan`)
 - Card contrast on dark sidebar — optionally quantify against WCAG AA ≥ 4.5:1 (from #17)
 - Mobile switch reach — with the avatar-dropdown switch path removed, switching on small screens requires opening the hamburger and tapping the card; confirm acceptable in UX review (from #17)
+- Header band vertical size / SVG canvas dimensions — deferred to `/speckit-plan` (from #18)
+- Header band background tint: per-theme colored wash vs. single neutral wash (from #18)
+- Exact section→theme routing table (`Sponsor`→`personas`; `Configuration`/`BatchUpload`→`default`) — finalize in planning (from #18)
+- Strictly-static band vs. later one-shot reduced-motion-aware entrance (from #18)
 
 ## Decisions Ratified During Review
 
