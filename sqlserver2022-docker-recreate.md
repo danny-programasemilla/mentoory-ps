@@ -121,6 +121,30 @@ Server=127.0.0.1,1433;Database=mentooryDb;User Id=sa;Password=UrStrongPa55w0rd;E
 - **Password**: `UrStrongPa55w0rd`
 - **SSL**: Enable TLS and set **Trust server certificate** (or in Driver properties set `encrypt=true` & `trustServerCertificate=true`).
 
+### Faster: connect by URL (JDBC) instead of field-by-field
+
+DBeaver is **JDBC**-based, so you cannot paste the .NET connection string from
+section 7 directly — the syntax differs. But you can avoid most field-by-field
+entry by switching to URL mode:
+
+1. **New Connection → SQL Server**.
+2. Change the **"Connect by"** selector from **Host** to **URL**. The
+   Host/Port/Database fields disappear and a single **URL** box appears.
+3. Paste the JDBC URL:
+   ```text
+   jdbc:sqlserver://localhost:1433;databaseName=mentooryDb;encrypt=true;trustServerCertificate=true
+   ```
+4. **Username** and **Password** stay separate fields (they are never part of
+   the pasted URL): `sa` / `UrStrongPa55w0rd`.
+
+Syntax differences vs the .NET string (section 7):
+
+| .NET (ADO.NET)                | JDBC (Microsoft driver)        |
+|-------------------------------|--------------------------------|
+| `Server=localhost,1433`       | `localhost:1433` (colon)       |
+| `Database=mentooryDb`         | `databaseName=mentooryDb`      |
+| `MultipleActiveResultSets`    | n/a — ADO.NET-only, drop it    |
+
 ---
 
 ## 9) docker‑compose (optional)
