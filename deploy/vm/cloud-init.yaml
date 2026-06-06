@@ -11,7 +11,7 @@ packages:
 write_files:
   # Cap docker's local json-file logs (10MB x 3 per container). Written before docker
   # installs so the daemon picks it up on first start. This is the on-VM equivalent of
-  # an Azure Log Analytics cap — disk-bounded, $0, and there is no Log Analytics here.
+  # an Azure Log Analytics cap -- disk-bounded, $0, and there is no Log Analytics here.
   - path: /etc/docker/daemon.json
     content: |
       { "log-driver": "json-file", "log-opts": { "max-size": "10m", "max-file": "3" } }

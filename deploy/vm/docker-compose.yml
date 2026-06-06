@@ -29,7 +29,7 @@ services:
 
   webapp:
     build:
-      # Build context is the repo root — Mentoory.Web/Dockerfile publishes the Web
+      # Build context is the repo root -- Mentoory.Web/Dockerfile publishes the Web
       # project and its transitive project graph (slnx-independent).
       context: ../..
       dockerfile: Mentoory.Web/Dockerfile
@@ -54,7 +54,7 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_ENDPOINT:-}
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc
       OTEL_SERVICE_NAME: mentoory-web
-      # Attachments storage — FUTURE USE. No Mentoory code consumes blob storage yet;
+      # Attachments storage -- FUTURE USE. No Mentoory code consumes blob storage yet;
       # these are wired as no-ops so a later attachments feature needs no compose change.
       Storage__Provider: ${STORAGE_PROVIDER:-}
       ConnectionStrings__blobs: ${BLOB_CONNECTION:-}
@@ -74,7 +74,7 @@ services:
   mssql:
     image: mcr.microsoft.com/mssql/server:2022-latest
     restart: unless-stopped
-    # Bind to loopback only — SQL never faces the public internet. Reach it for dacpac
+    # Bind to loopback only -- SQL never faces the public internet. Reach it for dacpac
     # publishing via an SSH tunnel (see publish-dacpac-vm.sh).
     ports:
       - "127.0.0.1:1433:1433"
@@ -94,7 +94,7 @@ services:
       retries: 20
       start_period: 40s
 
-  # On-demand only (profile: debug). In-memory telemetry viewer — structured logs,
+  # On-demand only (profile: debug). In-memory telemetry viewer -- structured logs,
   # traces, metrics. Nothing persisted, nothing to pay for: all state is RAM and
   # evaporates on restart. Bound to loopback; reach the UI through an SSH tunnel:
   #   ssh -L 18888:localhost:18888 azureuser@<VM IP>   then open http://localhost:18888
