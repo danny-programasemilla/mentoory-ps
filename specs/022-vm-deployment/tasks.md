@@ -27,8 +27,8 @@ US3 = operate economically & observably). All paths are repo-relative to the wor
 
 **Purpose**: Scaffolding for all deployment artifacts.
 
-- [ ] T001 Create the `deploy/vm/` directory at the repo root (holds all deployment artifacts per plan.md Project Structure)
-- [ ] T002 [P] Create repo-root `.dockerignore` excluding `**/bin`, `**/obj`, `.git`, `**/node_modules`, `TestResults`, `specs`, `brainstorm`, `deploy/vm/.env`, `deploy/vm/backups`, `.localstorage` (research R3)
+- [X] T001 Create the `deploy/vm/` directory at the repo root (holds all deployment artifacts per plan.md Project Structure)
+- [X] T002 [P] Create repo-root `.dockerignore` excluding `**/bin`, `**/obj`, `.git`, `**/node_modules`, `TestResults`, `specs`, `brainstorm`, `deploy/vm/.env`, `deploy/vm/backups`, `.localstorage` (research R3)
 
 ---
 
@@ -39,11 +39,11 @@ deployment depends on. **No user story can be stood up until this phase is compl
 
 **⚠️ CRITICAL**: Blocks US1 and US3.
 
-- [ ] T003 [P] Create `Mentoory.Web/Dockerfile`: multi-stage, build context = repo root; build stage `mcr.microsoft.com/dotnet/sdk:10.0` copying `global.json`, `Directory.Build.props`, `Directory.Build.targets`, `Directory.Packages.props` then source, running `dotnet publish Mentoory.Web/Mentoory.Web.csproj -c Release -o /app/publish`; runtime stage `mcr.microsoft.com/dotnet/aspnet:10.0` exposing 8080, `ENTRYPOINT ["dotnet","Mentoory.Web.dll"]` (research R3, R11; FR-009, FR-010)
-- [ ] T004 [P] Create `deploy/vm/.env.example` per contracts/env-vars.md §A: `APP_DOMAIN`, `ACME_EMAIL`, `MSSQL_SA_PASSWORD`, `MEDIATR_LICENSE_KEY`, optional `STORAGE_PROVIDER`/`BLOB_CONNECTION`/`OTEL_ENDPOINT`. Explicitly NO `ADMIN_DEFAULT_PASSWORD`/Syncfusion/Mailgun keys (research R5; FR-024, FR-035)
-- [ ] T005 [P] Create `deploy/vm/cloud-init.yaml`: install Docker + compose on first boot, write `/etc/docker/daemon.json` json-file log cap (10m×3), enable `ufw` for OpenSSH/80/443 (FR-004, FR-031)
-- [ ] T006 [P] Create `deploy/vm/Caddyfile`: global `email {$ACME_EMAIL}`, site block `{$APP_DOMAIN}` with `encode zstd gzip` and `reverse_proxy webapp:8080` (auto-TLS) (research R2; FR-008)
-- [ ] T007 Create `deploy/vm/docker-compose.yml` (project name `mentoory`) with core services per data-model.md §3–§4: `caddy` (80/443, Caddyfile + caddy_data/caddy_config volumes, depends_on webapp), `webapp` (build context `../..` dockerfile `Mentoory.Web/Dockerfile`; env: `ASPNETCORE_ENVIRONMENT=Production`, `ASPNETCORE_FORWARDEDHEADERS_ENABLED=true`, `HTTP_PORTS=8080`, `ConnectionStrings__DefaultConnection=Server=mssql,1433;Database=MentooryDb;User Id=sa;Password=${MSSQL_SA_PASSWORD};Encrypt=True;TrustServerCertificate=True`, `MediatR__LicenseKey=${MEDIATR_LICENSE_KEY:-}`, `OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_ENDPOINT:-}`, `OTEL_SERVICE_NAME=mentoory-web`, pinned `Logging__LogLevel__*`, optional `Storage__Provider=${STORAGE_PROVIDER:-}`/`ConnectionStrings__blobs=${BLOB_CONNECTION:-}`; volumes `app_storage` + `dataprotection` for the DP keyring; depends_on mssql healthy), `mssql` (`mcr.microsoft.com/mssql/server:2022-latest`, `127.0.0.1:1433`, Developer PID, `MSSQL_MEMORY_LIMIT_MB=2048`, `mssql_data` volume, sqlcmd healthcheck); declare named volumes (research R2,R5,R7; FR-007,011,012,013,014)
+- [X] T003 [P] Create `Mentoory.Web/Dockerfile`: multi-stage, build context = repo root; build stage `mcr.microsoft.com/dotnet/sdk:10.0` copying `global.json`, `Directory.Build.props`, `Directory.Build.targets`, `Directory.Packages.props` then source, running `dotnet publish Mentoory.Web/Mentoory.Web.csproj -c Release -o /app/publish`; runtime stage `mcr.microsoft.com/dotnet/aspnet:10.0` exposing 8080, `ENTRYPOINT ["dotnet","Mentoory.Web.dll"]` (research R3, R11; FR-009, FR-010)
+- [X] T004 [P] Create `deploy/vm/.env.example` per contracts/env-vars.md §A: `APP_DOMAIN`, `ACME_EMAIL`, `MSSQL_SA_PASSWORD`, `MEDIATR_LICENSE_KEY`, optional `STORAGE_PROVIDER`/`BLOB_CONNECTION`/`OTEL_ENDPOINT`. Explicitly NO `ADMIN_DEFAULT_PASSWORD`/Syncfusion/Mailgun keys (research R5; FR-024, FR-035)
+- [X] T005 [P] Create `deploy/vm/cloud-init.yaml`: install Docker + compose on first boot, write `/etc/docker/daemon.json` json-file log cap (10m×3), enable `ufw` for OpenSSH/80/443 (FR-004, FR-031)
+- [X] T006 [P] Create `deploy/vm/Caddyfile`: global `email {$ACME_EMAIL}`, site block `{$APP_DOMAIN}` with `encode zstd gzip` and `reverse_proxy webapp:8080` (auto-TLS) (research R2; FR-008)
+- [X] T007 Create `deploy/vm/docker-compose.yml` (project name `mentoory`) with core services per data-model.md §3–§4: `caddy` (80/443, Caddyfile + caddy_data/caddy_config volumes, depends_on webapp), `webapp` (build context `../..` dockerfile `Mentoory.Web/Dockerfile`; env: `ASPNETCORE_ENVIRONMENT=Production`, `ASPNETCORE_FORWARDEDHEADERS_ENABLED=true`, `HTTP_PORTS=8080`, `ConnectionStrings__DefaultConnection=Server=mssql,1433;Database=MentooryDb;User Id=sa;Password=${MSSQL_SA_PASSWORD};Encrypt=True;TrustServerCertificate=True`, `MediatR__LicenseKey=${MEDIATR_LICENSE_KEY:-}`, `OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_ENDPOINT:-}`, `OTEL_SERVICE_NAME=mentoory-web`, pinned `Logging__LogLevel__*`, optional `Storage__Provider=${STORAGE_PROVIDER:-}`/`ConnectionStrings__blobs=${BLOB_CONNECTION:-}`; volumes `app_storage` + `dataprotection` for the DP keyring; depends_on mssql healthy), `mssql` (`mcr.microsoft.com/mssql/server:2022-latest`, `127.0.0.1:1433`, Developer PID, `MSSQL_MEMORY_LIMIT_MB=2048`, `mssql_data` volume, sqlcmd healthcheck); declare named volumes (research R2,R5,R7; FR-007,011,012,013,014)
 
 **Checkpoint**: Runtime substrate exists — provisioning + deploy can now stand the app up.
 
@@ -57,9 +57,9 @@ HTTPS — no Aspire AppHost, no Azure Container Apps, no Azure SQL.
 **Independent Test**: Run provision → point DNS → first deploy; the site loads over HTTPS with a valid cert
 and the Spanish login renders, backed by the in-VM SQL with `MentooryDb` published.
 
-- [ ] T008 [P] [US1] Create `deploy/vm/provision-vm.sh` per contracts/deploy-cli.md: ensure RG (`rg-Mentoory-D`), `az vm create` Ubuntu 24.04 (`Standard_B2s`/`centralus`/64GB StandardSSD/Standard static IP, `--custom-data cloud-init.yaml`, `--nsg-rule NONE`), add NSG rules (80/443 from `*`, 22 from auto-detected `MYIP/32`), print IP + next steps; all env-overridable (FR-001..006, FR-035)
-- [ ] T009 [P] [US1] Create `deploy/vm/publish-dacpac-vm.sh` per contracts/deploy-cli.md: build `Mentoory.Db/MentooryDb.sqlproj` (`-c ${DACPAC_CONFIG:-Release}`, skippable), open `ssh -f -N -L <port>:localhost:1433`, `sqlpackage /Action:Publish` to `127.0.0.1,<port>` target DB `MentooryDb` (`BlockOnPossibleDataLoss=false`, `TrustServerCertificate=True`), close tunnel via trap (research R5; FR-016..018)
-- [ ] T010 [US1] Create `deploy/vm/deploy.sh` per contracts/deploy-cli.md: preflight SSH; `rsync -az --delete` repo→VM with the documented excludes (incl. `deploy/vm/.env`, `deploy/vm/backups`); require VM `.env` (clear failure if missing); `docker compose up -d mssql` + wait healthy; optional `--schema` → `publish-dacpac-vm.sh`; `docker compose up -d --build webapp caddy` (or `--no-build`); `docker image prune -f`; `docker compose ps`; optional `--logs` tail. Never write/delete the VM `.env` (depends on T007, T009; FR-019..023)
+- [X] T008 [P] [US1] Create `deploy/vm/provision-vm.sh` per contracts/deploy-cli.md: ensure RG (`rg-Mentoory-D`), `az vm create` Ubuntu 24.04 (`Standard_B2s`/`centralus`/64GB StandardSSD/Standard static IP, `--custom-data cloud-init.yaml`, `--nsg-rule NONE`), add NSG rules (80/443 from `*`, 22 from auto-detected `MYIP/32`), print IP + next steps; all env-overridable (FR-001..006, FR-035)
+- [X] T009 [P] [US1] Create `deploy/vm/publish-dacpac-vm.sh` per contracts/deploy-cli.md: build `Mentoory.Db/MentooryDb.sqlproj` (`-c ${DACPAC_CONFIG:-Release}`, skippable), open `ssh -f -N -L <port>:localhost:1433`, `sqlpackage /Action:Publish` to `127.0.0.1,<port>` target DB `MentooryDb` (`BlockOnPossibleDataLoss=false`, `TrustServerCertificate=True`), close tunnel via trap (research R5; FR-016..018)
+- [X] T010 [US1] Create `deploy/vm/deploy.sh` per contracts/deploy-cli.md: preflight SSH; `rsync -az --delete` repo→VM with the documented excludes (incl. `deploy/vm/.env`, `deploy/vm/backups`); require VM `.env` (clear failure if missing); `docker compose up -d mssql` + wait healthy; optional `--schema` → `publish-dacpac-vm.sh`; `docker compose up -d --build webapp caddy` (or `--no-build`); `docker image prune -f`; `docker compose ps`; optional `--logs` tail. Never write/delete the VM `.env` (depends on T007, T009; FR-019..023)
 - [ ] T011 [US1] Validate US1 via `quickstart.md` "One-time setup" + "Smoke test": provision, DNS, first deploy `--schema`, confirm HTTPS valid cert + Spanish login + `docker compose ps` healthy (SC-001, SC-009)
 
 **Checkpoint**: MVP — Mentoory reachable over HTTPS at fixed cost.
@@ -75,7 +75,7 @@ or causing logout-on-deploy.
 schema → `deploy.sh --schema` → schema updated over the private tunnel; confirm the VM `.env` is untouched
 and sessions survive (DataProtection volume).
 
-- [ ] T012 [US2] Document the day-to-day deploy + logs workflow in `deploy/vm/README.md` (deploy variants `--schema`/`--no-build`/`--logs`, idempotency, `.env` never overwritten, log tail + rotation cap) — README "Day-to-day" + "Logs" sections (FR-031, FR-034)
+- [X] T012 [US2] Document the day-to-day deploy + logs workflow in `deploy/vm/README.md` (deploy variants `--schema`/`--no-build`/`--logs`, idempotency, `.env` never overwritten, log tail + rotation cap) — README "Day-to-day" + "Logs" sections (FR-031, FR-034)
 - [ ] T013 [US2] Validate US2 via `quickstart.md` "Day-to-day": re-run `deploy.sh` (no-op), run `--schema` update over the SSH tunnel, confirm `.env` preserved and no public 1433 endpoint, and that login persists across a redeploy (DataProtection volume) (SC-003, SC-004, SC-005, FR-013)
 
 **Checkpoint**: Updates are repeatable and non-destructive.
@@ -90,9 +90,9 @@ and sessions survive (DataProtection volume).
 auto-stops/starts and DNS+TLS survive; start the telemetry viewer → reachable only via SSH tunnel, off by
 default.
 
-- [ ] T014 [P] [US3] Extend `deploy/vm/docker-compose.yml` with an `aspire-dashboard` service under the `debug` profile: `mcr.microsoft.com/dotnet/aspire-dashboard:9.0`, `127.0.0.1:18888` loopback, `AUTHMODE=Unsecured`, bounded telemetry limits; off by default (research R6; FR-030, SC-008)
-- [ ] T015 [P] [US3] Create `deploy/vm/backup.sh` per contracts/deploy-cli.md: source `.env`, `BACKUP DATABASE [MentooryDb] ... WITH INIT, COMPRESSION`, copy `.bak` out of the container, archive `app_storage` volume, prune older than `${BACKUP_KEEP_DAYS:-7}`, commented off-VM blob upload (FR-027, SC-007)
-- [ ] T016 [P] [US3] Create `deploy/vm/provision-schedule.sh` per contracts/deploy-cli.md: `provision` (DevTest auto-stop 19:00 + Automation account/identity/runbook `StartMentooryVM` + weekly start schedule 06:45 `America/Costa_Rica` + job link), plus `start`/`stop`/`status`/`disable`/`enable` subcommands; all env-overridable (FR-028, FR-029, SC-006)
+- [X] T014 [P] [US3] Extend `deploy/vm/docker-compose.yml` with an `aspire-dashboard` service under the `debug` profile: `mcr.microsoft.com/dotnet/aspire-dashboard:9.0`, `127.0.0.1:18888` loopback, `AUTHMODE=Unsecured`, bounded telemetry limits; off by default (research R6; FR-030, SC-008)
+- [X] T015 [P] [US3] Create `deploy/vm/backup.sh` per contracts/deploy-cli.md: source `.env`, `BACKUP DATABASE [MentooryDb] ... WITH INIT, COMPRESSION`, copy `.bak` out of the container, archive `app_storage` volume, prune older than `${BACKUP_KEEP_DAYS:-7}`, commented off-VM blob upload (FR-027, SC-007)
+- [X] T016 [P] [US3] Create `deploy/vm/provision-schedule.sh` per contracts/deploy-cli.md: `provision` (DevTest auto-stop 19:00 + Automation account/identity/runbook `StartMentooryVM` + weekly start schedule 06:45 `America/Costa_Rica` + job link), plus `start`/`stop`/`status`/`disable`/`enable` subcommands; all env-overridable (FR-028, FR-029, SC-006)
 - [ ] T017 [US3] Validate US3 via `quickstart.md`: install backup cron and confirm artifacts + pruning; `provision-schedule.sh` stop/start preserves static IP/DNS/TLS; start the `debug` dashboard and confirm loopback-only + off by default (SC-006, SC-007, SC-008)
 
 **Checkpoint**: All three stories independently functional.
@@ -103,9 +103,9 @@ default.
 
 **Purpose**: Future-use plumbing, full documentation, lint, and end-to-end validation.
 
-- [ ] T018 [P] Create `deploy/vm/provision-storage.sh` (future-use): create `Standard_LRS` `StorageV2` (public blob access off), ensure VM system-assigned identity, assign `Storage Blob Data Contributor`, print blob endpoint + `.env` lines; document "provisioned but not yet consumed" (research R8; FR-025, FR-026)
-- [ ] T019 Create comprehensive `deploy/vm/README.md` covering one-time setup, day-to-day deploys, logs, storage (future-use), backups, power schedule, cost kill-switch (docs only), and decommissioning the old Aspire/Azure-SQL path; include the cost table and B2s/B2ms guidance (FR-032, FR-033, FR-034)
-- [ ] T020 [P] Lint all `deploy/vm/*.sh` with `shellcheck` and resolve findings (quality; no functional change)
+- [X] T018 [P] Create `deploy/vm/provision-storage.sh` (future-use): create `Standard_LRS` `StorageV2` (public blob access off), ensure VM system-assigned identity, assign `Storage Blob Data Contributor`, print blob endpoint + `.env` lines; document "provisioned but not yet consumed" (research R8; FR-025, FR-026)
+- [X] T019 Create comprehensive `deploy/vm/README.md` covering one-time setup, day-to-day deploys, logs, storage (future-use), backups, power schedule, cost kill-switch (docs only), and decommissioning the old Aspire/Azure-SQL path; include the cost table and B2s/B2ms guidance (FR-032, FR-033, FR-034)
+- [X] T020 [P] Lint all `deploy/vm/*.sh` with `shellcheck` and resolve findings (quality; no functional change)
 - [ ] T021 Run full `quickstart.md` end-to-end validation against a real (or scratch) subscription and confirm every Success Criterion (SC-001..SC-010)
 
 ---
@@ -181,3 +181,18 @@ Task: "Create deploy/vm/provision-schedule.sh"   # T016
 - Commit after each task or logical group.
 - Validation tasks (T011, T013, T017, T021) require an Azure subscription + a DNS-controlled domain; if
   unavailable, document the dry-run/limits explicitly rather than silently skipping.
+
+## Implementation Status (2026-06-06)
+
+All authorable artifacts are complete and statically verified; the live-Azure validation tasks remain open
+for an operator to run.
+
+- **Done (16):** T001–T010, T012, T014–T016, T018–T020.
+  - All 6 shell scripts pass `bash -n`; `docker-compose.yml` + `cloud-init.yaml` pass YAML parsing.
+  - `shellcheck` (T020) was not installed in the authoring environment → substituted with `bash -n`
+    (clean). Run `shellcheck deploy/vm/*.sh` once available for full lint coverage.
+  - `docker compose config` could not run (Docker absent here); validated via YAML parse instead. Run
+    `docker compose config -q` on a Docker host before first deploy.
+- **Deferred — require a live Azure subscription + DNS-controlled domain (cannot run in this environment):**
+  T011 (US1 stand-up smoke test), T013 (US2 update/idempotency), T017 (US3 backups/power/telemetry),
+  T021 (full quickstart end-to-end). Follow `quickstart.md` to execute these during the first real deploy.

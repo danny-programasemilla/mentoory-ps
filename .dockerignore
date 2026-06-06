@@ -1,0 +1,27 @@
+# Keep the Docker build context small and correct. The webapp image builds from
+# the repo root (Mentoory.Web/Dockerfile does `dotnet publish Mentoory.Web`).
+# Build artifacts are rebuilt inside the image; VM-local state must never leak in.
+**/bin
+**/obj
+**/node_modules
+.git
+.github
+.idea
+.vs
+TestResults
+**/TestResults
+.localstorage
+# Spec / planning artifacts are not needed to build the app.
+specs
+brainstorm
+.specify
+.claude
+.ai
+# VM-local state (never copy a real .env or backups into an image layer).
+deploy/vm/.env
+deploy/vm/backups
+# Editor / OS noise.
+.DS_Store
+Thumbs.db
+*.swp
+*.user

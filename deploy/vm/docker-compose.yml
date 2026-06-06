@@ -1,0 +1,126 @@
+# Single-VM deployment for Mentoory (feature 022-vm-deployment).
+# Fixed-cost alternative to the Aspire / Azure Container Apps + Azure SQL stack.
+#
+#   caddy   -> auto-TLS reverse proxy (Let's Encrypt), ports 80/443
+#   webapp  -> the .NET 10 Mentoory.Web app (built from Mentoory.Web/Dockerfile)
+#   mssql   -> SQL Server 2022 (Developer edition, free for non-prod), loopback-only
+#   aspire-dashboard -> on-demand in-memory telemetry viewer (profile: debug)
+#
+# All persistent state lives in named volumes on the VM's data disk; back them up
+# with backup.sh.
+name: mentoory
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      ACME_EMAIL: ${ACME_EMAIL}
+      APP_DOMAIN: ${APP_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - webapp
+
+  webapp:
+    build:
+      # Build context is the repo root — Mentoory.Web/Dockerfile publishes the Web
+      # project and its transitive project graph (slnx-independent).
+      context: ../..
+      dockerfile: Mentoory.Web/Dockerfile
+    image: mentoory-webapp:local
+    restart: unless-stopped
+    depends_on:
+      mssql:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      # Caddy terminates TLS; trust X-Forwarded-* so the app sees the https scheme.
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      HTTP_PORTS: "8080"
+      # DB: SA auth against the mssql container on the private compose network.
+      ConnectionStrings__DefaultConnection: "Server=mssql,1433;Database=MentooryDb;User Id=sa;Password=${MSSQL_SA_PASSWORD};Encrypt=True;TrustServerCertificate=True"
+      # MediatR commercial license (empty => community notice; recommended for prod).
+      MediatR__LicenseKey: ${MEDIATR_LICENSE_KEY:-}
+      # OpenTelemetry export -> Aspire Dashboard. Empty by default (ServiceDefaults only
+      # wires the OTLP exporter when this is non-empty). To view telemetry, set
+      # OTEL_ENDPOINT=http://aspire-dashboard:18889 in .env and start the dashboard:
+      #   docker compose --profile debug up -d aspire-dashboard
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_ENDPOINT:-}
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_SERVICE_NAME: mentoory-web
+      # Attachments storage — FUTURE USE. No Mentoory code consumes blob storage yet;
+      # these are wired as no-ops so a later attachments feature needs no compose change.
+      Storage__Provider: ${STORAGE_PROVIDER:-}
+      ConnectionStrings__blobs: ${BLOB_CONNECTION:-}
+      # Log levels pinned for cost parity with the old Container Apps env.
+      Logging__LogLevel__Default: Warning
+      Logging__LogLevel__Microsoft.AspNetCore: Warning
+      Logging__LogLevel__Microsoft.EntityFrameworkCore.Database.Command: Warning
+    volumes:
+      # Optional local attachment storage (only used if STORAGE_PROVIDER=LocalFilesystem).
+      - app_storage:/data/storage
+      # Persist ASP.NET DataProtection keys across container recreates. Without this,
+      # every deploy wipes the keyring -> all auth cookies (Mentoory.Session) +
+      # antiforgery tokens invalidate (everyone logged out) and DP-encrypted data is lost.
+      # aspnet:10.0 runs as root by default -> keyring at /root/.aspnet/DataProtection-Keys.
+      - dataprotection:/root/.aspnet/DataProtection-Keys
+
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    restart: unless-stopped
+    # Bind to loopback only — SQL never faces the public internet. Reach it for dacpac
+    # publishing via an SSH tunnel (see publish-dacpac-vm.sh).
+    ports:
+      - "127.0.0.1:1433:1433"
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+      MSSQL_PID: Developer
+      # Cap the SQL buffer pool so the webapp has headroom on a 4 GB B2s.
+      # Raise if you move to a larger VM.
+      MSSQL_MEMORY_LIMIT_MB: "2048"
+    volumes:
+      - mssql_data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 40s
+
+  # On-demand only (profile: debug). In-memory telemetry viewer — structured logs,
+  # traces, metrics. Nothing persisted, nothing to pay for: all state is RAM and
+  # evaporates on restart. Bound to loopback; reach the UI through an SSH tunnel:
+  #   ssh -L 18888:localhost:18888 azureuser@<VM IP>   then open http://localhost:18888
+  #
+  # Start:  docker compose --profile debug up -d aspire-dashboard
+  # Stop:   docker compose stop aspire-dashboard
+  aspire-dashboard:
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:9.0
+    profiles: ["debug"]
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:18888:18888"   # web UI (loopback only -> SSH tunnel)
+    environment:
+      # No auth: safe only because the UI is loopback-bound and OTLP ingest is reachable
+      # solely on the private compose network.
+      DASHBOARD__FRONTEND__AUTHMODE: Unsecured
+      DASHBOARD__OTLP__AUTHMODE: Unsecured
+      DOTNET_DASHBOARD_OTLP_ENDPOINT_URL: http://0.0.0.0:18889
+      # Bounded buffers ~= "recent only". Lower = less RAM. Oldest auto-evicted.
+      DASHBOARD__TELEMETRYLIMITS__MAXLOGCOUNT: "5000"
+      DASHBOARD__TELEMETRYLIMITS__MAXTRACECOUNT: "5000"
+      DASHBOARD__TELEMETRYLIMITS__MAXMETRICSCOUNT: "5000"
+
+volumes:
+  caddy_data:
+  caddy_config:
+  mssql_data:
+  app_storage:
+  dataprotection:
