@@ -1,26 +1,28 @@
 ---
 name: speckit.spex-worktrees.worktree
-description: Manage git worktrees for isolated feature development - create after specify, list active worktrees, cleanup merged branches
-argument-hint: "[list|cleanup]"
+description: Manage git worktrees for isolated feature development - create after specify, list active worktrees, finish and cleanup
+argument-hint: "[list|cleanup|finish]"
 ---
 
 # Git Worktree Management for spex
 
 ## Overview
 
-This command manages git worktrees to isolate feature development. It supports three actions:
+This command manages git worktrees to isolate feature development. It supports four actions:
 
 - **create**: Called by the `after_specify` hook after `speckit-specify` completes. Creates a worktree, restores `main`, and prints switch instructions.
 - **list**: Shows all active feature worktrees with path, branch, and feature name.
+- **finish**: Merges the current worktree's branch into the default branch and removes the worktree. Use when implementation is complete.
 - **cleanup**: Detects worktrees whose branches are merged and offers removal.
 
 ## Action Routing
 
-Determine the action from context:
+Determine the action from the argument:
 
-- If invoked from the `after_specify` hook (post-specify context), the action is **create**.
-- If invoked with argument `cleanup`, the action is **cleanup**.
-- Otherwise (no args, `list`, or invoked directly), the action is **list**.
+- If invoked with argument `create` (from the `after_specify` hook): the action is **create**. Execute immediately, no confirmation needed.
+- If invoked with argument `finish`: the action is **finish**.
+- If invoked with argument `cleanup`: the action is **cleanup**.
+- Otherwise (no args, `list`, or invoked directly): the action is **list**.
 
 ## Prerequisites
 
@@ -146,6 +148,27 @@ fi
 
 Using `git add -u` (tracked modifications only) plus explicit paths for new spec artifacts limits the commit scope to intended files. The `git diff --cached --quiet` guard skips the commit when there are no staged changes, avoiding empty commits.
 
+### Step 5b: Capture Feature Directory and Flow State Before Branch Switch
+
+The next step switches to the default branch, which changes tracked files on disk. Since `.specify/feature.json` is tracked, its contents will revert to whatever the default branch has. And `.specify/.spex-state` is gitignored, so it won't survive the branch switch. Capture both now, while still on the feature branch:
+
+```bash
+FEATURE_DIR=""
+if [ -f ".specify/feature.json" ]; then
+  FEATURE_DIR=$(jq -r '.feature_directory // empty' ".specify/feature.json")
+fi
+# Fallback to branch-derived path if feature.json is missing or empty
+FEATURE_DIR=${FEATURE_DIR:-"specs/$BRANCH_NAME"}
+
+# Capture flow state content (gitignored, will be lost on branch switch)
+SPEX_STATE_CONTENT=""
+if [ -f ".specify/.spex-state" ]; then
+  SPEX_STATE_CONTENT=$(cat ".specify/.spex-state")
+fi
+```
+
+These values are used in Step 8b to set the correct feature context in the worktree.
+
 ### Step 6: Restore Default Branch (before worktree creation)
 
 Git does not allow two worktrees to have the same branch checked out. Since `speckit-specify` just created and checked out the feature branch, we must switch back to the default branch before creating a worktree for that branch.
@@ -207,9 +230,38 @@ fi
 
 This ensures the worktree has the same extensions, hooks, permissions, and skills as the main repo. No `/spex:init` needed in the worktree.
 
-### Step 9: Print Switch Instructions
+### Step 8b: Update feature.json and flow state for the Worktree Branch
 
-Print clear instructions for the user showing the worktree path:
+The copied `.specify/feature.json` may point to whatever feature was active on the default branch (since feature.json is tracked and reverts on branch switch). Write the correct value captured in Step 5b:
+
+```bash
+FEATURE_JSON="$WORKTREE_PATH/.specify/feature.json"
+echo "{\"feature_directory\": \"$FEATURE_DIR\"}" | jq '.' > "$FEATURE_JSON"
+```
+
+This writes the `FEATURE_DIR` value captured in Step 5b, which reflects the actual spec directory created by speckit-specify (not a branch-name derivation that may differ).
+
+The `.specify/.spex-state` file is gitignored, so the rsync in Step 8 won't copy it (the main repo is on the default branch at that point, where the file doesn't exist). Restore it from the content captured in Step 5b, with the branch and spec_dir updated to match the worktree:
+
+```bash
+STATE_FILE="$WORKTREE_PATH/.specify/.spex-state"
+if [ -n "$SPEX_STATE_CONTENT" ]; then
+  echo "$SPEX_STATE_CONTENT" | jq --arg branch "$BRANCH_NAME" --arg dir "$FEATURE_DIR" \
+    '.feature_branch = $branch | .spec_dir = $dir' > "$STATE_FILE"
+fi
+```
+
+This restores the flow state (including any quality gate results from the specify phase) and ensures both spec-kit commands and the status line operate on the correct feature context.
+
+### Step 9: Print Output
+
+Print a machine-readable line followed by human-readable instructions:
+
+```bash
+echo "WORKTREE_CREATED path=$WORKTREE_PATH"
+```
+
+Then print instructions for the user:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -225,7 +277,9 @@ Print clear instructions for the user showing the worktree path:
 └─────────────────────────────────────────────────────────────┘
 ```
 
-Use the actual `WORKTREE_PATH` value (computed in Step 4) in the output. This ensures the path is correct regardless of the configured `base_path`.
+Use the actual `WORKTREE_PATH` value (computed in Step 4) in the output.
+
+**Ship pipeline note:** When running inside a `speckit-spex-ship` pipeline, ship will automatically `cd` into the worktree and continue the pipeline there. No manual session restart needed.
 
 ## Action: List
 
@@ -271,6 +325,140 @@ No active feature worktrees found.
 Create one by running /speckit-specify with the worktrees extension enabled.
 ```
 
+## Action: Finish
+
+Merges the current worktree's feature branch into the default branch and removes the worktree. This is the recommended way to complete work in a spex worktree.
+
+**IMPORTANT:** Do NOT use Claude Code's `ExitWorktree` tool. Spex worktrees are created via `git worktree add`, not `EnterWorktree`, so `ExitWorktree` will refuse to operate on them. Always use git commands directly.
+
+### Step 1: Verify We're in a Worktree
+
+```bash
+REPO_ROOT=$(git rev-parse --show-toplevel)
+GIT_DIR=$(git rev-parse --git-dir)
+
+# A worktree has a .git file (not directory) pointing to the main repo
+if [ "$GIT_DIR" = "$REPO_ROOT/.git" ] || [ "$GIT_DIR" = ".git" ]; then
+  echo "ERROR: Not inside a git worktree. Use 'finish' from within a spex worktree."
+  # Stop here.
+fi
+```
+
+### Step 2: Get Branch and Main Worktree Info
+
+```bash
+BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+WORKTREE_PATH=$(git rev-parse --show-toplevel)
+
+# Find the main worktree (first entry in worktree list)
+MAIN_WORKTREE=$(git worktree list --porcelain | head -1 | sed 's/^worktree //')
+
+# Detect default branch
+DEFAULT_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
+if [ -z "$DEFAULT_BRANCH" ]; then
+  for candidate in main master; do
+    if git rev-parse --verify "$candidate" >/dev/null 2>&1; then
+      DEFAULT_BRANCH="$candidate"
+      break
+    fi
+  done
+fi
+DEFAULT_BRANCH=${DEFAULT_BRANCH:-main}
+```
+
+### Step 3: Ensure All Changes Are Committed
+
+```bash
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  echo "ERROR: Uncommitted changes in worktree. Commit or stash before finishing."
+  # Stop here.
+fi
+```
+
+### Step 4: Ask User How to Proceed
+
+Use AskUserQuestion with:
+- header: "Finish"
+- multiSelect: false
+- Options:
+  - "Merge and remove (Recommended)": "Fast-forward merge branch into default, remove worktree and branch"
+  - "Remove only": "Remove worktree and branch without merging (changes stay in git reflog)"
+  - "Cancel": "Keep worktree as-is"
+
+If "Cancel": stop.
+
+### Step 5: Switch CWD to Main Worktree
+
+**CRITICAL:** Switch the working directory to the main worktree BEFORE doing anything destructive. If cwd is inside the worktree being removed, all subsequent Bash commands will fail with "path does not exist".
+
+```bash
+cd "$MAIN_WORKTREE"
+```
+
+### Step 6: Merge (if selected)
+
+If the user chose "Merge and remove":
+
+```bash
+cd "$MAIN_WORKTREE"
+git checkout "$DEFAULT_BRANCH"
+git merge --ff-only "$BRANCH_NAME" 2>&1
+```
+
+If fast-forward merge fails (branches diverged), ask the user:
+
+Use AskUserQuestion with:
+- header: "Merge"
+- multiSelect: false
+- Options:
+  - "Create merge commit": "Merge with a merge commit (branches have diverged)"
+  - "Abort": "Keep worktree, resolve manually"
+
+If "Create merge commit":
+```bash
+git merge "$BRANCH_NAME" -m "Merge branch '$BRANCH_NAME'
+
+Assisted-By: 🤖 Claude Code" 2>&1
+```
+
+If "Abort": stop. The cwd is already at the main worktree, so the user can navigate back.
+
+### Step 7: Remove Worktree and Branch
+
+```bash
+# Remove worktree (cwd is already at main worktree from Step 5)
+git worktree remove "$WORKTREE_PATH" 2>&1
+
+# Delete the feature branch (it's merged or user chose remove-only)
+git branch -d "$BRANCH_NAME" 2>&1 || git branch -D "$BRANCH_NAME" 2>&1
+```
+
+### Step 8: Clear Flow State
+
+```bash
+STATE_FILE=".specify/.spex-state"
+if [ -f "$STATE_FILE" ]; then
+  rm -f "$STATE_FILE"
+fi
+```
+
+### Step 9: Report
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ Feature branch <branch> finished.                       │
+│                                                         │
+│ - Merged to <default-branch> (if selected)              │
+│ - Worktree removed: <worktree-path>                     │
+│ - Branch deleted: <branch>                              │
+│ - Flow state cleared                                    │
+│                                                         │
+│ You are now in the main repo on <default-branch>.       │
+└─────────────────────────────────────────────────────────┘
+```
+
+If the user wants to push: `git push origin $DEFAULT_BRANCH`
+
 ## Action: Cleanup
 
 Detect worktrees whose branches are merged and offer removal.
@@ -291,7 +479,7 @@ fi
 DEFAULT_BRANCH=${DEFAULT_BRANCH:-main}
 
 # Get all feature branches merged into the default branch
-MERGED_BRANCHES=$(git branch --merged "$DEFAULT_BRANCH" | sed 's/^[* ]*//' | grep -E '^[0-9]{3}-')
+MERGED_BRANCHES=$(git branch --merged "$DEFAULT_BRANCH" | sed 's/^[+* ]*//' | grep -E '^[0-9]{3}-')
 ```
 
 ### Step 2: Cross-Reference with Worktrees
