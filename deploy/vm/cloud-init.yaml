@@ -1,0 +1,23 @@
+#cloud-config
+# Bootstraps Docker + compose plugin on first boot. Referenced by provision-vm.sh
+# (az vm create --custom-data). Assumes admin user "azureuser" (ADMIN_USER default).
+package_update: true
+package_upgrade: true
+packages:
+  - ca-certificates
+  - curl
+  - git
+  - unzip
+write_files:
+  # Cap docker's local json-file logs (10MB x 3 per container). Written before docker
+  # installs so the daemon picks it up on first start. This is the on-VM equivalent of
+  # an Azure Log Analytics cap -- disk-bounded, $0, and there is no Log Analytics here.
+  - path: /etc/docker/daemon.json
+    content: |
+      { "log-driver": "json-file", "log-opts": { "max-size": "10m", "max-file": "3" } }
+runcmd:
+  - curl -fsSL https://get.docker.com | sh
+  - usermod -aG docker azureuser
+  - systemctl enable --now docker
+  # Basic host firewall in addition to the Azure NSG.
+  - [ bash, -lc, "ufw allow OpenSSH && ufw allow 80/tcp && ufw allow 443/tcp && ufw --force enable" ]
