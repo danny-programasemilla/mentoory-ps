@@ -423,7 +423,7 @@ a.sidebar-context-card:focus {
 
 /* Title: relocated h2.page-title. Sits over the transparent LEFT half → dark text on light,
    WCAG-AA preserved (FR-009). Single-line truncation so a long title never overflows the
-   band or overlaps the right-anchored colour field (FR-017). */
+   band or overlaps the right-anchored colour field (FR-019). */
 .page-banner__title {
     flex: 1 1 auto;
     min-width: 0;
@@ -434,7 +434,7 @@ a.sidebar-context-card:focus {
 }
 
 /* Right-anchored watermark icon. Decorative only: aria-hidden in markup, never interactive
-   (FR-003, FR-011). Rendered as a faint light/white watermark so it reads over the bold right
+   (FR-011, FR-016). Rendered as a faint light/white watermark so it reads over the bold right
    colour field without becoming a focal element (FR-016). */
 .page-banner__icon {
     flex: 0 0 auto;

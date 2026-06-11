@@ -1,4 +1,5 @@
 using System.Net;
+using System.Xml.Linq;
 using FluentAssertions;
 using Mentoory.Tests.Integration.Fixtures;
 using Xunit;
@@ -50,6 +51,13 @@ public class BannerAssetsServedTests
         looksLikeSvg.Should().BeTrue(
             $"'{slug}.svg' should be served as SVG (content-type '{contentType}' or an <svg> root)");
 
-        body.Should().Contain("<svg", $"'{slug}.svg' must be a well-formed SVG document");
+        body.Should().Contain("<svg", $"'{slug}.svg' must contain an <svg> root");
+
+        // Parse the document to back the well-formedness claim: a substring check alone would pass
+        // a file with unbalanced tags or malformed geometry. The root element must be <svg>.
+        var parse = () => XDocument.Parse(body);
+        parse.Should().NotThrow($"'{slug}.svg' must be well-formed XML");
+        XDocument.Parse(body).Root!.Name.LocalName.Should().Be("svg",
+            $"'{slug}.svg' must have an <svg> root element");
     }
 }
