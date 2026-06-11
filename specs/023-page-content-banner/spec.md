@@ -83,7 +83,7 @@ A user visiting a page whose action has no specific icon mapping, or a page that
 - **FR-003**: The banner strip MUST display a single contextual icon on its trailing (right) side, treated as a faint, decorative watermark.
 - **FR-004**: The contextual icon MUST be selected by the current page's action, mapping at minimum: list/index → a list icon, create → an add icon, edit → an edit icon, details/view → a view icon.
 - **FR-005**: For any action without a specific mapping, the system MUST display a neutral default icon (no missing or broken icon).
-- **FR-006**: The banner strip's colour treatment MUST vary by platform section and MUST be resolved consistently with the existing section theming used by the header band, rather than introducing a separate, independent section mapping.
+- **FR-006**: The banner strip's colour treatment MUST vary by platform section and MUST be resolved consistently with the existing section theming used by the header band (the feature-021 `header-band--{slug}` section resolution), rather than introducing a separate, independent section mapping.
 - **FR-007**: For a section without a specific colour mapping, the system MUST apply the platform's default treatment, consistent with the existing header band's fallback.
 - **FR-008**: The system MUST display the page title only once across the header band and the banner strip; the header band MUST no longer render the page title.
 - **FR-009**: The header band MUST continue to display the breadcrumb trail, page action buttons, and the top bar (notifications and user menu) unchanged.
@@ -116,10 +116,11 @@ Not applicable — this feature introduces no data, persistence, or domain entit
 
 ## Assumptions
 
+- The canonical scope predicate is "an authenticated page rendered by the main application layout"; the auth/error-layout exclusion (FR-013) is its corollary. FR-001, FR-013, and SC-004 all refer to this same page set.
 - The page title is sourced from the page's existing declared title (the value already used by the header band today); pages already set this consistently.
 - "Section" and "action" are derived from the current page's existing routing context (area/controller and action), the same inputs the existing header-band theming already consumes.
-- The existing header-band section theming is the authoritative source for section colour treatment; this feature reuses it rather than redefining section→colour mappings.
-- The standard action vocabulary for icon mapping is the conventional list/create/edit/details set; other actions (custom or non-CRUD) fall through to the default icon, which is acceptable for v1.
+- The existing header-band section theming is the authoritative source for section colour treatment; this feature reuses it rather than redefining section→colour mappings (the `header-band--{slug}` slugs resolved today by the feature-021 theme resolver).
+- The standard action vocabulary for icon mapping is the conventional MVC action-name set — `Index` → list, `Create` → add, `Edit` → edit, `Details` → view; every other action (custom or non-CRUD) falls through to the default icon (FR-005), which is acceptable for v1.
 - On small viewports, hiding or reducing the decorative icon (mirroring the header band's existing responsive behaviour) is acceptable and preferred over cramming the strip.
 - This is a presentation-only change: no database, schema, EF, Application, or Domain changes are in scope.
 - Per-view overrides of the strip's icon or the addition of a per-page subtitle are out of scope for v1 and may be considered as a later enhancement.
