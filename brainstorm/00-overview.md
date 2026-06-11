@@ -1,6 +1,6 @@
 # Brainstorm Overview
 
-Last updated: 2026-05-23 (#18 themed-header-band → spec 021 created; curated per-section abstract SVG band behind the shared page header — fresh, on-brand, static, WCAG-AA legible)
+Last updated: 2026-06-10 (#19 page-content-banner → active; slim ~60px CSS strip in `.page-body` above page content — section gradient + per-action Tabler webfont icon, page title relocated into the strip, zero image assets)
 
 ## Sessions
 
@@ -24,6 +24,7 @@ Last updated: 2026-05-23 (#18 themed-header-band → spec 021 created; curated p
 | 16 | 2026-04-25 | integration-soak-bundle | spec-shipped | 019 (PR #15, squash `fbd5ac6`) |
 | 17 | 2026-05-22 | sidebar-context-footer | spec-created | 020 |
 | 18 | 2026-05-23 | themed-header-band | spec-created | 021 |
+| 19 | 2026-06-10 | page-content-banner | active | - |
 
 ## Open Threads
 
@@ -93,6 +94,11 @@ Last updated: 2026-05-23 (#18 themed-header-band → spec 021 created; curated p
 - Header band background tint: per-theme colored wash vs. single neutral wash (from #18)
 - Exact section→theme routing table (`Sponsor`→`personas`; `Configuration`/`BatchUpload`→`default`) — finalize in planning (from #18)
 - Strictly-static band vs. later one-shot reduced-motion-aware entrance (from #18)
+- Icon + gradient key computation: extend 021's `HeaderTheme` resolver vs. sibling helper (from #19)
+- Complete action→icon map + default glyph for unmapped actions (from #19)
+- Heading hierarchy when the page title relocates into the strip (from #19)
+- Small-screen behavior: drop watermark icon below `md` (like 021) vs. keep full strip (from #19)
+- Per-view override of strip icon/subtitle vs. route-derived mapping only (from #19)
 
 ## Decisions Ratified During Review
 

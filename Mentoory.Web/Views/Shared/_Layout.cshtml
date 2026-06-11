@@ -19,6 +19,7 @@
         var action = ViewContext.RouteData.Values["action"]?.ToString();
         var pageTitle = ViewData["Title"]?.ToString() ?? controller ?? "";
         var headerTheme = Mentoory.Web.Infrastructure.HeaderTheme.Resolve(area, controller);
+        var bannerIcon = Mentoory.Web.Infrastructure.PageBannerIcon.Resolve(action);
 
         <div class="page">
             @await Html.PartialAsync("_Navigation")
@@ -47,7 +48,6 @@
                                         }
                                     </ol>
                                 </div>
-                                <h2 class="page-title">@pageTitle</h2>
                             </div>
                             @* Per-page action buttons opt in via @@section PageActions *@
                             @await RenderSectionAsync("PageActions", required: false)
@@ -58,6 +58,14 @@
                 </div>
                 <div class="page-body">
                     <div class="container-xl">
+                        @* Page content banner strip (023): section-themed, action-aware,
+                           carries the relocated page title. First child, above page content. *@
+                        @await Html.PartialAsync("_PageBanner", new ViewDataDictionary(ViewData)
+                        {
+                            ["BannerSlug"] = headerTheme,
+                            ["BannerIcon"] = bannerIcon,
+                            ["BannerTitle"] = pageTitle,
+                        })
                         @RenderBody()
                     </div>
                 </div>
