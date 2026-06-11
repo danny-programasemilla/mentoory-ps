@@ -1,6 +1,4 @@
 @{
-    ViewBag.ContextSelectorMode = "modal";
-
     var activeRole = User.GetActiveRole();
 }
 
@@ -38,20 +36,6 @@
                     <i class="ti ti-logout me-2"></i>Cerrar sesión
                 </button>
             </form>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="contextSwitcherModal" tabindex="-1" aria-labelledby="contextSwitcherModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="contextSwitcherModalLabel">Cambiar Contexto de Trabajo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-            </div>
-            <div class="modal-body">
-                @await Html.PartialAsync("_ContextSelector")
-            </div>
         </div>
     </div>
 </div>

@@ -110,6 +110,53 @@ public class ContextSwitchingTests
     }
 
     [Fact]
+    public async Task ContextModal_Content_ShouldBeInteractive_NotCoveredByBackdrop()
+    {
+        var page = await _fixture.CreatePageAsync();
+        try
+        {
+            await LoginAndSelectContextAsync(page, "multirole@test.mentoory.com", "Test123!@#");
+
+            // Open the switcher modal from the sidebar context card.
+            var contextCard = page.Locator("[data-testid='current-context']");
+            await contextCard.ClickAsync();
+
+            var modal = page.Locator("#contextSwitcherModal");
+            await modal.WaitForAsync(new LocatorWaitForOptions
+            {
+                State = WaitForSelectorState.Visible,
+                Timeout = 5000
+            });
+
+            // Regression guard for the stacking-context trap: if the modal is nested inside
+            // an ancestor that owns a stacking context (e.g. `.page-header > .container-xl`
+            // with z-index:1), it paints BELOW the body-level `.modal-backdrop` (z-index 1050).
+            // The modal then "shows" but every click lands on the backdrop. Hit-test the centre
+            // of the modal content: the topmost element there must live inside the modal.
+            var contentIsTopmost = await page.EvaluateAsync<bool>(@"() => {
+                var content = document.querySelector('#contextSwitcherModal .modal-content');
+                if (!content) return false;
+                var r = content.getBoundingClientRect();
+                var el = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+                return !!el && !!el.closest('#contextSwitcherModal');
+            }");
+            contentIsTopmost.Should().BeTrue(
+                "the modal content must be the topmost element at its centre; if it is trapped " +
+                "below .modal-backdrop the switcher is visible but unclickable");
+
+            // And an in-modal control must actually accept a real pointer click: clicking the
+            // close button (Playwright enforces actionability/hit-testing) must dismiss the modal.
+            await modal.Locator(".btn-close").ClickAsync();
+            await Assertions.Expect(modal).Not.ToBeVisibleAsync();
+        }
+        finally
+        {
+            await _fixture.TakeScreenshotOnFailureAsync(page, nameof(ContextModal_Content_ShouldBeInteractive_NotCoveredByBackdrop));
+            await page.Context.DisposeAsync();
+        }
+    }
+
+    [Fact]
     public async Task SingleContextUser_Card_IsStatic_NotClickable()
     {
         var page = await _fixture.CreatePageAsync();
