@@ -67,8 +67,10 @@ over the field; small-screen + print behave per spec.
   `<svg …` root. `[Trait("Category","Integration")]` via `WebApplicationFactory`; no DB. Guards
   FR-021 / SC-011 and catches a mis-named asset.
 - [ ] **T017** Update `tests/Mentoory.Tests.E2E/Tests/PageBannerTests.cs`: change the height-band
-  assertion from `>= 56` to `>= 88` (with a generous upper bound for padding slack) to enforce
-  SC-006/FR-012; keep the single-title + visible-above-content assertions.
+  assertion to enforce the band concretely — `Height >= 88` AND `Height <= 140` (140 = 100px nominal
+  ceiling + padding/border slack) — for SC-006/FR-012; keep the single-title + visible-above-content
+  assertions. While here, correct the stale assertion comment that labels height as `FR-014` to
+  `FR-012/SC-006` (FR-014 is single-title, not height).
 - [ ] **T018** Verify `PageBannerRenderTests` (markup contract) still passes **unchanged** — this is
   the regression guard that DOM/accessibility (FR-014/FR-016) did not regress. Do not edit it.
 
@@ -100,11 +102,11 @@ over the field; small-screen + print behave per spec.
 |-------|--------------|
 | T002–T009 | FR-002, FR-003, FR-005, FR-006, FR-024, SC-002, SC-003, SC-004, SC-011 |
 | T010, T011 | FR-002, FR-004, FR-007, FR-010, FR-012, FR-021, SC-006 |
-| T012 | FR-008, FR-009, SC-005 |
+| T012 | FR-008, FR-009, FR-019, SC-005 |
 | T013 | FR-011, FR-016, SC-007 |
 | T014 | FR-020, SC-010 |
 | T015 | FR-022 |
 | T016 | FR-021, SC-011 |
 | T017 | FR-012, FR-013, FR-014, SC-006, SC-008 |
-| T018 | FR-014, FR-016, FR-017, SC-008 (regression guard) |
-| T019–T022 | Constitution (zero warnings, Spanish UI), SC-001, SC-009, SC-010 |
+| T018 | FR-001, FR-014, FR-015, FR-016, FR-017, FR-018, SC-008 (regression guard) |
+| T019–T022 | Constitution (zero warnings, FR-023 Spanish UI), SC-001, SC-009, SC-010 |
