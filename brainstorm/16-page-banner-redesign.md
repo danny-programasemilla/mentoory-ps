@@ -1,7 +1,7 @@
 # Brainstorm: Page Content Banner Redesign
 
 **Date:** 2026-06-11
-**Status:** active
+**Status:** spec-created (spec 024; shipped via PR #27)
 
 ## Problem Framing
 

@@ -25,7 +25,7 @@ Last updated: 2026-06-11 (#20 page-banner-redesign â†’ active; revisit of 023 â€
 | 17 | 2026-05-22 | sidebar-context-footer | spec-created | 020 |
 | 18 | 2026-05-23 | themed-header-band | spec-created | 021 |
 | 19 | 2026-06-10 | page-content-banner | active | - |
-| 20 | 2026-06-11 | page-banner-redesign | active | - |
+| 20 | 2026-06-11 | page-banner-redesign | spec-created | 024 (PR #27) |
 
 ## Open Threads
 
