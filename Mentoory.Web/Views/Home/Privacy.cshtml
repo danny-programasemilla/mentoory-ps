@@ -2,14 +2,8 @@
     ViewData["Title"] = "Privacy Policy";
 }
 
-<div class="page-header d-print-none mb-4">
-    <div class="row align-items-center">
-        <div class="col-auto">
-            <h2 class="page-title">@ViewData["Title"]</h2>
-        </div>
-    </div>
-</div>
-
+@* Page title is rendered once by the content banner strip in _Layout (023-page-content-banner);
+   this view no longer renders its own page-header h2 to avoid a duplicate title (FR-008, SC-002). *@
 <div class="card">
     <div class="card-body">
         <p>Use this page to detail your site's privacy policy.</p>
