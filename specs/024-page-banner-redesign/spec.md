@@ -19,6 +19,9 @@
 - Q: How tall is the banner and what text does it carry? → A: A compact band, taller than the previous ~60px (target band ~88–100px), carrying the page title only — no subtitle.
 - Q: How do colour and title relate across the banner? → A: Bold colour and geometry occupy roughly the trailing (right) ~40–50% of the band; the title sits on the leading (left) side over a clean, light area in dark text, preserving WCAG-AA contrast with the least per-design risk.
 - Q: Does the per-action icon change? → A: No. The contextual per-action icon is retained on the right, unchanged in behaviour from feature 023 (list/create/edit/details + default fallback).
+- Q: What exact height within the 88–100px band? → A: Target **96px** as the nominal banner height; the 88–100px band is the acceptable tolerance for responsive/measurement variation. (Removes ambiguity for SC-006 / FR-012.)
+- Q: Where does each area's colour come from — reuse the existing area colours or pick new ones? → A: **Reuse the existing per-area colour families** the platform already associates with each area (the feature 021/023 area accent hues), rendered as **bold, solid colour fields** rather than the previous ~14% wash. This preserves cross-platform colour continuity while delivering the bold treatment; no new colour system is introduced.
+- Q: Is the geometry bespoke per area or drawn from a shared set? → A: A **small, shared geometric vocabulary** (a bounded set of motifs such as chevron / diagonal / mosaic) is varied per area so each area is still visibly distinct (FR-006), keeping authoring bounded rather than fully bespoke per page.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -95,7 +98,7 @@ A user reading any page can always read the page title clearly over the banner, 
 - **FR-009**: The page title MUST meet WCAG-AA contrast (ratio ≥ 4.5:1 for normal text) against the banner background in the title region, on every area's banner design.
 - **FR-010**: The bold colour field and geometric accents MUST occupy primarily the trailing (right) portion of the banner (approximately the right 40–50%), leaving the leading title region clean enough to guarantee FR-009.
 - **FR-011**: The banner MUST retain a single contextual icon on its trailing (right) side, treated as a faint decorative element, selected by the current page's action — mapping at minimum: list/index → a list icon, create → an add icon, edit → an edit icon, details/view → a view icon — with a neutral default icon for any unmapped action. This behaviour is unchanged from feature 023.
-- **FR-012**: The banner MUST be taller than the previous ~60px strip, sitting within a compact band of approximately 88–100px in height.
+- **FR-012**: The banner MUST be taller than the previous ~60px strip, with a nominal height of **96px**, sitting within a compact band of approximately 88–100px (the acceptable tolerance).
 - **FR-013**: The banner MUST carry the page title only — it MUST NOT introduce a subtitle, description line, or call-to-action element.
 - **FR-014**: The system MUST display the page title only once across the header band and the banner; the header band MUST NOT render the page title (unchanged from feature 023).
 - **FR-015**: The header band MUST continue to display the breadcrumb trail, page action buttons, and the top bar (notifications and user menu) unchanged.
@@ -122,7 +125,7 @@ A user reading any page can always read the page title clearly over the banner, 
 - **SC-003**: Any two recognised areas' banners are visibly distinguishable from each other in both colour and geometric composition (no two areas share an identical design merely recoloured), verifiable by side-by-side comparison.
 - **SC-004**: The banner's treatment is clearly bolder than the previous implementation — a reviewer comparing the new banner against the feature-023 baseline confirms a solid colour field and visible geometry rather than a near-transparent wash, on every area.
 - **SC-005**: The page title passes WCAG-AA contrast (ratio ≥ 4.5:1 for normal text) against the banner background in the title region on every area's banner design.
-- **SC-006**: The banner height sits within the 88–100px band on every in-scope page (taller than the previous ~60px), verifiable by measurement.
+- **SC-006**: The banner height is a nominal 96px and sits within the 88–100px band on every in-scope page (taller than the previous ~60px), verifiable by measurement.
 - **SC-007**: For the four standard actions (list, create, edit, details), 100% of pages show the action-appropriate icon; any page outside those four shows the default icon (never a missing or broken icon) — unchanged from feature 023.
 - **SC-008**: 0% of pages display the page title more than once (no page shows the title in both the header band and the banner).
 - **SC-009**: 0 login or error pages display the banner.
@@ -134,6 +137,6 @@ A user reading any page can always read the page title clearly over the banner, 
 - The canonical scope predicate remains "an authenticated page rendered by the main application layout"; the auth/error-layout exclusion (FR-018) is its corollary. FR-001, FR-018, SC-001, and SC-009 all refer to this same page set (carried over from feature 023).
 - The page title is sourced from the page's existing declared title (the value feature 023 already relocated into the strip); pages already set this consistently.
 - The area identity used to select a banner is the same area/section slug the platform already resolves for the header band (feature 021/023). The recognised area set above mirrors that existing mapping; if the platform's area set changes, the banner set is expected to track it.
-- The per-area palette is expected to draw from the colours the platform already associates with each area; whether those exact values are reused or refreshed for the bolder treatment is a visual-design detail to be settled during planning (it does not change scope).
-- The specific geometric style assigned to each area (e.g. chevron, diagonal, mosaic), the precise final height within the 88–100px band, and the exact mechanism for displaying and recolouring the curated assets are presentation/planning details that do not alter the requirements above.
+- The per-area palette reuses the colours the platform already associates with each area (the feature 021/023 area accent hues), rendered as bold solid fields; no new colour system is introduced (resolved in Clarifications).
+- The geometry is drawn from a small shared vocabulary varied per area, and the nominal height is 96px (resolved in Clarifications). The exact mechanism for displaying and recolouring the curated assets remains a planning detail that does not alter the requirements above.
 - The feature reuses feature 023's existing plumbing for area resolution, action-to-icon mapping, title relocation, and layout scoping; only the visual treatment, the asset strategy, and the banner height change.
