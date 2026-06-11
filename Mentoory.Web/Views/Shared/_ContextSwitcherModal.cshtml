@@ -1,0 +1,21 @@
+@* Context switcher modal. Rendered at body level (a direct child of <body>) — NOT inside
+   the page header. Bootstrap modals must sit at a top-level position: nesting this inside
+   `.page-header > .container-xl` (which owns a stacking context via z-index:1, feature 021)
+   traps it below the body-level `.modal-backdrop`, leaving it visible but unclickable.
+   Opened from the sidebar context card via data-bs-target="#contextSwitcherModal". *@
+@{
+    ViewBag.ContextSelectorMode = "modal";
+}
+<div class="modal fade" id="contextSwitcherModal" tabindex="-1" aria-labelledby="contextSwitcherModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="contextSwitcherModalLabel">Cambiar Contexto de Trabajo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                @await Html.PartialAsync("_ContextSelector")
+            </div>
+        </div>
+    </div>
+</div>

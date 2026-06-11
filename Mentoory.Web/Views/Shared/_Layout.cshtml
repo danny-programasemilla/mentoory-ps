@@ -72,6 +72,9 @@
                 @await Html.PartialAsync("_Footer")
             </div>
         </div>
+        @* Modal rendered at body level (outside .page-header's stacking context) so the
+           backdrop never paints over it. Trigger lives in the sidebar context card. *@
+        @await Html.PartialAsync("_ContextSwitcherModal")
     }
     else
     {
