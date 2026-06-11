@@ -454,3 +454,11 @@ a.sidebar-context-card:focus {
         display: none;
     }
 }
+
+/* Print: the strip is decorative chrome — hide it, mirroring the 021 header band's d-print-none.
+   Done via CSS (not a DOM class) so the rendered .page-banner DOM contract stays intact. */
+@media print {
+    .page-banner {
+        display: none;
+    }
+}

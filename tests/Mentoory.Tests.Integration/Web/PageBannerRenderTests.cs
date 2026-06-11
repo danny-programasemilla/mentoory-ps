@@ -105,26 +105,36 @@ public class PageBannerRenderTests : IntegrationTestBase
         html.Should().Contain("class=\"page-header", "the header band must still render");
         html.Should().Contain("class=\"breadcrumb\"", "the breadcrumb must remain in the header band (FR-009)");
         html.Should().Contain("class=\"page-pretitle\"", "the page-pretitle (breadcrumb wrapper) must remain");
+        html.Should().Contain("aria-label=\"Menu de usuario\"",
+            "the _TopBar user menu must remain in the header band after the title moves out (FR-009/C-05)");
     }
 
-    [Fact]
-    public async Task UnmappedAction_RendersDefaultIcon_WithSectionColour()
+    [Theory]
+    // Non-Index actions reachable by the IncubatorAdmin fixture, proving the icon VARIES by action
+    // (the section Theory above is all Index→list). Crucially, /Users/Enroll has an UNMAPPED action
+    // ("Enroll"), so it exercises the default-icon DOM path (FR-005 → ti-layout-2), non-vacuously.
+    [InlineData("/Administration/Users/Enroll", "personas", "layout-2")] // unmapped action → default icon
+    [InlineData("/Administration/Projects/Create", "proyectos", "plus")] // Create → plus
+    public async Task NonIndexAction_RendersExpectedActionIcon_OverSectionColour(
+        string route, string expectedSlug, string expectedIcon)
     {
         var client = await CreateAuthenticatedAdminClientAsync();
 
-        // Create is a mapped action; to exercise the default-icon path we need a non-CRUD action.
-        // The audit-log export route exposes a non-standard action that falls through to default.
-        // If no such route is reachable here we still assert the default mapping via the partial
-        // contract: every section route renders a valid (never missing) icon slug.
-        var response = await client.GetAsync("/Administration/Projects/Create");
-        // Create may or may not be reachable depending on context; tolerate redirect/forbidden.
-        if (response.StatusCode == HttpStatusCode.OK)
-        {
-            var html = await response.Content.ReadAsStringAsync();
-            // FR-004: Create → plus.
-            Regex.IsMatch(html, "<i class=\"ti ti-plus page-banner__icon\" aria-hidden=\"true\">")
-                .Should().BeTrue("a Create page should render the ti-plus action icon");
-        }
+        var response = await client.GetAsync(route);
+        response.StatusCode.Should().Be(HttpStatusCode.OK,
+            $"'{route}' should render for an IncubatorAdmin with an active context");
+
+        var html = await response.Content.ReadAsStringAsync();
+
+        // Exactly one strip, carrying the section slug.
+        Regex.Matches(html, "class=\"page-banner[ \"]").Count.Should().Be(1,
+            "exactly one .page-banner strip should render");
+        Regex.IsMatch(html, $"<div[^>]*class=\"page-banner page-banner--{expectedSlug}\"")
+            .Should().BeTrue($"'{route}' should render page-banner--{expectedSlug}");
+
+        // FR-004/FR-005: the action's icon (mapped → plus; unmapped → the layout-2 default).
+        Regex.IsMatch(html, $"<i class=\"ti ti-{expectedIcon} page-banner__icon\" aria-hidden=\"true\">")
+            .Should().BeTrue($"'{route}' should render the ti-{expectedIcon} action icon, aria-hidden");
     }
 
     [Fact]
