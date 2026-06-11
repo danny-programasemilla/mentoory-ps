@@ -8,6 +8,13 @@
 
 **Input**: User description: "Add a slim, sober ~60px content banner strip to every authenticated page, rendered purely in CSS, sitting above page content and below the feature-021 themed header band. Section gradient + per-action Tabler icon watermark on the right. The page title relocates into the strip; the 021 header band drops its H2 but keeps breadcrumb + actions + topbar. Source brainstorm: brainstorm/15-page-content-banner.md."
 
+## Clarifications
+
+### Session 2026-06-10
+
+- Q: When a page declares no title, does the strip still render (just without title text), or is it hidden entirely? → A: It still renders — the strip shows the section colour treatment and the (action/default) icon, and simply omits the title text. The strip is never hidden on an in-scope page solely because a title is absent.
+- Q: On small/narrow viewports, what happens to the decorative right-side icon? → A: It is hidden below the same viewport breakpoint at which the existing header band hides its decorative art (the Bootstrap `md` breakpoint, < 768px), leaving the title and colour treatment intact. The strip's height band is preserved.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Consistent, action-aware page banner above content (Priority: P1)
@@ -63,7 +70,7 @@ A user visiting a page whose action has no specific icon mapping, or a page that
 
 - **Login and error pages**: These use a different layout and MUST NOT show the banner strip; the feature applies only to authenticated pages on the main application layout.
 - **Long titles**: A very long page title MUST remain readable within the ~60px strip without overflowing into or overlapping the right-side icon; it should truncate or wrap gracefully.
-- **Small screens**: On narrow viewports the strip must remain legible and uncluttered (the decorative icon may be reduced or hidden, consistent with how the existing header band behaves on small screens).
+- **Small screens**: On narrow viewports the strip must remain legible and uncluttered. The decorative right-side icon is hidden below the same breakpoint at which the existing header band hides its decorative art (Bootstrap `md`, < 768px), while the title and colour treatment remain; the strip keeps its height band.
 - **Section not recognised**: A page in a section with no specific colour mapping MUST fall back to the platform's default treatment, identical to how the existing header band handles unmapped sections.
 - **Print**: The strip is decorative chrome and SHOULD follow the same print-hiding behaviour as the existing page header.
 
@@ -82,7 +89,7 @@ A user visiting a page whose action has no specific icon mapping, or a page that
 - **FR-009**: The header band MUST continue to display the breadcrumb trail, page action buttons, and the top bar (notifications and user menu) unchanged.
 - **FR-010**: The page title within the banner strip MUST be exposed as the page's primary heading in the document outline for assistive technologies.
 - **FR-011**: The decorative icon MUST be hidden from assistive technologies (it conveys no information beyond the title and section already present).
-- **FR-012**: For a page that does not declare a title, the banner strip MUST NOT render empty or placeholder title text and MUST remain visually coherent.
+- **FR-012**: For a page that does not declare a title, the banner strip MUST still render (showing the section colour treatment and the action/default icon) and MUST omit the title text entirely rather than rendering empty or placeholder text. An in-scope page MUST NOT have its strip hidden solely because a title is absent.
 - **FR-013**: The banner strip MUST NOT appear on pages that use the authentication or error layouts (login, error pages).
 - **FR-014**: The banner strip MUST be approximately 60px tall and present a sober, professional appearance consistent with the platform's existing brand design language (the gradient/abstract treatment seen on the login panel and header band).
 - **FR-015**: The banner strip MUST be implemented without introducing any new raster or vector image asset files; its visual treatment is produced from existing styling primitives and the existing icon set.
