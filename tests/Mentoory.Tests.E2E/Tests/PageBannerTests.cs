@@ -6,9 +6,9 @@ using Xunit;
 namespace Mentoory.Tests.E2E.Tests;
 
 /// <summary>
-/// E2E (023-page-content-banner): on a representative authenticated page the content banner
-/// strip is present and visible, sits above the page content (and below the header band), is
-/// ~60px tall, and carries the page title exactly once. Mirrors the 021 HeaderBandTests shape.
+/// E2E (024-page-banner-redesign): on a representative authenticated page the content banner
+/// is present and visible, sits above the page content (and below the header band), is
+/// ~96px tall, and carries the page title exactly once. Mirrors the 021 HeaderBandTests shape.
 /// </summary>
 [Collection(E2ETestCollection.Name)]
 [Trait("Category", "E2E")]
@@ -37,10 +37,12 @@ public class PageBannerTests
             (await banner.CountAsync()).Should().Be(1, "exactly one content banner strip should render");
             (await banner.IsVisibleAsync()).Should().BeTrue("the banner strip must be visible");
 
-            // ~60px height band (FR-014). Allow padding/border slack.
+            // ~96px height band (FR-012/SC-006). Lower bound guards the bold band height; upper
+            // bound (100px nominal + padding/border slack) guards against runaway growth.
             var box = await banner.BoundingBoxAsync();
             box.Should().NotBeNull();
-            box!.Height.Should().BeGreaterThanOrEqualTo(56, "the strip should present its ~60px height band");
+            box!.Height.Should().BeGreaterThanOrEqualTo(88, "the band should present its ~96px height (FR-012/SC-006)");
+            box!.Height.Should().BeLessThanOrEqualTo(140, "the band height should stay within the nominal ceiling + slack (FR-012/SC-006)");
 
             // Title appears once, inside the strip (SC-002, FR-002).
             var title = page.Locator(".page-banner .page-banner__title");

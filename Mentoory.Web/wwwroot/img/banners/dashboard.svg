@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 240" fill="none" aria-hidden="true">
+  <!-- MOSAIC motif: stepped grid of accent squares, denser toward the right edge. -->
+  <g>
+    <rect x="700" y="40" width="46" height="46" rx="6" fill="#E07850" opacity="0.45"/>
+    <rect x="760" y="100" width="46" height="46" rx="6" fill="#E07850" opacity="0.65"/>
+    <rect x="760" y="160" width="46" height="46" rx="6" fill="#F0A488" opacity="0.55"/>
+    <rect x="820" y="40" width="64" height="64" rx="8" fill="#E07850"/>
+    <rect x="820" y="118" width="64" height="64" rx="8" fill="#E07850" opacity="0.55"/>
+    <rect x="898" y="60" width="80" height="80" rx="9" fill="#E07850"/>
+    <rect x="898" y="154" width="50" height="50" rx="7" fill="#F0A488" opacity="0.7"/>
+    <rect x="992" y="36" width="58" height="58" rx="8" fill="#E07850" opacity="0.7"/>
+    <rect x="992" y="108" width="92" height="92" rx="10" fill="#E07850"/>
+    <rect x="1064" y="36" width="64" height="64" rx="8" fill="#E07850"/>
+    <rect x="1098" y="116" width="64" height="64" rx="8" fill="#F0A488" opacity="0.8"/>
+    <rect x="1148" y="40" width="40" height="40" rx="6" fill="#E07850" opacity="0.6"/>
+  </g>
+</svg>
