@@ -1,0 +1,23 @@
+@*
+    Page content banner strip (023-page-content-banner).
+    Rendered as the first child of .page-body > .container-xl, above the page content.
+    Pure presentation chrome: no resolution logic here — the section slug, action icon, and
+    title are computed once in _Layout.cshtml and passed via ViewData.
+
+    ViewData contract:
+      "BannerSlug"  : section slug from HeaderTheme.Resolve  (string, non-empty)
+      "BannerIcon"  : Tabler icon slug from PageBannerIcon.Resolve (string, non-empty)
+      "BannerTitle" : page title (string?, omitted entirely when null/blank — FR-012)
+*@
+@{
+    var slug = ViewData["BannerSlug"] as string ?? "default";
+    var icon = ViewData["BannerIcon"] as string ?? "layout-2";
+    var title = ViewData["BannerTitle"] as string;
+}
+<div class="page-banner page-banner--@slug">
+    @if (!string.IsNullOrWhiteSpace(title))
+    {
+        <h2 class="page-title page-banner__title">@title</h2>
+    }
+    <i class="ti ti-@icon page-banner__icon" aria-hidden="true"></i>
+</div>

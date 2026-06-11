@@ -390,3 +390,67 @@ a.sidebar-context-card:focus {
         --band-art: none;
     }
 }
+
+/* ── Page content banner (023) ───────────────────────────────────────────────
+   A slim (~60px), sober strip rendered as the FIRST child of .page-body > .container-xl,
+   above the page content and below the 021 header band. It carries the page title (relocated
+   out of the header band) on the left and a faint, per-action Tabler webfont icon on the right.
+   The section colour reuses the 021 section resolver: each .page-banner--{slug} sets only the
+   --banner-accent RGB triple; the shared rule below builds the gradient + icon tint once.
+   The gradient stays near-transparent under the left title column (0–55%) so the title keeps
+   WCAG-AA contrast (≥ 4.5:1) over the body background. */
+.page-banner {
+    --banner-accent: 224, 120, 80; /* overridden per slug; default treatment */
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 60px;
+    margin-bottom: 1rem;
+    padding: 0 1rem;
+    overflow: hidden;
+    border-radius: var(--tblr-border-radius, 4px);
+    background-image: linear-gradient(90deg, transparent 0 55%, rgba(var(--banner-accent), 0.14) 100%);
+}
+
+/* Title: relocated h2.page-title. Single-line truncation so a long title never overflows the
+   strip or overlaps the right-anchored icon (FR-017). */
+.page-banner__title {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* Faint, right-anchored watermark icon. Decorative only: aria-hidden in markup, never
+   interactive here (FR-003, FR-011). Tinted with the section accent at low opacity so the
+   title region stays legible. */
+.page-banner__icon {
+    flex: 0 0 auto;
+    margin-left: 1rem;
+    font-size: 2rem;
+    line-height: 1;
+    color: rgba(var(--banner-accent), 0.85);
+    opacity: 0.18;
+    pointer-events: none;
+}
+
+/* Per-section accent (RGB triple only — gradient/tint logic lives once in .page-banner above).
+   Triples match the colours feature 021 uses for each section (data-model.md). */
+.page-banner--dashboard { --banner-accent: 224, 120, 80; }
+.page-banner--proyectos { --banner-accent: 245, 183, 49; }
+.page-banner--conocimiento { --banner-accent: 217, 70, 168; }
+.page-banner--diagnostico { --banner-accent: 66, 153, 225; }
+.page-banner--personas { --banner-accent: 224, 120, 80; }
+.page-banner--incubadoras { --banner-accent: 217, 70, 168; }
+.page-banner--auditoria { --banner-accent: 27, 36, 52; }
+.page-banner--default { --banner-accent: 224, 120, 80; }
+
+/* Responsive (small-screen clarification): below Bootstrap md, hide the decorative icon so it
+   never crowds a wrapped/truncated title; the title and gradient remain, height band preserved. */
+@media (max-width: 767.98px) {
+    .page-banner__icon {
+        display: none;
+    }
+}

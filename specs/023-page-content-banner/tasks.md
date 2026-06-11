@@ -27,7 +27,7 @@ Web app (modular monolith). All production changes in `Mentoory.Web/`. Tests in 
 
 **Purpose**: Confirm the work surface. No new project, asset directory, or dependency is required — the strip is pure Razor + CSS + one static helper.
 
-- [ ] T001 Confirm the touch-set exists and compiles at baseline: `Mentoory.Web/Infrastructure/HeaderTheme.cs` (reused), `Mentoory.Web/Views/Shared/_Layout.cshtml`, `Mentoory.Web/wwwroot/css/mentoory.css`. Run `dotnet build` to establish a warning-free green baseline before changes.
+- [X] T001 Confirm the touch-set exists and compiles at baseline: `Mentoory.Web/Infrastructure/HeaderTheme.cs` (reused), `Mentoory.Web/Views/Shared/_Layout.cshtml`, `Mentoory.Web/wwwroot/css/mentoory.css`. Run `dotnet build` to establish a warning-free green baseline before changes.
 
 ---
 
@@ -37,10 +37,10 @@ Web app (modular monolith). All production changes in `Mentoory.Web/`. Tests in 
 
 **⚠️ CRITICAL**: No user story work begins until this phase is complete.
 
-- [ ] T002 [P] Write FAILING unit tests for `PageBannerIcon.Resolve(string? action)` in `tests/Mentoory.Tests.Integration/Web/PageBannerIconResolveTests.cs` — `[Trait("Category","Unit")]`, no host. Assert every row from data-model.md (`Index→list`, `Create→plus`, `Edit→edit`, `Details→eye`, `Delete→trash`), case-insensitivity (e.g. `eDiT→edit`), unmapped/`null`/blank → `layout-2` (default), and that the result is never null/whitespace. (FR-004, FR-005)
-- [ ] T003 Implement `Mentoory.Web/Infrastructure/PageBannerIcon.cs` — a pure static class with a case-insensitive `Dictionary<string,string>` action→slug map and `Resolve(string? action)` returning the bare Tabler icon slug, `default` = `layout-2`. Mirror the shape/XML-doc style of `HeaderTheme`. Make T002 pass. (FR-004, FR-005)
-- [ ] T004 Add the shared strip CSS to `Mentoory.Web/wwwroot/css/mentoory.css` (new "Page content banner (023)" block, after the 021 header-band block): `.page-banner` — flex row, `min-height: 60px`, gradient built from `rgba(var(--banner-accent), …)` weighted so the left title region stays WCAG-AA legible; `.page-banner__title` — `page-title` typography + ellipsis truncation (`overflow:hidden; white-space:nowrap`); `.page-banner__icon` — right-anchored, ~2rem, faint (low opacity, section-tinted), `pointer-events:none`. (FR-003, FR-014, FR-016, FR-017)
-- [ ] T005 Add the eight `.page-banner--{slug}` accent rules (each sets only `--banner-accent: R, G, B`) using the section RGB triples from data-model.md, plus the responsive rule `@media (max-width: 767.98px) { .page-banner__icon { display: none; } }`. Leave the existing `.header-band--{slug}` (021) rules unchanged. (FR-006, FR-007, small-screen clarification)
+- [X] T002 [P] Write FAILING unit tests for `PageBannerIcon.Resolve(string? action)` in `tests/Mentoory.Tests.Integration/Web/PageBannerIconResolveTests.cs` — `[Trait("Category","Unit")]`, no host. Assert every row from data-model.md (`Index→list`, `Create→plus`, `Edit→edit`, `Details→eye`, `Delete→trash`), case-insensitivity (e.g. `eDiT→edit`), unmapped/`null`/blank → `layout-2` (default), and that the result is never null/whitespace. (FR-004, FR-005)
+- [X] T003 Implement `Mentoory.Web/Infrastructure/PageBannerIcon.cs` — a pure static class with a case-insensitive `Dictionary<string,string>` action→slug map and `Resolve(string? action)` returning the bare Tabler icon slug, `default` = `layout-2`. Mirror the shape/XML-doc style of `HeaderTheme`. Make T002 pass. (FR-004, FR-005)
+- [X] T004 Add the shared strip CSS to `Mentoory.Web/wwwroot/css/mentoory.css` (new "Page content banner (023)" block, after the 021 header-band block): `.page-banner` — flex row, `min-height: 60px`, gradient built from `rgba(var(--banner-accent), …)` weighted so the left title region stays WCAG-AA legible; `.page-banner__title` — `page-title` typography + ellipsis truncation (`overflow:hidden; white-space:nowrap`); `.page-banner__icon` — right-anchored, ~2rem, faint (low opacity, section-tinted), `pointer-events:none`. (FR-003, FR-014, FR-016, FR-017)
+- [X] T005 Add the eight `.page-banner--{slug}` accent rules (each sets only `--banner-accent: R, G, B`) using the section RGB triples from data-model.md, plus the responsive rule `@media (max-width: 767.98px) { .page-banner__icon { display: none; } }`. Leave the existing `.header-band--{slug}` (021) rules unchanged. (FR-006, FR-007, small-screen clarification)
 
 **Checkpoint**: `dotnet test … PageBannerIconResolveTests` green; CSS compiles; no visual wiring yet.
 
@@ -52,10 +52,10 @@ Web app (modular monolith). All production changes in `Mentoory.Web/`. Tests in 
 
 **Independent Test**: Visit list/create/edit/details pages across sections; each shows the strip above content with the right section colour and action icon.
 
-- [ ] T006 [US1] Create the strip partial `Mentoory.Web/Views/Shared/_PageBanner.cshtml` — accepts the resolved `slug`, `icon`, and `title`; renders `<div class="page-banner page-banner--{slug}"> {title-h2 if non-blank} <i class="ti ti-{icon} page-banner__icon" aria-hidden="true"></i></div>` exactly per contracts/page-banner.md. (FR-001, FR-002, FR-003, FR-011)
-- [ ] T007 [US1] Edit `Mentoory.Web/Views/Shared/_Layout.cshtml`: compute `bannerIcon = PageBannerIcon.Resolve(action)` alongside the existing `headerTheme`, and render `_PageBanner` as the first child of `.page-body > .container-xl`, before `@RenderBody()`, passing `headerTheme` (slug), `bannerIcon`, and `pageTitle`. (FR-001, FR-006, FR-013 — inside the authenticated branch only)
-- [ ] T008 [P] [US1] Write integration render tests in `tests/Mentoory.Tests.Integration/Web/PageBannerRenderTests.cs` — `[Collection(IntegrationTestCollection.Name)]`, mirror `HeaderBandRenderTests`. Over routes `/Administration/Dashboard` (dashboard), `/Administration/Users` (personas), `/Administration/Projects` (proyectos), `/AvailableProjects` (default): assert exactly one `.page-banner` inside `.page-body`, carrying `page-banner--{slug}`, containing one `i.page-banner__icon` with the action's `ti-{icon}` and `aria-hidden="true"`, and no link/button/tabindex inside the icon (C-01..C-03, C-07). (SC-001, SC-003, SC-006)
-- [ ] T009 [P] [US1] Write E2E test `tests/Mentoory.Tests.E2E/Tests/PageBannerTests.cs` (mirror `HeaderBandTests`): on an authenticated route the `.page-banner` is visible, sits above the page content, is ≈60px tall, and shows the title once. (SC-001, SC-008)
+- [X] T006 [US1] Create the strip partial `Mentoory.Web/Views/Shared/_PageBanner.cshtml` — accepts the resolved `slug`, `icon`, and `title`; renders `<div class="page-banner page-banner--{slug}"> {title-h2 if non-blank} <i class="ti ti-{icon} page-banner__icon" aria-hidden="true"></i></div>` exactly per contracts/page-banner.md. (FR-001, FR-002, FR-003, FR-011)
+- [X] T007 [US1] Edit `Mentoory.Web/Views/Shared/_Layout.cshtml`: compute `bannerIcon = PageBannerIcon.Resolve(action)` alongside the existing `headerTheme`, and render `_PageBanner` as the first child of `.page-body > .container-xl`, before `@RenderBody()`, passing `headerTheme` (slug), `bannerIcon`, and `pageTitle`. (FR-001, FR-006, FR-013 — inside the authenticated branch only)
+- [X] T008 [P] [US1] Write integration render tests in `tests/Mentoory.Tests.Integration/Web/PageBannerRenderTests.cs` — `[Collection(IntegrationTestCollection.Name)]`, mirror `HeaderBandRenderTests`. Over routes `/Administration/Dashboard` (dashboard), `/Administration/Users` (personas), `/Administration/Projects` (proyectos), `/AvailableProjects` (default): assert exactly one `.page-banner` inside `.page-body`, carrying `page-banner--{slug}`, containing one `i.page-banner__icon` with the action's `ti-{icon}` and `aria-hidden="true"`, and no link/button/tabindex inside the icon (C-01..C-03, C-07). (SC-001, SC-003, SC-006)
+- [X] T009 [P] [US1] Write E2E test `tests/Mentoory.Tests.E2E/Tests/PageBannerTests.cs` (mirror `HeaderBandTests`): on an authenticated route the `.page-banner` is visible, sits above the page content, is ≈60px tall, and shows the title once. (SC-001, SC-008)
 
 **Checkpoint**: US1 delivers the visible, themed, action-aware strip — a usable MVP on its own.
 
@@ -67,9 +67,9 @@ Web app (modular monolith). All production changes in `Mentoory.Web/`. Tests in 
 
 **Independent Test**: Any authenticated page shows the title once (in the strip, not in the header band), with breadcrumb/actions/topbar intact.
 
-- [ ] T010 [US2] Edit `Mentoory.Web/Views/Shared/_Layout.cshtml`: remove `<h2 class="page-title">@pageTitle</h2>` from the `.page-header` band block, keeping the `.page-pretitle`/breadcrumb, the `PageActions` section, and `_TopBar`. (FR-008, FR-009)
-- [ ] T011 [US2] Extend `PageBannerRenderTests` with single-title + header-preserved assertions: the page title text appears in `.page-banner` and the `.page-header` no longer contains `h2.page-title`; the title appears exactly once in the document; `.page-header` still renders `.breadcrumb`, any `PageActions`, and the `_TopBar` (C-04, C-05). Assert the strip title is the page's primary heading exposed to assistive tech (FR-010). (SC-002)
-- [ ] T012 [US2] Regression guard: run the existing 021 suites (`HeaderBandRenderTests`, `HeaderThemeResolveTests`, `HeaderBandTests`) and fix any assertion that depended on `h2.page-title` living in the band — the band's breadcrumb/decorative/topbar contract must still hold after the title moves out.
+- [X] T010 [US2] Edit `Mentoory.Web/Views/Shared/_Layout.cshtml`: remove `<h2 class="page-title">@pageTitle</h2>` from the `.page-header` band block, keeping the `.page-pretitle`/breadcrumb, the `PageActions` section, and `_TopBar`. (FR-008, FR-009)
+- [X] T011 [US2] Extend `PageBannerRenderTests` with single-title + header-preserved assertions: the page title text appears in `.page-banner` and the `.page-header` no longer contains `h2.page-title`; the title appears exactly once in the document; `.page-header` still renders `.breadcrumb`, any `PageActions`, and the `_TopBar` (C-04, C-05). Assert the strip title is the page's primary heading exposed to assistive tech (FR-010). (SC-002)
+- [X] T012 [US2] Regression guard: run the existing 021 suites (`HeaderBandRenderTests`, `HeaderThemeResolveTests`, `HeaderBandTests`) and fix any assertion that depended on `h2.page-title` living in the band — the band's breadcrumb/decorative/topbar contract must still hold after the title moves out.
 
 **Checkpoint**: Title shown exactly once across header band + strip; 021 band contract preserved.
 
@@ -81,9 +81,9 @@ Web app (modular monolith). All production changes in `Mentoory.Web/`. Tests in 
 
 **Independent Test**: An unmapped-action page shows the default icon + section colour; a title-less page renders the strip without an empty title node.
 
-- [ ] T013 [US3] Verify/confirm the partial (`_PageBanner.cshtml`) omits the `<h2>` entirely when `title` is null/blank (no empty/placeholder node) while still rendering the gradient + icon; adjust the conditional if needed. (FR-012)
-- [ ] T014 [P] [US3] Extend `PageBannerRenderTests`: a route with a non-standard action renders `ti-layout-2` (default icon) with the section's `page-banner--{slug}` and no layout breakage; assert the strip still renders for an authenticated page even when the title is blank (no empty `h2.page-title page-banner__title`). (SC-003, FR-005, FR-012)
-- [ ] T015 [P] [US3] Add a negative integration assertion: the login page (and/or an error page) renders no `.page-banner` element (C-06). (SC-004)
+- [X] T013 [US3] Verify/confirm the partial (`_PageBanner.cshtml`) omits the `<h2>` entirely when `title` is null/blank (no empty/placeholder node) while still rendering the gradient + icon; adjust the conditional if needed. (FR-012)
+- [X] T014 [P] [US3] Extend `PageBannerRenderTests`: a route with a non-standard action renders `ti-layout-2` (default icon) with the section's `page-banner--{slug}` and no layout breakage; assert the strip still renders for an authenticated page even when the title is blank (no empty `h2.page-title page-banner__title`). (SC-003, FR-005, FR-012)
+- [X] T015 [P] [US3] Add a negative integration assertion: the login page (and/or an error page) renders no `.page-banner` element (C-06). (SC-004)
 
 **Checkpoint**: All three stories complete; fallback behaviour defined and tested.
 
@@ -93,9 +93,9 @@ Web app (modular monolith). All production changes in `Mentoory.Web/`. Tests in 
 
 **Purpose**: Verification, hygiene, and the spec's measurable outcomes.
 
-- [ ] T016 Run `/simplify` (or equivalent) over the new helper, partial, and CSS — remove any dead/duplicated rules; confirm gradient logic lives only in `.page-banner` (per-slug rules carry only `--banner-accent`).
-- [ ] T017 `dotnet build` warning-free (Constitution V) and full `dotnet test` green (unit + integration + E2E + 021 regression).
-- [ ] T018 Manual quickstart pass (quickstart.md table): confirm SC-001..SC-008 — strip present above content on representative pages, title shown once, action icons correct, section colours match the 021 band, login/error excluded, title contrast ≥ 4.5:1, no new image files added (`git status`), and narrow-viewport (~375px) legibility with the icon hidden and no overflow.
+- [X] T016 Run `/simplify` (or equivalent) over the new helper, partial, and CSS — remove any dead/duplicated rules; confirm gradient logic lives only in `.page-banner` (per-slug rules carry only `--banner-accent`).
+- [X] T017 `dotnet build` warning-free (Constitution V) and full `dotnet test` green (unit + integration + E2E + 021 regression).
+- [X] T018 Manual quickstart pass (quickstart.md table): confirm SC-001..SC-008 — strip present above content on representative pages, title shown once, action icons correct, section colours match the 021 band, login/error excluded, title contrast ≥ 4.5:1, no new image files added (`git status`), and narrow-viewport (~375px) legibility with the icon hidden and no overflow.
 
 ---
 
