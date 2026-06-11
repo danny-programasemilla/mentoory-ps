@@ -1,6 +1,6 @@
 # Brainstorm Overview
 
-Last updated: 2026-06-10 (#19 page-content-banner → active; slim ~60px CSS strip in `.page-body` above page content — section gradient + per-action Tabler webfont icon, page title relocated into the strip, zero image assets)
+Last updated: 2026-06-11 (#20 page-banner-redesign → active; revisit of 023 — replace the flat parametric gradient with a curated set of one bold pre-authored SVG banner per area, ~88–100px, dark title on clean left + color/geometry right, per-action icon kept; lifts 023's "no image assets" rule)
 
 ## Sessions
 
@@ -25,6 +25,7 @@ Last updated: 2026-06-10 (#19 page-content-banner → active; slim ~60px CSS str
 | 17 | 2026-05-22 | sidebar-context-footer | spec-created | 020 |
 | 18 | 2026-05-23 | themed-header-band | spec-created | 021 |
 | 19 | 2026-06-10 | page-content-banner | active | - |
+| 20 | 2026-06-11 | page-banner-redesign | active | - |
 
 ## Open Threads
 
@@ -99,6 +100,13 @@ Last updated: 2026-06-10 (#19 page-content-banner → active; slim ~60px CSS str
 - Heading hierarchy when the page title relocates into the strip (from #19)
 - Small-screen behavior: drop watermark icon below `md` (like 021) vs. keep full strip (from #19)
 - Per-view override of strip icon/subtitle vs. route-derived mapping only (from #19)
+- Exact final banner height within ~88–100px and how the SVG art scales to fill it (from #20)
+- Per-area palette: reuse exact 021/023 section colors vs. refresh for the bolder treatment (from #20)
+- Specific geometric style per area (chevron/diagonal/mosaic/slash) — bespoke vs. shared vocabulary (from #20)
+- SVG delivery: inline `<svg>` vs `<img>` vs CSS `background-image`; recolor in-file vs CSS vars (from #20)
+- Responsive <md behavior for richer SVG art: hide art / simplify to color band / keep full art (from #20)
+- Guaranteeing the title's dark-on-light region stays clean where art meets the title column, AA across all areas (from #20)
+- Print + reduced-motion behavior for the SVG art (from #20)
 
 ## Decisions Ratified During Review
 
