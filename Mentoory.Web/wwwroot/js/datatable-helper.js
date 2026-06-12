@@ -17,6 +17,29 @@ var FILTER_TYPE_REGISTRY = {
 };
 
 /**
+ * Shared status filter option sets for per-view `filters` overrides.
+ * `value` strings match exactly what the server handlers parse
+ * (`'true'`/`'false'` for bool.TryParse, `'0'`/`'1'` for SyncMode). `''` = no filter.
+ */
+var FILTER_OPTIONS_ACTIVE_FEM = [
+    { value: '', label: 'Todos' },
+    { value: 'true', label: 'Activa' },
+    { value: 'false', label: 'Inactiva' }
+];
+
+var FILTER_OPTIONS_ACTIVE_MASC = [
+    { value: '', label: 'Todos' },
+    { value: 'true', label: 'Activo' },
+    { value: 'false', label: 'Inactivo' }
+];
+
+var FILTER_OPTIONS_SYNC_MODE = [
+    { value: '', label: 'Todos' },
+    { value: '0', label: 'Desconectado' },
+    { value: '1', label: 'Sincronización parcial' }
+];
+
+/**
  * Column header keywords to exclude from filter panel generation.
  * Matched as lowercase substrings against accent-stripped header text.
  */

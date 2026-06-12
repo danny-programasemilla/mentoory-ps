@@ -31,6 +31,16 @@ public partial class UpdateIncubatorHandler(
         }
 
         incubator.Update(request.Name, request.Description, timeProvider.UtcNow);
+
+        if (request.IsActive)
+        {
+            incubator.Activate(timeProvider.UtcNow);
+        }
+        else
+        {
+            incubator.Deactivate(timeProvider.UtcNow);
+        }
+
         repository.Update(incubator);
 
         LogIncubatorUpdated(request.ExternalId);

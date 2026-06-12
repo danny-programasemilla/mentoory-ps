@@ -38,6 +38,7 @@
                         render: function (data) { return formatDate(data); }
                     }
                 ],
+                filters: [{ column: 'isActive', type: 'select', options: FILTER_OPTIONS_ACTIVE_FEM }],
                 defaultOrder: [[5, 'desc']]
             });
         });

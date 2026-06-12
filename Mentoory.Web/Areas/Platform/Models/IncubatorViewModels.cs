@@ -26,4 +26,7 @@ public sealed class EditIncubatorViewModel
     [StringLength(500, ErrorMessage = "La descripción no puede exceder 500 caracteres.")]
     [Display(Name = "Descripción")]
     public string? Description { get; set; }
+
+    [Display(Name = "Estado")]
+    public bool IsActive { get; set; }
 }

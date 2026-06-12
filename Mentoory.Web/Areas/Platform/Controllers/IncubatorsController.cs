@@ -91,7 +91,8 @@ public class IncubatorsController : Controller
         {
             ExternalId = incubator.ExternalId,
             Name = incubator.Name,
-            Description = incubator.Description
+            Description = incubator.Description,
+            IsActive = incubator.IsActive
         };
 
         return View(model);
@@ -107,7 +108,7 @@ public class IncubatorsController : Controller
         }
 
         var result = await _executor.SendAndLogIfFailureAsync(
-            new UpdateIncubatorCommand(externalId, model.Name, model.Description), ct);
+            new UpdateIncubatorCommand(externalId, model.Name, model.Description, model.IsActive), ct);
 
         if (result.IsSuccess)
         {
