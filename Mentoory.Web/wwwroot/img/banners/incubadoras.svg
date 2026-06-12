@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 240" fill="none" aria-hidden="true">
+  <!-- DIAGONAL motif: bold slashing parallelogram bands cutting across the right at ~35deg. -->
+  <g>
+    <path d="M640 240 L820 -20 L900 -20 L720 240 Z" fill="#2FB344" opacity="0.45"/>
+    <path d="M760 240 L940 -20 L1060 -20 L880 240 Z" fill="#2FB344"/>
+    <path d="M940 240 L1120 -20 L1180 -20 L1000 240 Z" fill="#5FC76E" opacity="0.7"/>
+    <path d="M1040 240 L1220 -20 L1300 -20 L1120 240 Z" fill="#2FB344"/>
+  </g>
+</svg>

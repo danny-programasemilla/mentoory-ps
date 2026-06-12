@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 240" fill="none" aria-hidden="true">
+  <!-- CHEVRON motif: stacked angled bars marching up-right, solid accent + lighter tints for depth. -->
+  <g>
+    <path d="M700 200 L760 140 L800 140 L740 200 Z" fill="#F8CC6B" opacity="0.6"/>
+    <path d="M760 200 L820 140 L860 140 L800 200 Z" fill="#F5B731"/>
+    <path d="M820 200 L880 140 L920 140 L860 200 Z" fill="#F5B731" opacity="0.7"/>
+    <path d="M790 130 L860 60 L900 60 L830 130 Z" fill="#F5B731"/>
+    <path d="M850 130 L920 60 L960 60 L890 130 Z" fill="#F8CC6B" opacity="0.7"/>
+    <path d="M910 130 L980 60 L1020 60 L950 130 Z" fill="#F5B731"/>
+    <path d="M880 200 L960 120 L1004 120 L924 200 Z" fill="#F5B731"/>
+    <path d="M950 200 L1030 120 L1074 120 L994 200 Z" fill="#F8CC6B" opacity="0.65"/>
+    <path d="M1020 200 L1100 120 L1144 120 L1064 200 Z" fill="#F5B731"/>
+    <path d="M1000 120 L1080 40 L1124 40 L1044 120 Z" fill="#F5B731"/>
+    <path d="M1070 120 L1150 40 L1194 40 L1114 120 Z" fill="#F8CC6B" opacity="0.7"/>
+  </g>
+</svg>

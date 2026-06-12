@@ -1,6 +1,6 @@
 # Brainstorm Overview
 
-Last updated: 2026-06-11 (#20 form-error-feedback → active; app-wide inline form-error pattern — remove the duplicating validation summary, global field CSS (danger border + persistent glow + inside-right alert-circle icon), page-level errors surface as toasts; rollout in waves CRUD → auth → atypical; prototype approved on Incubators/Create)
+Last updated: 2026-06-11 (#21 form-error-feedback → shipped via PR #28; app-wide inline form-error pattern — remove the duplicating validation summary, global field CSS (danger border + persistent glow + inside-right alert-circle icon), page-level errors surface as toasts; rollout in waves CRUD → auth → atypical; prototype approved on Incubators/Create)
 
 ## Sessions
 
@@ -25,7 +25,8 @@ Last updated: 2026-06-11 (#20 form-error-feedback → active; app-wide inline fo
 | 17 | 2026-05-22 | sidebar-context-footer | spec-created | 020 |
 | 18 | 2026-05-23 | themed-header-band | spec-created | 021 |
 | 19 | 2026-06-10 | page-content-banner | active | - |
-| 20 | 2026-06-11 | form-error-feedback | active | - |
+| 20 | 2026-06-11 | page-banner-redesign | spec-created | 024 (PR #27) |
+| 21 | 2026-06-11 | form-error-feedback | active | 024-form-error-feedback (PR #28) |
 
 ## Open Threads
 
@@ -100,12 +101,19 @@ Last updated: 2026-06-11 (#20 form-error-feedback → active; app-wide inline fo
 - Heading hierarchy when the page title relocates into the strip (from #19)
 - Small-screen behavior: drop watermark icon below `md` (like 021) vs. keep full strip (from #19)
 - Per-view override of strip icon/subtitle vs. route-derived mapping only (from #19)
-- Same-request toast mechanism for non-field ModelState errors — on-load script vs data attribute vs `_Layout` partial (TempData only covers the redirect case) (from #20)
-- `_AuthLayout` toast container/component presence for Wave 2 — Login "invalid credentials" is a page-level error that must toast (from #20)
-- `<select>` fields: inside-right error icon vs native dropdown arrow overlap (from #20)
-- Atypical forms (Wave 3): icon placement on file inputs (BatchUpload), per-question error display for the dynamic Participant Diagnostic (from #20)
-- Form-error accessibility: `aria-invalid` on fields, `role="alert"`/`aria-live` for messages + toasts (from #20)
-- Error icon rendering: CSS background-image alert-circle (approved) vs real Tabler icon element for selects/file inputs (from #20)
+- Exact final banner height within ~88–100px and how the SVG art scales to fill it (from #20)
+- Per-area palette: reuse exact 021/023 section colors vs. refresh for the bolder treatment (from #20)
+- Specific geometric style per area (chevron/diagonal/mosaic/slash) — bespoke vs. shared vocabulary (from #20)
+- SVG delivery: inline `<svg>` vs `<img>` vs CSS `background-image`; recolor in-file vs CSS vars (from #20)
+- Responsive <md behavior for richer SVG art: hide art / simplify to color band / keep full art (from #20)
+- Guaranteeing the title's dark-on-light region stays clean where art meets the title column, AA across all areas (from #20)
+- Print + reduced-motion behavior for the SVG art (from #20)
+- Same-request toast mechanism for non-field ModelState errors — on-load script vs data attribute vs `_Layout` partial (TempData only covers the redirect case) (from #21)
+- `_AuthLayout` toast container/component presence for Wave 2 — Login "invalid credentials" is a page-level error that must toast (from #21)
+- `<select>` fields: inside-right error icon vs native dropdown arrow overlap (from #21)
+- Atypical forms (Wave 3): icon placement on file inputs (BatchUpload), per-question error display for the dynamic Participant Diagnostic (from #21)
+- Form-error accessibility: `aria-invalid` on fields, `role="alert"`/`aria-live` for messages + toasts (from #21)
+- Error icon rendering: CSS background-image alert-circle (approved) vs real Tabler icon element for selects/file inputs (from #21)
 
 ## Decisions Ratified During Review
 

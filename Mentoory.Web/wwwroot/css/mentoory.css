@@ -435,29 +435,45 @@ input[type="file"].form-control.input-validation-error {
     }
 }
 
-/* ── Page content banner (023) ───────────────────────────────────────────────
-   A slim (~60px), sober strip rendered as the FIRST child of .page-body > .container-xl,
+/* ── Page content banner (024 redesign) ──────────────────────────────────────
+   A bold (~96px) per-area band rendered as the FIRST child of .page-body > .container-xl,
    above the page content and below the 021 header band. It carries the page title (relocated
-   out of the header band) on the left and a faint, per-action Tabler webfont icon on the right.
-   The section colour reuses the 021 section resolver: each .page-banner--{slug} sets only the
-   --banner-accent RGB triple; the shared rule below builds the gradient + icon tint once.
-   The gradient stays near-transparent under the left title column (0–55%) so the title keeps
-   WCAG-AA contrast (≥ 4.5:1) over the body background. */
+   out of the header band) on a lightly-tinted LEFT region in dark text (WCAG-AA preserved), with
+   a bold colour field + curated geometric SVG art deepening toward the right, and a faint
+   per-action Tabler webfont icon as a light watermark over the field.
+   Background is LAYERED, mirroring the 021 header band: per-slug --banner-art (a curated bold
+   SVG, /img/banners/{slug}.svg) on top of --banner-field. The field is a SINGLE full-width
+   gradient that runs edge-to-edge (no hard mid-band seam): a faint tint on the leading side that
+   keeps the title legible, smoothly deepening to a bold field on the trailing side. It is pure
+   CSS so it ALWAYS paints — a failed/missing SVG load still yields a coherent coloured band
+   (FR-021 fallback). Each .page-banner--{slug} sets only the --banner-accent RGB triple +
+   --banner-art url; the shared rule builds the field once. */
 .page-banner {
     --banner-accent: 224, 120, 80; /* overridden per slug; default treatment */
+    --banner-field: linear-gradient(90deg,
+        rgba(var(--banner-accent), 0.10) 0%,
+        rgba(var(--banner-accent), 0.16) 42%,
+        rgba(var(--banner-accent), 0.62) 74%,
+        rgba(var(--banner-accent), 0.95) 100%);
     position: relative;
     display: flex;
     align-items: center;
-    min-height: 60px;
+    min-height: 96px;
     margin-bottom: 1rem;
     padding: 0 1rem;
     overflow: hidden;
     border-radius: var(--tblr-border-radius, 4px);
-    background-image: linear-gradient(90deg, transparent 0 55%, rgba(var(--banner-accent), 0.14) 100%);
+    /* Layer order: SVG art (right-anchored geometry) on top, bold colour field behind. Both come
+       from custom properties so the responsive rule below can drop the art alone, keeping the field. */
+    background-repeat: no-repeat;
+    background-position: right center;
+    background-size: auto 100%;
+    background-image: var(--banner-art, none), var(--banner-field, none);
 }
 
-/* Title: relocated h2.page-title. Single-line truncation so a long title never overflows the
-   strip or overlaps the right-anchored icon (FR-017). */
+/* Title: relocated h2.page-title. Sits over the lightly-tinted LEFT region (≤16% accent) →
+   dark text stays WCAG-AA legible (FR-009). Single-line truncation so a long title never overflows the
+   band or overlaps the right-anchored colour field (FR-019). */
 .page-banner__title {
     flex: 1 1 auto;
     min-width: 0;
@@ -467,40 +483,45 @@ input[type="file"].form-control.input-validation-error {
     text-overflow: ellipsis;
 }
 
-/* Faint, right-anchored watermark icon. Decorative only: aria-hidden in markup, never
-   interactive here (FR-003, FR-011). Tinted with the section accent at low opacity so the
-   title region stays legible. */
+/* Right-anchored watermark icon. Decorative only: aria-hidden in markup, never interactive
+   (FR-011, FR-016). Rendered as a faint light/white watermark so it reads over the bold right
+   colour field without becoming a focal element (FR-016). */
 .page-banner__icon {
     flex: 0 0 auto;
     margin-left: 1rem;
     font-size: 2rem;
     line-height: 1;
-    color: rgba(var(--banner-accent), 0.85);
-    opacity: 0.18;
+    color: #fff;
+    opacity: 0.28;
     pointer-events: none;
 }
 
-/* Per-section accent (RGB triple only — gradient/tint logic lives once in .page-banner above).
-   Triples match the colours feature 021 uses for each section (data-model.md). */
-.page-banner--dashboard { --banner-accent: 224, 120, 80; }
-.page-banner--proyectos { --banner-accent: 245, 183, 49; }
-.page-banner--conocimiento { --banner-accent: 217, 70, 168; }
-.page-banner--diagnostico { --banner-accent: 66, 153, 225; }
-.page-banner--personas { --banner-accent: 224, 120, 80; }
-.page-banner--incubadoras { --banner-accent: 217, 70, 168; }
-.page-banner--auditoria { --banner-accent: 27, 36, 52; }
-.page-banner--default { --banner-accent: 224, 120, 80; }
+/* Per-area accent (RGB triple) + curated SVG art (mirrors the .header-band--{slug} shape).
+   Triples + assets match the curated set in data-model.md. Shared-hue pairs use distinct
+   motifs so they stay visually distinguishable (FR-006). */
+.page-banner--dashboard { --banner-accent: 224, 120, 80; --banner-art: url('/img/banners/dashboard.svg'); }
+.page-banner--proyectos { --banner-accent: 245, 183, 49; --banner-art: url('/img/banners/proyectos.svg'); }
+.page-banner--conocimiento { --banner-accent: 168, 82, 52; --banner-art: url('/img/banners/conocimiento.svg'); }
+.page-banner--diagnostico { --banner-accent: 66, 153, 225; --banner-art: url('/img/banners/diagnostico.svg'); }
+.page-banner--personas { --banner-accent: 224, 120, 80; --banner-art: url('/img/banners/personas.svg'); }
+.page-banner--incubadoras { --banner-accent: 47, 179, 68; --banner-art: url('/img/banners/incubadoras.svg'); }
+.page-banner--auditoria { --banner-accent: 27, 36, 52; --banner-art: url('/img/banners/auditoria.svg'); }
+.page-banner--default { --banner-accent: 224, 120, 80; --banner-art: url('/img/banners/default.svg'); }
 
-/* Responsive (small-screen clarification): below Bootstrap md, hide the decorative icon so it
-   never crowds a wrapped/truncated title; the title and gradient remain, height band preserved. */
+/* Responsive (FR-020): below Bootstrap md, drop the SVG art (keep the colour field) and hide the
+   decorative icon so neither crowds a wrapped/truncated title; the title + field remain. */
 @media (max-width: 767.98px) {
+    .page-banner {
+        --banner-art: none;
+    }
+
     .page-banner__icon {
         display: none;
     }
 }
 
-/* Print: the strip is decorative chrome — hide it, mirroring the 021 header band's d-print-none.
-   Done via CSS (not a DOM class) so the rendered .page-banner DOM contract stays intact. */
+/* Print: the band is decorative chrome — hide it, mirroring the 021 header band's d-print-none.
+   Done via CSS (not a DOM class) so the rendered .page-banner DOM contract stays intact (FR-022). */
 @media print {
     .page-banner {
         display: none;
