@@ -1,6 +1,6 @@
 # Brainstorm Overview
 
-Last updated: 2026-06-11 (#21 list-edit-ux-consistency → active; systemic fix — dropdown filters for fixed-value status columns across 5 tables, standardize Cancel→list convention (fix Incubators Edit outlier), add Activa/Inactiva toggle to Incubators Edit form)
+Last updated: 2026-06-11 (#22 list-edit-ux-consistency → shipping via PR #29 (spec 025); systemic fix — dropdown filters for fixed-value status columns across 5 tables, standardize Cancel→list convention (fix Incubators Edit outlier), add Activa/Inactiva toggle to Incubators Edit form. Prior: #21 form-error-feedback shipped via PR #28)
 
 ## Sessions
 
@@ -26,7 +26,8 @@ Last updated: 2026-06-11 (#21 list-edit-ux-consistency → active; systemic fix 
 | 18 | 2026-05-23 | themed-header-band | spec-created | 021 |
 | 19 | 2026-06-10 | page-content-banner | active | - |
 | 20 | 2026-06-11 | page-banner-redesign | spec-created | 024 (PR #27) |
-| 21 | 2026-06-11 | list-edit-ux-consistency | active | - |
+| 21 | 2026-06-11 | form-error-feedback | active | 024-form-error-feedback (PR #28) |
+| 22 | 2026-06-11 | list-edit-ux-consistency | spec-created | 025 (PR #29) |
 
 ## Open Threads
 
@@ -108,9 +109,15 @@ Last updated: 2026-06-11 (#21 list-edit-ux-consistency → active; systemic fix 
 - Responsive <md behavior for richer SVG art: hide art / simplify to color band / keep full art (from #20)
 - Guaranteeing the title's dark-on-light region stays clean where art meets the title column, AA across all areas (from #20)
 - Print + reduced-motion behavior for the SVG art (from #20)
-- Filter-detection mechanism: extend JS registry to recognize generic active/inactive render vs. per-view dropdown option overrides (from #21)
-- Dropdown option labels: derived automatically from rendered values vs. declared per table (from #21)
-- Domain: does deactivating an incubator have downstream/cascading effects, or is it a pure status flag (from #21)
+- Same-request toast mechanism for non-field ModelState errors — on-load script vs data attribute vs `_Layout` partial (TempData only covers the redirect case) (from #21)
+- `_AuthLayout` toast container/component presence for Wave 2 — Login "invalid credentials" is a page-level error that must toast (from #21)
+- `<select>` fields: inside-right error icon vs native dropdown arrow overlap (from #21)
+- Atypical forms (Wave 3): icon placement on file inputs (BatchUpload), per-question error display for the dynamic Participant Diagnostic (from #21)
+- Form-error accessibility: `aria-invalid` on fields, `role="alert"`/`aria-live` for messages + toasts (from #21)
+- Error icon rendering: CSS background-image alert-circle (approved) vs real Tabler icon element for selects/file inputs (from #21)
+- Filter-detection mechanism: extend JS registry to recognize generic active/inactive render vs. per-view dropdown option overrides (from #22)
+- Dropdown option labels: derived automatically from rendered values vs. declared per table (from #22)
+- Domain: does deactivating an incubator have downstream/cascading effects, or is it a pure status flag (from #22)
 
 ## Decisions Ratified During Review
 

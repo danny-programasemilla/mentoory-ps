@@ -11,6 +11,8 @@
     <ItemGroup>
         <PackageReference Include="Aspire.Hosting.Azure.Sql"/>
         <PackageReference Include="Aspire.Hosting.SqlServer"/>
+        <!-- Force patched MessagePack over the vulnerable 2.5.192 pulled transitively (NU1903 / GHSA-hv8m-jj95-wg3x). -->
+        <PackageReference Include="MessagePack"/>
     </ItemGroup>
 
     <ItemGroup>

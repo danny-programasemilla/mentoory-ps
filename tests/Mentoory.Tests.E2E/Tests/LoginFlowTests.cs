@@ -73,8 +73,18 @@ public class LoginFlowTests
             page.Url.Should().Contain("/Access/Login",
                 "failed login should stay on the login page");
 
-            var pageContent = await page.ContentAsync();
-            pageContent.Should().Contain("Credenciales inválidas");
+            // The credential error is surfaced as a danger toast (not a top summary block).
+            // Wait for the JS-rendered toast rather than relying on raw-HTML substring,
+            // since the message is emitted as a Unicode-escaped JS string literal.
+            var toast = page.Locator("#toastContainer .toast")
+                .Filter(new LocatorFilterOptions { HasText = "Credenciales inválidas" });
+            await toast.WaitForAsync(new() { State = WaitForSelectorState.Visible, Timeout = 5000 });
+            (await toast.CountAsync()).Should().BeGreaterThan(0,
+                "invalid credentials should be announced via a danger toast");
+
+            // And the removed validation-summary block must not reappear.
+            (await page.Locator("[data-valmsg-summary], .text-danger.mb-3").CountAsync()).Should().Be(0,
+                "the top validation-summary block must remain removed (SC-001)");
         }
         finally
         {
