@@ -30,6 +30,13 @@ public partial class UpdateIncubatorHandler(
                 (nameof(request.ExternalId), "Incubator not found"));
         }
 
+        if (request.CallerIncubatorId is { } callerIncubatorId
+            && incubator.Id != callerIncubatorId)
+        {
+            return Failure(ResultErrorCodes.GenericError,
+                (nameof(request.ExternalId), "No tiene autorización para modificar esta incubadora."));
+        }
+
         incubator.Update(request.Name, request.Description, timeProvider.UtcNow);
 
         if (request.IsActive)

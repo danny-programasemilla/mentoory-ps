@@ -108,7 +108,8 @@ public class IncubatorsController : Controller
         }
 
         var result = await _executor.SendAndLogIfFailureAsync(
-            new UpdateIncubatorCommand(externalId, model.Name, model.Description, model.IsActive), ct);
+            new UpdateIncubatorCommand(
+                externalId, model.Name, model.Description, model.IsActive, User.GetActiveIncubatorIdOrNull()), ct);
 
         if (result.IsSuccess)
         {
