@@ -8,6 +8,25 @@
 
 **Input**: User description: "List/Edit UX consistency (systemic): dropdown filters for fixed-value status columns across list tables, a consistent Cancel→list navigation convention on Create/Edit pages, and the ability to change an incubator's estado from its Edit form."
 
+## Clarifications
+
+### Session 2026-06-11
+
+- Q: What form should the incubator estado control on the Edit form take? →
+  A: A labeled on/off toggle (switch) reading Activa / Inactiva, presented alongside the
+  existing name and description fields (consistent with the brainstorm decision). The
+  exact widget styling is a UI detail for planning, but the control is binary
+  (Activa/Inactiva), not a multi-value selector.
+- Q: Does the Cancel→list convention (FR-008) require changing every Create/Edit page? →
+  A: No. Only the Incubators Edit page currently violates the convention and requires a
+  change. All other Create/Edit pages already return to their list and MUST remain
+  unchanged; for them this is a verify-only confirmation, not a modification.
+- Q: Are status filter dropdowns limited to the two-value Activa/Inactiva case? →
+  A: No. A status filter dropdown MUST offer the full set of values that the column can
+  display (e.g. the diagnostic synchronization states, which are more than two), not just a
+  boolean Activa/Inactiva pair. The precise option set per table is determined during
+  planning from each column's existing displayed values.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Filter list tables by a fixed-value status using a dropdown (Priority: P1)
@@ -142,7 +161,9 @@ in the list (and that the list's status filter can then find it under Inactiva).
   Incubators list view (not the detail/view page).
 - **FR-008**: The Cancel action on Create/Edit pages across the application MUST return the
   user to the corresponding entity's list view whenever such a list exists; this is the
-  standard convention and MUST be applied uniformly.
+  standard convention and MUST hold uniformly. Apart from the Incubators Edit page
+  (FR-007), all existing Create/Edit pages already satisfy this and MUST remain unchanged
+  (verify-only).
 
 #### Estado editing for incubators (US3)
 
