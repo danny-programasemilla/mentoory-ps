@@ -1,6 +1,6 @@
 # Brainstorm Overview
 
-Last updated: 2026-06-11 (#20 page-banner-redesign → active; revisit of 023 — replace the flat parametric gradient with a curated set of one bold pre-authored SVG banner per area, ~88–100px, dark title on clean left + color/geometry right, per-action icon kept; lifts 023's "no image assets" rule)
+Last updated: 2026-06-11 (#21 form-error-feedback → shipped via PR #28; app-wide inline form-error pattern — remove the duplicating validation summary, global field CSS (danger border + persistent glow + inside-right alert-circle icon), page-level errors surface as toasts; rollout in waves CRUD → auth → atypical; prototype approved on Incubators/Create)
 
 ## Sessions
 
@@ -26,6 +26,7 @@ Last updated: 2026-06-11 (#20 page-banner-redesign → active; revisit of 023 �
 | 18 | 2026-05-23 | themed-header-band | spec-created | 021 |
 | 19 | 2026-06-10 | page-content-banner | active | - |
 | 20 | 2026-06-11 | page-banner-redesign | spec-created | 024 (PR #27) |
+| 21 | 2026-06-11 | form-error-feedback | active | 024-form-error-feedback (PR #28) |
 
 ## Open Threads
 
@@ -107,6 +108,12 @@ Last updated: 2026-06-11 (#20 page-banner-redesign → active; revisit of 023 �
 - Responsive <md behavior for richer SVG art: hide art / simplify to color band / keep full art (from #20)
 - Guaranteeing the title's dark-on-light region stays clean where art meets the title column, AA across all areas (from #20)
 - Print + reduced-motion behavior for the SVG art (from #20)
+- Same-request toast mechanism for non-field ModelState errors — on-load script vs data attribute vs `_Layout` partial (TempData only covers the redirect case) (from #21)
+- `_AuthLayout` toast container/component presence for Wave 2 — Login "invalid credentials" is a page-level error that must toast (from #21)
+- `<select>` fields: inside-right error icon vs native dropdown arrow overlap (from #21)
+- Atypical forms (Wave 3): icon placement on file inputs (BatchUpload), per-question error display for the dynamic Participant Diagnostic (from #21)
+- Form-error accessibility: `aria-invalid` on fields, `role="alert"`/`aria-live` for messages + toasts (from #21)
+- Error icon rendering: CSS background-image alert-circle (approved) vs real Tabler icon element for selects/file inputs (from #21)
 
 ## Decisions Ratified During Review
 

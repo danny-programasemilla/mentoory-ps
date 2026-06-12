@@ -13,11 +13,25 @@ function showToast(message, type) {
     var toastEl = document.createElement('div');
     toastEl.className = 'toast align-items-center text-bg-' + type + ' border-0';
     toastEl.setAttribute('role', 'alert');
-    toastEl.innerHTML =
-        '<div class="d-flex">' +
-            '<div class="toast-body">' + message + '</div>' +
-            '<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>' +
-        '</div>';
+    toastEl.setAttribute('aria-atomic', 'true');
+
+    var wrapper = document.createElement('div');
+    wrapper.className = 'd-flex';
+
+    var bodyEl = document.createElement('div');
+    bodyEl.className = 'toast-body';
+    // Use textContent (not innerHTML) so the message is never parsed as HTML — defense-in-depth XSS hardening.
+    bodyEl.textContent = message;
+
+    var closeEl = document.createElement('button');
+    closeEl.type = 'button';
+    closeEl.className = 'btn-close btn-close-white me-2 m-auto';
+    closeEl.setAttribute('data-bs-dismiss', 'toast');
+    closeEl.setAttribute('aria-label', 'Cerrar');
+
+    wrapper.appendChild(bodyEl);
+    wrapper.appendChild(closeEl);
+    toastEl.appendChild(wrapper);
 
     container.appendChild(toastEl);
     var toast = new bootstrap.Toast(toastEl, { delay: 5000 });

@@ -12,6 +12,8 @@
     <PackageVersion Include="FluentValidation" Version="12.1.1" />
     <PackageVersion Include="FluentValidation.AspNetCore" Version="11.3.0" />
     <PackageVersion Include="MediatR" Version="14.1.0" />
+    <!-- Pin patched MessagePack: transitive 2.5.192 from Aspire hosting has advisory GHSA-hv8m-jj95-wg3x (NU1903). -->
+    <PackageVersion Include="MessagePack" Version="2.5.302" />
     <PackageVersion Include="MediatR.Contracts" Version="2.0.1" />
     <PackageVersion Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="10.0.1" />
     <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.1" />

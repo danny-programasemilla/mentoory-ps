@@ -27,8 +27,6 @@
     <input type="hidden" name="FormExternalId" value="@Model.FormExternalId" />
     <input type="hidden" name="EvaluationStage" value="@(Model.EvaluationStage == "Initial" ? 0 : 1)" />
 
-    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
-
     @if (Model.Questions.Count == 0)
     {
         <div class="empty">
@@ -131,3 +129,15 @@
         </div>
     }
 </form>
+
+@* This questionnaire is a PRG flow: submit errors arrive after a redirect via
+   TempData (ModelState is empty post-redirect), so surface them as a danger
+   toast — consistent with the app-wide page-level-error pattern. *@
+@if (TempData["ErrorMessage"] is string diagnosticError && !string.IsNullOrWhiteSpace(diagnosticError))
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            showToast(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(diagnosticError)), 'danger');
+        });
+    </script>
+}
