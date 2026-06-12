@@ -125,5 +125,5 @@ Run /simplify before presenting code to the user.
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan:
-`specs/023-page-content-banner/plan.md`
+`specs/025-list-edit-ux-consistency/plan.md`
 <!-- SPECKIT END -->
