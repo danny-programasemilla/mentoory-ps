@@ -8,6 +8,16 @@
 
 **Input**: Brainstorm `brainstorm/16-form-error-feedback.md` (approved). Prototype validated on `Platform/Incubators/Create`.
 
+## Clarifications
+
+### Session 2026-06-12 (resolved during autonomous pipeline, `smart` mode)
+
+- **Q**: How are non-field `ModelState` errors surfaced as toasts on a server-rendered (non-redirect) view? → **A**: A shared Razor partial, included once via the layout(s), renders all non-field `ModelState` entries and fires `showToast(..., 'danger')` for each on page load. Forms need no per-form wiring.
+- **Q**: How is the inside-right error icon handled on `<select>` and file inputs where it would collide with native controls? → **A**: Position the icon clear of the native control where feasible; where it is not (e.g. file inputs), fall back to border + glow + message without the inside icon. Border, glow, and message always apply.
+- **Q**: Do AJAX-submitted forms (already toasting via `form-helper.js`) change? → **A**: No change to their toasting behavior; they inherit the global field-error CSS automatically and are out of scope for summary removal unless they render a server-side summary.
+- **Q**: What severity/lifetime for page-level error toasts? → **A**: Danger (red) severity, using the existing Toast component and its standard auto-dismiss.
+- **Q**: What is required for accessibility beyond validator defaults? → **A**: Rely on jQuery-unobtrusive's `aria-invalid`/`aria-describedby` on fields; ensure the toast surface is an `aria-live`/`role="alert"` region so toasts are announced.
+
 ## User Scenarios & Testing *(mandatory)*
 
 The waves are prioritized user journeys. Each is independently testable and shippable; Wave 1 establishes the shared foundation (global field styling + page-level-error toasts) and is a viable MVP on its own.
