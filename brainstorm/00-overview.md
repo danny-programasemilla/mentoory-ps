@@ -1,6 +1,6 @@
 # Brainstorm Overview
 
-Last updated: 2026-06-10 (#19 page-content-banner → active; slim ~60px CSS strip in `.page-body` above page content — section gradient + per-action Tabler webfont icon, page title relocated into the strip, zero image assets)
+Last updated: 2026-06-11 (#20 form-error-feedback → active; app-wide inline form-error pattern — remove the duplicating validation summary, global field CSS (danger border + persistent glow + inside-right alert-circle icon), page-level errors surface as toasts; rollout in waves CRUD → auth → atypical; prototype approved on Incubators/Create)
 
 ## Sessions
 
@@ -25,6 +25,7 @@ Last updated: 2026-06-10 (#19 page-content-banner → active; slim ~60px CSS str
 | 17 | 2026-05-22 | sidebar-context-footer | spec-created | 020 |
 | 18 | 2026-05-23 | themed-header-band | spec-created | 021 |
 | 19 | 2026-06-10 | page-content-banner | active | - |
+| 20 | 2026-06-11 | form-error-feedback | active | - |
 
 ## Open Threads
 
@@ -99,6 +100,12 @@ Last updated: 2026-06-10 (#19 page-content-banner → active; slim ~60px CSS str
 - Heading hierarchy when the page title relocates into the strip (from #19)
 - Small-screen behavior: drop watermark icon below `md` (like 021) vs. keep full strip (from #19)
 - Per-view override of strip icon/subtitle vs. route-derived mapping only (from #19)
+- Same-request toast mechanism for non-field ModelState errors — on-load script vs data attribute vs `_Layout` partial (TempData only covers the redirect case) (from #20)
+- `_AuthLayout` toast container/component presence for Wave 2 — Login "invalid credentials" is a page-level error that must toast (from #20)
+- `<select>` fields: inside-right error icon vs native dropdown arrow overlap (from #20)
+- Atypical forms (Wave 3): icon placement on file inputs (BatchUpload), per-question error display for the dynamic Participant Diagnostic (from #20)
+- Form-error accessibility: `aria-invalid` on fields, `role="alert"`/`aria-live` for messages + toasts (from #20)
+- Error icon rendering: CSS background-image alert-circle (approved) vs real Tabler icon element for selects/file inputs (from #20)
 
 ## Decisions Ratified During Review
 
