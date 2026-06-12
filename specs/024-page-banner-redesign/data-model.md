@@ -14,10 +14,10 @@ is chosen so the two shared-hue pairs remain distinguishable (FR-006).
 |----------------|--------------------------------|---------------------------|-----------------|-------|
 | `dashboard`    | `/img/banners/dashboard.svg`   | 224,120,80 / #E07850      | mosaic          | shares hue with `personas` → distinct motif |
 | `proyectos`    | `/img/banners/proyectos.svg`   | 245,183,49 / #F5B731      | chevron         | |
-| `conocimiento` | `/img/banners/conocimiento.svg`| 217,70,168 / #D946A8      | mosaic          | shares hue with `incubadoras` → distinct motif |
-| `diagnostico`  | `/img/banners/diagnostico.svg` | 66,153,225 / #4299E1      | diagonal        | |
+| `conocimiento` | `/img/banners/conocimiento.svg`| 168,82,52 / #A85234       | mosaic          | terracotta (`--mentory-primary-700`); recoloured from magenta 2026-06-11 |
+| `diagnostico`  | `/img/banners/diagnostico.svg` | 66,153,225 / #4299E1      | diagonal        | blue (`--mentory-info`) |
 | `personas`     | `/img/banners/personas.svg`    | 224,120,80 / #E07850      | chevron         | shares hue with `dashboard` → distinct motif |
-| `incubadoras`  | `/img/banners/incubadoras.svg` | 217,70,168 / #D946A8      | diagonal        | shares hue with `conocimiento` → distinct motif |
+| `incubadoras`  | `/img/banners/incubadoras.svg` | 47,179,68 / #2FB344       | diagonal        | green (`--mentory-success`); recoloured from magenta 2026-06-11 |
 | `auditoria`    | `/img/banners/auditoria.svg`   | 27,36,52 / #1B2434        | mosaic          | dark/slate identity |
 | `default`      | `/img/banners/default.svg`     | 224,120,80 / #E07850      | diagonal        | fallback for any unmapped area |
 

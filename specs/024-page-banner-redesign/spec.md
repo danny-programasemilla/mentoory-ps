@@ -20,8 +20,15 @@
 - Q: How do colour and title relate across the banner? → A: Bold colour and geometry occupy roughly the trailing (right) ~40–50% of the band; the title sits on the leading (left) side over a clean, light area in dark text, preserving WCAG-AA contrast with the least per-design risk.
 - Q: Does the per-action icon change? → A: No. The contextual per-action icon is retained on the right, unchanged in behaviour from feature 023 (list/create/edit/details + default fallback).
 - Q: What exact height within the 88–100px band? → A: Target **96px** as the nominal banner height; the 88–100px band is the acceptable tolerance for responsive/measurement variation. (Removes ambiguity for SC-006 / FR-012.)
-- Q: Where does each area's colour come from — reuse the existing area colours or pick new ones? → A: **Reuse the existing per-area colour families** the platform already associates with each area (the feature 021/023 area accent hues), rendered as **bold, solid colour fields** rather than the previous ~14% wash. This preserves cross-platform colour continuity while delivering the bold treatment; no new colour system is introduced.
+- Q: Where does each area's colour come from — reuse the existing area colours or pick new ones? → A: Each area's colour is an **exact site-palette token** (`:root` in `mentoory.css`), rendered as a **bold colour field** rather than the previous ~14% wash. Most areas reuse the hue the platform already associates with them; the off-palette magenta is not used (see the 2026-06-11 revision). No new colour system is introduced.
 - Q: Is the geometry bespoke per area or drawn from a shared set? → A: A **small, shared geometric vocabulary** (a bounded set of motifs such as chevron / diagonal / mosaic) is varied per area so each area is still visibly distinct (FR-006), keeping authoring bounded rather than fully bespoke per page.
+
+### Session 2026-06-11 (post-implementation design revision)
+
+Following a visual review of the first rendered result, two refinements were made (spec + code kept in sync):
+
+- Q: The hard mid-band colour split read as the banner being "cut in half." → A: The colour treatment is now a **single full-width gradient** that runs edge-to-edge (faint tint on the left for title legibility, smoothly deepening to bold on the right) — no hard seam (revises FR-010).
+- Q: The magenta hue used for `conocimiento` and `incubadoras` did not fit the site palette. → A: Both areas are recoloured to **documented palette tokens**: `conocimiento` → deep terracotta `#A85234` (`--mentory-primary-700`); `incubadoras` → green `#2FB344` (`--mentory-success`). All banner colours are now exact site-palette tokens; the off-palette magenta is removed.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -96,7 +103,7 @@ A user reading any page can always read the page title clearly over the banner, 
 - **FR-007**: For an area without a specific banner design, the system MUST apply a **default banner**, consistent with the existing header band's fallback for unmapped sections, with no layout breakage.
 - **FR-008**: The banner MUST present the page's title on its leading (left) side as the page's single, primary title, rendered in dark text over a clean, light region.
 - **FR-009**: The page title MUST meet WCAG-AA contrast (ratio ≥ 4.5:1 for normal text) against the banner background in the title region, on every area's banner design.
-- **FR-010**: The bold colour field and geometric accents MUST occupy primarily the trailing (right) portion of the banner (approximately the right 40–50%), leaving the leading title region clean enough to guarantee FR-009.
+- **FR-010**: The banner's colour treatment MUST be a single full-width gradient that runs edge-to-edge as one integrated band (no hard mid-band seam): a faint tint of the area colour on the leading (left) side — light enough to keep the leading title region legible per FR-009 — smoothly deepening to a bold colour field on the trailing (right) side, where the geometric accents sit.
 - **FR-011**: The banner MUST retain a single contextual icon on its trailing (right) side, treated as a faint decorative element, selected by the current page's action — mapping at minimum: list/index → a list icon, create → an add icon, edit → an edit icon, details/view → a view icon — with a neutral default icon for any unmapped action. This behaviour is unchanged from feature 023.
 - **FR-012**: The banner MUST be taller than the previous ~60px strip, with a nominal height of **96px**, sitting within a compact band of approximately 88–100px (the acceptable tolerance).
 - **FR-013**: The banner MUST carry the page title only — it MUST NOT introduce a subtitle, description line, or call-to-action element.

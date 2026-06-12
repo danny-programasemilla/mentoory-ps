@@ -56,34 +56,36 @@ actually enforced rather than merely not-violated.
 
 ## R4. Colour & contrast strategy
 
-**Finding**: 023 already guarantees AA title contrast by keeping the gradient transparent under
-the left title column. The chosen layout (color/geometry on the right, dark title on a clean
-light left area) keeps that guarantee with the least per-design risk — the title never sits over
-the bold colour.
+**Finding**: 023 guarantees AA title contrast by keeping the gradient faint under the left title
+column. The chosen layout (faint colour on the left deepening to a bold field on the right, dark
+title on the left) keeps that guarantee with the least per-design risk — the title sits over only
+a light tint (≤16% accent), never the bold colour.
 
-**Decision**: Reuse the existing per-area accent triples (021/023 values) for the bold right
-field; render the title dark over the transparent left region (unchanged contrast posture). The
-retained icon moves from an accent tint (legible over near-white) to a faint **light** watermark
-so it reads over the now-bold right field, while staying decorative and `aria-hidden`.
+**Decision (revised 2026-06-11)**: The colour field is a **single full-width gradient** that runs
+edge-to-edge — `rgba(accent, 0.10)` at the left, held ≤0.16 through ~42%, ramping to `rgba(accent,
+0.95)` at the right — so the band reads as one integrated piece (no hard mid-band seam) while the
+title stays dark-on-light. Per-area accents are exact palette tokens. The retained icon is a faint
+**light/white** watermark so it reads over the now-bold right side, while staying decorative and
+`aria-hidden`.
 
 **Per-area accent hues (reused from 021/023):**
 
 | Slug | RGB | Hex |
 |------|-----|-----|
-| dashboard | 224,120,80 | #E07850 |
-| proyectos | 245,183,49 | #F5B731 |
-| conocimiento | 217,70,168 | #D946A8 |
-| diagnostico | 66,153,225 | #4299E1 |
-| personas | 224,120,80 | #E07850 |
-| incubadoras | 217,70,168 | #D946A8 |
-| auditoria | 27,36,52 | #1B2434 |
-| default | 224,120,80 | #E07850 |
+| dashboard | 224,120,80 | #E07850 (`--mentory-primary`) |
+| proyectos | 245,183,49 | #F5B731 (`--mentory-accent-gold`) |
+| conocimiento | 168,82,52 | #A85234 (`--mentory-primary-700`) |
+| diagnostico | 66,153,225 | #4299E1 (`--mentory-info`) |
+| personas | 224,120,80 | #E07850 (`--mentory-primary`) |
+| incubadoras | 47,179,68 | #2FB344 (`--mentory-success`) |
+| auditoria | 27,36,52 | #1B2434 (`--mentory-sidebar-bg`) |
+| default | 224,120,80 | #E07850 (`--mentory-primary`) |
 
-Note: `personas`/`dashboard` and `incubadoras`/`conocimiento` share an accent hue in the 021
-palette. FR-006 requires two areas be distinguishable in **both** colour and geometry — so the
-shared-hue pairs MUST differ by geometric motif (e.g. dashboard=mosaic vs personas=chevron;
-conocimiento=mosaic vs incubadoras=diagonal). The geometry carries the distinction where the hue
-repeats.
+Note (revised 2026-06-11): every banner colour is now an **exact site-palette token**. The
+off-palette magenta originally used for `conocimiento`/`incubadoras` was removed: `conocimiento`
+→ terracotta `#A85234`, `incubadoras` → green `#2FB344`. The only remaining shared-hue pair is
+`dashboard`/`personas` (both `#E07850`); FR-006 is satisfied there by distinct motifs (dashboard
+mosaic vs personas chevron). All other areas differ in hue outright.
 
 ## R5. Geometric vocabulary
 

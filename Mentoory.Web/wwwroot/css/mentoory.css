@@ -394,17 +394,23 @@ a.sidebar-context-card:focus {
 /* ── Page content banner (024 redesign) ──────────────────────────────────────
    A bold (~96px) per-area band rendered as the FIRST child of .page-body > .container-xl,
    above the page content and below the 021 header band. It carries the page title (relocated
-   out of the header band) on a clean light LEFT region in dark text (WCAG-AA preserved), with
-   a bold colour field + curated geometric SVG art on the right ~40–50%, and a faint per-action
-   Tabler webfont icon as a light watermark over the field.
+   out of the header band) on a lightly-tinted LEFT region in dark text (WCAG-AA preserved), with
+   a bold colour field + curated geometric SVG art deepening toward the right, and a faint
+   per-action Tabler webfont icon as a light watermark over the field.
    Background is LAYERED, mirroring the 021 header band: per-slug --banner-art (a curated bold
-   SVG, /img/banners/{slug}.svg) on top of --banner-field (a hard right-anchored CSS colour
-   block). The field is pure CSS so it ALWAYS paints — a failed/missing SVG load still yields a
-   coherent coloured band (FR-021 fallback). Each .page-banner--{slug} sets only the
-   --banner-accent RGB triple + --banner-art url; the shared rule builds the field once. */
+   SVG, /img/banners/{slug}.svg) on top of --banner-field. The field is a SINGLE full-width
+   gradient that runs edge-to-edge (no hard mid-band seam): a faint tint on the leading side that
+   keeps the title legible, smoothly deepening to a bold field on the trailing side. It is pure
+   CSS so it ALWAYS paints — a failed/missing SVG load still yields a coherent coloured band
+   (FR-021 fallback). Each .page-banner--{slug} sets only the --banner-accent RGB triple +
+   --banner-art url; the shared rule builds the field once. */
 .page-banner {
     --banner-accent: 224, 120, 80; /* overridden per slug; default treatment */
-    --banner-field: linear-gradient(90deg, transparent 0 50%, rgba(var(--banner-accent), 0.92) 56% 100%);
+    --banner-field: linear-gradient(90deg,
+        rgba(var(--banner-accent), 0.10) 0%,
+        rgba(var(--banner-accent), 0.16) 42%,
+        rgba(var(--banner-accent), 0.62) 74%,
+        rgba(var(--banner-accent), 0.95) 100%);
     position: relative;
     display: flex;
     align-items: center;
@@ -421,8 +427,8 @@ a.sidebar-context-card:focus {
     background-image: var(--banner-art, none), var(--banner-field, none);
 }
 
-/* Title: relocated h2.page-title. Sits over the transparent LEFT half → dark text on light,
-   WCAG-AA preserved (FR-009). Single-line truncation so a long title never overflows the
+/* Title: relocated h2.page-title. Sits over the lightly-tinted LEFT region (≤16% accent) →
+   dark text stays WCAG-AA legible (FR-009). Single-line truncation so a long title never overflows the
    band or overlaps the right-anchored colour field (FR-019). */
 .page-banner__title {
     flex: 1 1 auto;
@@ -451,10 +457,10 @@ a.sidebar-context-card:focus {
    motifs so they stay visually distinguishable (FR-006). */
 .page-banner--dashboard { --banner-accent: 224, 120, 80; --banner-art: url('/img/banners/dashboard.svg'); }
 .page-banner--proyectos { --banner-accent: 245, 183, 49; --banner-art: url('/img/banners/proyectos.svg'); }
-.page-banner--conocimiento { --banner-accent: 217, 70, 168; --banner-art: url('/img/banners/conocimiento.svg'); }
+.page-banner--conocimiento { --banner-accent: 168, 82, 52; --banner-art: url('/img/banners/conocimiento.svg'); }
 .page-banner--diagnostico { --banner-accent: 66, 153, 225; --banner-art: url('/img/banners/diagnostico.svg'); }
 .page-banner--personas { --banner-accent: 224, 120, 80; --banner-art: url('/img/banners/personas.svg'); }
-.page-banner--incubadoras { --banner-accent: 217, 70, 168; --banner-art: url('/img/banners/incubadoras.svg'); }
+.page-banner--incubadoras { --banner-accent: 47, 179, 68; --banner-art: url('/img/banners/incubadoras.svg'); }
 .page-banner--auditoria { --banner-accent: 27, 36, 52; --banner-art: url('/img/banners/auditoria.svg'); }
 .page-banner--default { --banner-accent: 224, 120, 80; --banner-art: url('/img/banners/default.svg'); }
 
