@@ -458,8 +458,10 @@ Desktop.ini
 
 # IDE folders that occasionally appear under SpecKit memory
 .specify/memory/.idea/
-# spex: generated/local files (only constitution is committed)
-**/.claude/
+# spex: generated/local files (only constitution + skills are committed)
+**/.claude/*
+# Keep speckit/spex skills tracked so every worktree gets them out-of-the-box
+!**/.claude/skills/
 **/.specify/**
 !**/.specify/memory/
 !**/.specify/memory/constitution.md
