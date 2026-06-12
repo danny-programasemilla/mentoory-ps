@@ -94,5 +94,6 @@
     }
     @await RenderSectionAsync("Scripts", required: false)
     @await Component.InvokeAsync("Toast")
+    <partial name="_ModelStateToasts" />
 </body>
 </html>

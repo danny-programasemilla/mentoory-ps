@@ -6,7 +6,7 @@
 
 <div class="row justify-content-center">
     <div class="col-lg-8">
-        <form asp-action="Create" method="post" class="form-inline-validation">
+        <form asp-action="Create" method="post">
             @Html.AntiForgeryToken()
             <div class="card">
                 <div class="card-body">
@@ -39,50 +39,6 @@
         </form>
     </div>
 </div>
-
-@section Styles {
-    @* ============================================================
-       PROPOSAL — inline form-error feedback (scoped to this page).
-       Applies to any invalid field inside .form-inline-validation:
-       danger border + glow that PERSIST (not focus-only) + an
-       alert-circle icon inside, on the right.
-       ============================================================ *@
-    <style>
-        /* Invalid field: danger border, soft glow, error icon inside-right.
-           Targets the class ASP.NET + jQuery-unobtrusive add to invalid inputs. */
-        .form-inline-validation .form-control.input-validation-error,
-        .form-inline-validation .form-select.input-validation-error {
-            border-color: var(--tblr-danger);
-            box-shadow: 0 0 0 .2rem rgba(var(--tblr-danger-rgb), .22);
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23D63939' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cline x1='12' y1='8' x2='12' y2='12'/%3E%3Cline x1='12' y1='16' x2='12.01' y2='16'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right .75rem center;
-            background-size: 1.15rem 1.15rem;
-            padding-right: 2.75rem;
-        }
-
-        /* Keep the danger glow (not the default primary one) while focused. */
-        .form-inline-validation .form-control.input-validation-error:focus,
-        .form-inline-validation .form-select.input-validation-error:focus {
-            border-color: var(--tblr-danger);
-            box-shadow: 0 0 0 .25rem rgba(var(--tblr-danger-rgb), .30);
-        }
-
-        /* Textarea: pin the icon to the top-right corner. */
-        .form-inline-validation textarea.form-control.input-validation-error {
-            background-position: right .75rem top .7rem;
-        }
-
-        /* Inline message below the field. */
-        .form-inline-validation .field-validation-error {
-            display: block;
-            margin-top: .375rem;
-            font-size: .8125rem;
-            font-weight: 500;
-            color: var(--tblr-danger);
-        }
-    </style>
-}
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

@@ -1,0 +1,25 @@
+@*
+    Surfaces genuine page-level (non-field) ModelState errors as danger toasts.
+    Only entries whose key is empty (string.Empty) are emitted — field-keyed
+    errors render inline next to their field. Reuses showToast (site.js).
+    Included once per layout, so forms need no per-form wiring.
+*@
+@{
+    var nonFieldErrors = ViewData.ModelState
+        .Where(entry => string.IsNullOrEmpty(entry.Key))
+        .SelectMany(entry => entry.Value!.Errors)
+        .Select(error => error.ErrorMessage)
+        .Where(message => !string.IsNullOrWhiteSpace(message))
+        .ToList();
+}
+@if (nonFieldErrors.Count > 0)
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            @foreach (var message in nonFieldErrors)
+            {
+                @:showToast(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(message)), 'danger');
+            }
+        });
+    </script>
+}
