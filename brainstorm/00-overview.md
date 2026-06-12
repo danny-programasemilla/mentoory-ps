@@ -1,6 +1,6 @@
 # Brainstorm Overview
 
-Last updated: 2026-06-11 (#20 page-banner-redesign → active; revisit of 023 — replace the flat parametric gradient with a curated set of one bold pre-authored SVG banner per area, ~88–100px, dark title on clean left + color/geometry right, per-action icon kept; lifts 023's "no image assets" rule)
+Last updated: 2026-06-11 (#21 list-edit-ux-consistency → active; systemic fix — dropdown filters for fixed-value status columns across 5 tables, standardize Cancel→list convention (fix Incubators Edit outlier), add Activa/Inactiva toggle to Incubators Edit form)
 
 ## Sessions
 
@@ -26,6 +26,7 @@ Last updated: 2026-06-11 (#20 page-banner-redesign → active; revisit of 023 �
 | 18 | 2026-05-23 | themed-header-band | spec-created | 021 |
 | 19 | 2026-06-10 | page-content-banner | active | - |
 | 20 | 2026-06-11 | page-banner-redesign | spec-created | 024 (PR #27) |
+| 21 | 2026-06-11 | list-edit-ux-consistency | active | - |
 
 ## Open Threads
 
@@ -107,6 +108,9 @@ Last updated: 2026-06-11 (#20 page-banner-redesign → active; revisit of 023 �
 - Responsive <md behavior for richer SVG art: hide art / simplify to color band / keep full art (from #20)
 - Guaranteeing the title's dark-on-light region stays clean where art meets the title column, AA across all areas (from #20)
 - Print + reduced-motion behavior for the SVG art (from #20)
+- Filter-detection mechanism: extend JS registry to recognize generic active/inactive render vs. per-view dropdown option overrides (from #21)
+- Dropdown option labels: derived automatically from rendered values vs. declared per table (from #21)
+- Domain: does deactivating an incubator have downstream/cascading effects, or is it a pure status flag (from #21)
 
 ## Decisions Ratified During Review
 
