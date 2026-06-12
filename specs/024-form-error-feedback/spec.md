@@ -94,7 +94,7 @@ A user interacts with the batch-upload form (file input) or the participant diag
 - **FR-008**: Error states MUST be exposed to assistive technologies — invalid fields marked as invalid, and inline messages plus toasts announced.
 - **FR-009**: The pattern MUST work for both client-side validation (before submit) and server-rendered validation (after submit), producing the same appearance.
 - **FR-010**: Where a form has multiple invalid fields, each MUST independently show its own error state.
-- **FR-011**: Authentication pages MUST display authentication-level failures (e.g. invalid credentials) as page-level toasts, which requires the toast surface to be available on the authentication layout.
+- **FR-011**: Authentication pages MUST display authentication-level failures (e.g. invalid credentials) as page-level toasts, which requires the `showToast` capability (the JS function, currently only loaded via `site.js` on `_Layout`) to be available on the authentication layout. The Toast container is already present on `_AuthLayout`.
 - **FR-012**: Atypical forms (file upload, dynamic questionnaire) MUST present field errors consistent with the pattern, adapting icon placement where the standard inside-right position is not feasible.
 - **FR-013**: The reference prototype on `Incubators/Create` MUST be migrated onto the centralized convention (its page-scoped styles removed in favor of the shared rule), so it is not a special case.
 
@@ -103,7 +103,7 @@ A user interacts with the batch-upload form (file input) or the participant diag
 ### Measurable Outcomes
 
 - **SC-001**: On every in-scope form, any given validation error appears exactly once — never both in a top summary and under the field.
-- **SC-002**: 100% of in-scope forms (14 total: 8 standard, 4 auth, 2 atypical) present invalid fields with the danger border + glow + inside-right icon treatment.
+- **SC-002**: 100% of in-scope forms (13 total: 7 standard, 4 auth, 2 atypical — the exact list is every view containing `asp-validation-summary`, enumerated during planning) present invalid fields with the danger border + glow + inside-right icon treatment.
 - **SC-003**: No page-level error that previously appeared only in a summary is lost — every such error is shown via toast (verified on forms that emit non-field errors, e.g. incubator create/edit and login).
 - **SC-004**: A user can identify which specific field is in error from the field itself, without reading a separate summary.
 - **SC-005**: Invalid fields, inline messages, and toasts are announced by screen readers.
@@ -114,9 +114,9 @@ A user interacts with the batch-upload form (file input) or the participant diag
 - The existing toast infrastructure (`showToast` in `wwwroot/js/site.js`, Bootstrap Toast + the shared Toast view component) is reused for page-level errors rather than introducing a new mechanism.
 - jQuery-unobtrusive validation remains the validation mechanism, so the `input-validation-error` / `field-validation-error` classes emitted by ASP.NET tag helpers and the client validator are the styling hooks.
 - The approved `Incubators/Create` prototype defines the target visual (danger border, persistent glow, inside-right alert-circle icon, restyled message).
-- 14 forms are in scope, grouped into 3 waves (8 standard CRUD, 4 auth, 2 atypical).
+- 13 forms are in scope (every view currently containing `asp-validation-summary`), grouped into 3 waves: 7 standard CRUD (Incubators Create/Edit, Administration Projects/Create, Users/Enroll, Users/RegisterInternal, Coordination Diagnostics/Clone, Knowledge/CreateTemplate), 4 auth (Login, ForgotPassword, ResetPassword, ChangePassword), 2 atypical (BatchUpload, Participant Diagnostic). The exact list is reconfirmed during planning.
 - This is a Web-layer-only change — Razor views, CSS, a small shared JS/partial helper, and minimal controller error-routing where needed. No Domain, Application, or Infrastructure changes; no validation-rule changes.
-- The authentication layout (`_AuthLayout`) does not yet include the toast surface and will need it added for Wave 2.
+- The authentication layout (`_AuthLayout`) already renders the Toast container (`@await Component.InvokeAsync("Toast")`) but does NOT load `site.js`, so the `showToast` function is unavailable on auth pages. Wave 2 must make `showToast` (and any page-error partial) available on `_AuthLayout`, not add the toast container.
 - Existing `mentoory.css` design tokens (`--tblr-danger`, `--tblr-danger-rgb`) provide the danger color.
 
 ## Out of Scope
